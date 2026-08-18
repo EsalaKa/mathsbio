@@ -1,0 +1,171 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #17211c;
+  background: #f7faf8;
+  line-height: 1.65;
+}
+
+.container {
+  width: min(1100px, 90%);
+  margin: 0 auto;
+}
+
+.site-header {
+  background: #ffffff;
+  border-bottom: 1px solid #dce7e0;
+}
+
+.nav-wrap {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #145c3b;
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  gap: 24px;
+}
+
+nav a {
+  color: #33463b;
+  text-decoration: none;
+}
+
+nav a:hover {
+  color: #145c3b;
+}
+
+.hero {
+  padding: 100px 0 90px;
+  background: linear-gradient(135deg, #edf8f1, #f8fbf9);
+}
+
+.eyebrow {
+  color: #287451;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+h1 {
+  max-width: 780px;
+  margin: 10px 0 20px;
+  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  line-height: 1.08;
+  color: #123d2a;
+}
+
+.lead {
+  max-width: 720px;
+  font-size: 1.2rem;
+  color: #46584e;
+}
+
+.button {
+  display: inline-block;
+  margin-top: 18px;
+  padding: 12px 20px;
+  border-radius: 7px;
+  background: #176b45;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.section {
+  padding: 75px 0;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 2rem;
+  color: #174c34;
+}
+
+.section-intro {
+  max-width: 700px;
+  color: #596a60;
+  margin-bottom: 32px;
+}
+
+.path-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  padding: 26px;
+  border: 1px solid #dce7e0;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(26, 67, 45, 0.05);
+}
+
+.card span {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #39815e;
+}
+
+.card h3 {
+  margin: 8px 0 10px;
+  color: #183e2d;
+}
+
+.card p {
+  margin-bottom: 0;
+  color: #596a60;
+}
+
+.about {
+  background: #edf5f0;
+}
+
+.about p {
+  max-width: 800px;
+}
+
+footer {
+  padding: 28px 0;
+  background: #123d2a;
+  color: #dce9e1;
+}
+
+@media (max-width: 800px) {
+  .path-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-wrap {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 18px 0;
+    gap: 10px;
+  }
+
+  nav {
+    gap: 16px;
+  }
+
+  .hero {
+    padding: 70px 0;
+  }
+}
