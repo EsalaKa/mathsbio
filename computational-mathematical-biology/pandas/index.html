@@ -1,0 +1,6 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pandas | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><main class="section container"><a class="back-link" href="../">← Computational Mathematical Biology</a><article class="lesson-content"><h1 class="section-title">Pandas</h1><p>Pandas is used for labelled tabular data such as biological observations collected by date, location, treatment or individual.</p><h2>Reading data</h2><pre><code>import pandas as pd
+
+data = pd.read_csv("observations.csv")
+print(data.head())</code></pre><h2>Selecting variables</h2><pre><code>time = data["time"]
+cases = data["cases"]</code></pre><h2>Basic checks</h2><pre><code>print(data.isna().sum())
+print(data.describe())</code></pre><p>Data cleaning should be scientifically documented: missing values, aggregation and transformations can change the meaning of the analysis.</p><div class="box"><strong>Key idea.</strong> Pandas helps organise observed data before they are visualised, statistically analysed or compared with mathematical models.</div></article></main></body></html>

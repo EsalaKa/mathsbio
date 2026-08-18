@@ -1,0 +1,6 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Random-number generation | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><main class="section container"><a class="back-link" href="../">← Computational Mathematical Biology</a><article class="lesson-content"><h1 class="section-title">Random-number generation</h1><p>Stochastic simulation requires computer-generated random values from specified probability distributions. In practice these are pseudorandom: a deterministic algorithm produces a sequence designed to behave statistically like random draws.</p><h2>NumPy generator</h2><pre><code>import numpy as np
+rng = np.random.default_rng(12345)
+
+u = rng.uniform(0, 1)
+z = rng.normal(0, 1)
+tau = rng.exponential(scale=2.0)</code></pre><h2>Seeds</h2><p>A fixed seed makes a simulation reproducible. Different seeds produce different pseudorandom sequences.</p><h2>Distribution matters</h2><p>Uniform, normal, exponential, Poisson and binomial draws represent different stochastic mechanisms and should not be interchanged merely because each produces random numbers.</p><div class="box"><strong>Key idea.</strong> Random-number generation is the computational bridge between probability distributions and simulated stochastic trajectories.</div></article></main></body></html>

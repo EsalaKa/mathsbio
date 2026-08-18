@@ -1,0 +1,11 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Matplotlib | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><main class="section container"><a class="back-link" href="../">← Computational Mathematical Biology</a><article class="lesson-content"><h1 class="section-title">Matplotlib</h1><p>Matplotlib creates scientific graphs for exploring data and presenting model results.</p><h2>Plotting a model trajectory</h2><pre><code>import matplotlib.pyplot as plt
+
+plt.plot(t, N)
+plt.xlabel("Time")
+plt.ylabel("Population")
+plt.show()</code></pre><h2>Comparing model and data</h2><pre><code>plt.scatter(t_data, y_data, label="Data")
+plt.plot(t_model, y_model, label="Model")
+plt.xlabel("Time")
+plt.ylabel("Observed quantity")
+plt.legend()
+plt.show()</code></pre><p>Axes, units and legends should communicate the biological quantity clearly. Visual appearance should not obscure uncertainty or differences between observations and predictions.</p><div class="box"><strong>Key idea.</strong> A scientific graph is part of the analysis: it should make the mathematical and biological meaning of the result easier to inspect.</div></article></main></body></html>
