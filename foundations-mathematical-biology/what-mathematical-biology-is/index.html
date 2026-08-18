@@ -1,1 +1,66 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>What mathematical biology is | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Foundations of Mathematical Biology</a><h1 class="section-title">What mathematical biology is</h1></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="An introduction to mathematical biology and how mathematics is used to understand living systems.">
+<title>What mathematical biology is | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem;margin-bottom:.7rem}.lesson-content p{margin:.75rem 0}.model-flow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin:1.8rem 0;padding:22px;background:#edf5f0;border-radius:10px}.flow-box{background:#fff;border:1px solid #cddfd4;border-radius:8px;padding:11px 15px;font-weight:600;color:#183e2d}.flow-arrow{font-size:1.3rem;color:#39815e}.example-box{margin:1.5rem 0;padding:20px 24px;background:#fff;border-left:4px solid #39815e;border-radius:6px;box-shadow:0 3px 12px rgba(26,67,45,.04)}.key-point{margin:1.6rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}@media(max-width:650px){.model-flow{flex-direction:column}.flow-arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Foundations of Mathematical Biology</a>
+<article class="lesson-content">
+<h1 class="section-title">What mathematical biology is</h1>
+
+<p><strong>Mathematical biology</strong> is the use of mathematics to describe, analyse and understand biological systems. A biological process is represented by a mathematical model so that its behaviour can be studied systematically.</p>
+
+<p>The subject connects biological questions with mathematical reasoning. It is used at many scales, from molecules and cells to populations, epidemics and ecosystems.</p>
+
+<h2>From a biological question to a mathematical model</h2>
+
+<p>A mathematical model is a simplified mathematical representation of a biological system. The aim is not to reproduce every detail of the real system. Instead, the model keeps the features that are important for the question being investigated.</p>
+
+<div class="model-flow" aria-label="Mathematical biology modelling process">
+<div class="flow-box">Biological question</div><div class="flow-arrow">→</div>
+<div class="flow-box">Mathematical model</div><div class="flow-arrow">→</div>
+<div class="flow-box">Analysis or computation</div><div class="flow-arrow">→</div>
+<div class="flow-box">Biological interpretation</div>
+</div>
+
+<p>Mathematics allows consequences of a proposed biological mechanism to be worked out precisely. The resulting behaviour can then be interpreted in biological terms and compared with observations when appropriate.</p>
+
+<h2>A simple example</h2>
+
+<p>Suppose \(N(t)\) represents the size of a population at time \(t\). One simple model of population growth is</p>
+
+<div class="example-box">
+\[
+\frac{dN}{dt}=rN.
+\]
+</div>
+
+<p>This equation states that the rate at which the population changes is proportional to its current size. If \(r&gt;0\), the model predicts growth; if \(r&lt;0\), it predicts decline.</p>
+
+<p>The model converts a biological idea into an equation. Mathematics can then be used to determine how the population changes through time. Later sections develop the meaning of quantities such as variables, parameters and rates in detail.</p>
+
+<h2>What mathematical biology can investigate</h2>
+
+<p>Mathematical models can be used to investigate questions such as how a population grows, how an infectious disease spreads, how species interact, how chemical reactions occur inside cells, or how biological systems respond to interventions.</p>
+
+<p>Different biological questions require different mathematical tools. These may include differential equations, probability, stochastic processes, matrices, statistics, numerical methods and computational simulation.</p>
+
+<div class="key-point"><strong>Central idea.</strong> Mathematical biology translates a biological question into a mathematical representation, studies the consequences of that representation, and interprets the results in the context of the original biological system.</div>
+
+</article>
+</main>
+</body>
+</html>
