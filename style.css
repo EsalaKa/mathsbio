@@ -53,23 +53,24 @@ nav a:hover {
 }
 
 .hero {
-  padding: 38px 0;
+  padding: 30px 0;
   background: linear-gradient(135deg, #edf8f1, #f8fbf9);
 }
 
 h1 {
   margin: 0;
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  line-height: 1.2;
+  font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+  line-height: 1.15;
   color: #123d2a;
   white-space: nowrap;
 }
 
 .hero-subtitle {
-  margin-left: 14px;
-  font-size: 0.48em;
+  margin-left: 12px;
+  font-size: 0.34em;
   font-weight: 400;
   color: #596a60;
+  white-space: nowrap;
 }
 
 .section {
@@ -147,16 +148,17 @@ footer {
   }
 
   .hero {
-    padding: 28px 0;
+    padding: 22px 0;
   }
 
   h1 {
-    white-space: normal;
+    font-size: clamp(1.15rem, 5vw, 1.6rem);
+    white-space: nowrap;
   }
 
   .hero-subtitle {
-    display: block;
-    margin: 5px 0 0;
-    font-size: 0.52em;
+    margin-left: 5px;
+    font-size: 0.27em;
+    white-space: nowrap;
   }
 }
