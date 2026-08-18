@@ -53,56 +53,33 @@ nav a:hover {
 }
 
 .hero {
-  padding: 100px 0 90px;
+  padding: 38px 0;
   background: linear-gradient(135deg, #edf8f1, #f8fbf9);
 }
 
-.eyebrow {
-  color: #287451;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-}
-
 h1 {
-  max-width: 780px;
-  margin: 10px 0 20px;
-  font-size: clamp(2.4rem, 6vw, 4.5rem);
-  line-height: 1.08;
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1.2;
   color: #123d2a;
+  white-space: nowrap;
 }
 
-.lead {
-  max-width: 720px;
-  font-size: 1.2rem;
-  color: #46584e;
-}
-
-.button {
-  display: inline-block;
-  margin-top: 18px;
-  padding: 12px 20px;
-  border-radius: 7px;
-  background: #176b45;
-  color: white;
-  text-decoration: none;
-  font-weight: 600;
+.hero-subtitle {
+  margin-left: 14px;
+  font-size: 0.48em;
+  font-weight: 400;
+  color: #596a60;
 }
 
 .section {
-  padding: 75px 0;
+  padding: 55px 0;
 }
 
 h2 {
   margin-top: 0;
   font-size: 2rem;
   color: #174c34;
-}
-
-.section-intro {
-  max-width: 700px;
-  color: #596a60;
-  margin-bottom: 32px;
 }
 
 .path-grid {
@@ -131,8 +108,12 @@ h2 {
 }
 
 .card p {
-  margin-bottom: 0;
   color: #596a60;
+}
+
+.card .explore {
+  display: inline-block;
+  margin-top: 6px;
 }
 
 .about {
@@ -166,6 +147,16 @@ footer {
   }
 
   .hero {
-    padding: 70px 0;
+    padding: 28px 0;
+  }
+
+  h1 {
+    white-space: normal;
+  }
+
+  .hero-subtitle {
+    display: block;
+    margin: 5px 0 0;
+    font-size: 0.52em;
   }
 }
