@@ -6,7 +6,14 @@
 <meta name="description" content="Variables, parameters and states in mathematical biology, with clear biological examples and mathematical notation.">
 <title>Variables, parameters and states | MathsBio</title>
 <link rel="stylesheet" href="../../style.css">
-<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\)']]}};</script>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['\\[', '\\]']]
+  }
+};
+</script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <style>
 .lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem;margin-bottom:.7rem}.lesson-content p{margin:.75rem 0}.definition-box,.example-box,.key-point{margin:1.4rem 0;padding:18px 22px;border-radius:8px}.definition-box{background:#edf5f0}.example-box{background:#fff;border-left:4px solid #39815e;box-shadow:0 3px 12px rgba(26,67,45,.04)}.key-point{background:#f5f7f6;border:1px solid #dce5e0}.math-table{width:100%;border-collapse:collapse;margin:1.4rem 0}.math-table th,.math-table td{text-align:left;padding:12px 14px;border-bottom:1px solid #d9e2dd}.math-table th{background:#edf5f0}.state-vector{margin:1.4rem 0;padding:18px;text-align:center;background:#fff;border:1px solid #dce5e0;border-radius:8px}
@@ -35,9 +42,25 @@
 <h2>States</h2>
 <div class="definition-box"><strong>State.</strong> The state of a model is the information needed to describe the system at a particular time.</div>
 <p>For an SIR epidemic model, the state can be written</p>
-<div class="state-vector">\[\mathbf{X}(t)=\begin{pmatrix}S(t)\\I(t)\\R(t)\end{pmatrix}.\]</div>
+<div class="state-vector">
+\[
+\mathbf{X}(t)=
+\begin{pmatrix}
+S(t)\\
+I(t)\\
+R(t)
+\end{pmatrix}.
+\]
+</div>
 <p>For example,</p>
-\[\mathbf{X}(t)=\begin{pmatrix}900\\80\\20\end{pmatrix}\]
+\[
+\mathbf{X}(t)=
+\begin{pmatrix}
+900\\
+80\\
+20
+\end{pmatrix}.
+\]
 <p>means that at time \(t\) there are 900 susceptible, 80 infectious and 20 recovered individuals.</p>
 <h2>How the ideas differ</h2>
 <table class="math-table"><thead><tr><th>Concept</th><th>Role</th><th>Example</th></tr></thead><tbody><tr><td>Variable</td><td>A quantity that can change</td><td>\(I(t)\)</td></tr><tr><td>Parameter</td><td>A quantity specifying a model characteristic</td><td>\(r\), \(K\)</td></tr><tr><td>State</td><td>Values describing the system at a given time</td><td>\((S(t),I(t),R(t))\)</td></tr></tbody></table>
