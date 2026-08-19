@@ -1,1 +1,123 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Random variables | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Random variables</h1><p>A random variable assigns a numerical value to the outcome of a random experiment.</p><h2>Discrete random variables</h2><p>A discrete random variable takes values in a finite or countable set. For example, \(X\) might be the number of infected individuals, with probabilities \(P(X=x)\).</p><h2>Continuous random variables</h2><p>A continuous random variable is described by a probability density \(f(x)\), with</p>\[P(a\le X\le b)=\int_a^b f(x)\,dx.\]<h2>Expectation and variance</h2><p>For a discrete variable,</p>\[E[X]=\sum_x xP(X=x),\qquad \operatorname{Var}(X)=E[X^2]-E[X]^2.\]<div class="box"><strong>Key idea.</strong> A random variable converts uncertain outcomes into numerical quantities whose distributions can be analysed mathematically.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Random variables | MathsBio</title><link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.lesson-content h3{font-size:1.2rem;margin-top:1.6rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.figure{margin:1.5rem 0;padding:16px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:700px;height:auto;display:block}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.axis{stroke:#53635a;stroke-width:1.6}.bar{fill:#69a080}.curve{fill:none;stroke:#39815e;stroke-width:4}.shade{fill:#cfe3d7;opacity:.75}.gtext{font-size:13px;fill:#2d3c34}.glabel{font-size:15px;font-weight:700;fill:#26362e}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Random variables</h1>
+<p>In the previous section, we saw that a biological process can have several possible outcomes. To analyse those outcomes mathematically, we need a way to attach a number to each one. That is the purpose of a <strong>random variable</strong>.</p>
+<div class="box"><strong>Core idea.</strong> A random variable is a numerical quantity whose value depends on the outcome of a random process. Before the random event occurs, we do not know which value it will take.</div>
+
+<h2>Start with a simple epidemic example</h2>
+<p>Suppose one infectious person is observed during one day. Let</p>
+\[X=\text{number of new people infected by that person during the day}.\]
+<p>At the beginning of the day, we do not know the value of \(X\). Possible values might be</p>
+\[X=0,1,2,3,\ldots\]
+<p>After the day has passed, perhaps the person infected two people. For that particular outcome,</p>
+\[X=2.\]
+<div class="example"><strong>The important point.</strong> \(X\) is not “random” because the symbol itself changes unpredictably. It is random because its value is determined by an uncertain outcome.</div>
+
+<h2>Outcome and random variable are not the same thing</h2>
+<p>Suppose we observe three susceptible contacts. The biological outcome might record exactly which people became infected:</p>
+\[\text{infected, not infected, infected}.\]
+<p>The random variable \(X\) could simply count the infections. It converts that outcome into the number</p>
+\[X=2.\]
+<div class="flow"><span>random biological outcome</span><b>→</b><span>apply a numerical rule</span><b>→</b><span>value of random variable</span></div>
+<p>Different random variables can be defined from the same experiment. We might instead define \(Y\) as the time until the first infection, or \(Z\) as whether at least one infection occurs.</p>
+
+<h2>Capital and lowercase notation</h2>
+<p>We usually use a capital letter such as \(X\) for the random variable and a lowercase letter such as \(x\) for one possible value.</p>
+\[X=\text{random variable},\qquad x=\text{a possible value of }X.\]
+<p>Therefore</p>
+\[P(X=x)\]
+<p>means “the probability that the random variable \(X\) takes the value \(x\).”</p>
+<div class="example"><strong>Example.</strong> If \(X\) is the number of new infections, then \(P(X=2)=0.30\) means there is a 30% probability that exactly two new infections occur.</div>
+
+<h2>A random variable has a probability distribution</h2>
+<p>Knowing the possible values of \(X\) is not enough. We also need to know how likely those values are. The probabilities associated with all possible values form the <strong>probability distribution</strong> of \(X\).</p>
+<p>Suppose</p>
+<table class="defs"><tr><th>Number of new infections \(x\)</th><th>\(P(X=x)\)</th></tr><tr><td>0</td><td>0.20</td></tr><tr><td>1</td><td>0.40</td></tr><tr><td>2</td><td>0.30</td></tr><tr><td>3</td><td>0.10</td></tr></table>
+<p>The probabilities must add to 1:</p>
+\[0.20+0.40+0.30+0.10=1.\]
+<p>This means one of the listed possibilities must occur under this simplified model.</p>
+<div class="figure"><svg viewBox="0 0 780 410" role="img" aria-label="Discrete probability distribution for number of new infections"><line class="axis" x1="90" y1="330" x2="720" y2="330"/><line class="axis" x1="90" y1="55" x2="90" y2="330"/><rect class="bar" x="155" y="220" width="80" height="110"/><rect class="bar" x="295" y="110" width="80" height="220"/><rect class="bar" x="435" y="165" width="80" height="165"/><rect class="bar" x="575" y="275" width="80" height="55"/><text class="glabel" x="405" y="385" text-anchor="middle">number of new infections, x</text><text class="glabel" x="28" y="195" text-anchor="middle" transform="rotate(-90 28 195)">probability P(X = x)</text><text class="gtext" x="195" y="355" text-anchor="middle">0</text><text class="gtext" x="335" y="355" text-anchor="middle">1</text><text class="gtext" x="475" y="355" text-anchor="middle">2</text><text class="gtext" x="615" y="355" text-anchor="middle">3</text><text class="gtext" x="195" y="205" text-anchor="middle">0.20</text><text class="gtext" x="335" y="95" text-anchor="middle">0.40</text><text class="gtext" x="475" y="150" text-anchor="middle">0.30</text><text class="gtext" x="615" y="260" text-anchor="middle">0.10</text></svg></div>
+<p>The graph shows the whole distribution. It tells us much more than reporting only one observed value of \(X\).</p>
+
+<h2>Discrete random variables</h2>
+<p>A <strong>discrete random variable</strong> takes separate, countable values.</p>
+<p>Examples in biology include:</p>
+<table class="compare"><tr><th>Random variable</th><th>Possible values</th></tr><tr><td>number of infectious individuals</td><td>\(0,1,2,3,\ldots\)</td></tr><tr><td>number of births in one day</td><td>\(0,1,2,3,\ldots\)</td></tr><tr><td>number of mutations in a DNA region</td><td>\(0,1,2,3,\ldots\)</td></tr><tr><td>whether infection occurs</td><td>\(0\) or \(1\)</td></tr></table>
+<p>There cannot be 2.4 infected individuals in an individual-count model. The values occur as separate counts.</p>
+
+<h2>Continuous random variables</h2>
+<p>A <strong>continuous random variable</strong> can take any value within an interval.</p>
+<p>For example, let</p>
+\[T=\text{time until the next infection event}.\]
+<p>Possible values might include</p>
+\[T=0.4,\quad 1.27,\quad 3.816\text{ days},\]
+<p>and all other positive real values allowed by the model.</p>
+<table class="compare"><tr><th>Discrete</th><th>Continuous</th></tr><tr><td>number of infection events</td><td>waiting time until an infection</td></tr><tr><td>number of cells</td><td>cell mass</td></tr><tr><td>number of deaths</td><td>time until death</td></tr></table>
+
+<h2>Why continuous probabilities are different</h2>
+<p>For a continuous random variable, probability is assigned to <strong>intervals</strong> rather than individual exact points.</p>
+<p>If \(T\) is a continuous waiting time, then</p>
+\[P(1\leq T\leq2)\]
+<p>is the probability that the event occurs between 1 and 2 days.</p>
+<p>A probability density function \(f(t)\) describes how probability is distributed across possible values:</p>
+\[\boxed{P(a\leq T\leq b)=\int_a^b f(t)\,dt}.\]
+<div class="figure"><svg viewBox="0 0 800 410" role="img" aria-label="Area under a continuous probability density curve"><line class="axis" x1="85" y1="330" x2="735" y2="330"/><line class="axis" x1="85" y1="55" x2="85" y2="330"/><path class="shade" d="M275 330 L275 190 C330 135 385 120 445 155 L445 330 Z"/><path class="curve" d="M85 330 C145 325 190 290 235 225 C300 125 370 95 440 150 C520 210 580 290 735 325"/><line x1="275" y1="330" x2="275" y2="190" stroke="#53635a" stroke-dasharray="5 5"/><line x1="445" y1="330" x2="445" y2="155" stroke="#53635a" stroke-dasharray="5 5"/><text class="glabel" x="410" y="385" text-anchor="middle">possible value of T</text><text class="glabel" x="28" y="195" text-anchor="middle" transform="rotate(-90 28 195)">density f(t)</text><text class="gtext" x="275" y="352" text-anchor="middle">a</text><text class="gtext" x="445" y="352" text-anchor="middle">b</text><text class="gtext" x="360" y="215" text-anchor="middle">area = P(a ≤ T ≤ b)</text></svg></div>
+<div class="box"><strong>Important.</strong> The height \(f(t)\) is a probability <em>density</em>, not the probability that \(T=t\). For a continuous random variable, probability comes from the area under the density curve over an interval.</div>
+
+<h2>Expectation: the long-run average</h2>
+<p>The <strong>expected value</strong> of a random variable describes its probability-weighted average.</p>
+<p>For a discrete random variable,</p>
+\[\boxed{E[X]=\sum_x xP(X=x)}.\]
+<p>Using our infection example,</p>
+\[E[X]=0(0.20)+1(0.40)+2(0.30)+3(0.10)=1.3.\]
+<p>So the expected number of new infections is</p>
+\[E[X]=1.3.\]
+<div class="example"><strong>Interpretation.</strong> This does not mean that one person produces exactly 1.3 infections. That is impossible in this count model. It means that if the same probabilistic situation were repeated many times, the average number of infections would tend towards 1.3.</div>
+
+<h2>Why expectation alone is not enough</h2>
+<p>Two random variables can have the same expected value but very different uncertainty.</p>
+<p>For example, one epidemic process might usually produce values close to its mean, while another might frequently produce either extinction or a very large outbreak. Their averages could be similar even though their biological risks are very different.</p>
+<p>We therefore also need a measure of how widely the values are spread.</p>
+
+<h2>Variance: how much outcomes vary</h2>
+<p>The <strong>variance</strong> measures the expected squared distance from the mean:</p>
+\[\boxed{\operatorname{Var}(X)=E[(X-E[X])^2]}.\]
+<p>An equivalent and often convenient formula is</p>
+\[\boxed{\operatorname{Var}(X)=E[X^2]-E[X]^2}.\]
+<p>For our example,</p>
+\[E[X^2]=0^2(0.20)+1^2(0.40)+2^2(0.30)+3^2(0.10)=2.5,\]
+<p>so</p>
+\[\operatorname{Var}(X)=2.5-(1.3)^2=0.81.\]
+<p>The standard deviation is</p>
+\[\sqrt{0.81}=0.9.\]
+<div class="box"><strong>Interpretation.</strong> Expectation tells us the centre of the distribution. Variance tells us how much the possible outcomes are dispersed around that centre.</div>
+
+<h2>Probability, expectation and variance answer different questions</h2>
+<table class="compare"><tr><th>Quantity</th><th>Question answered</th></tr><tr><td>\(P(X=x)\)</td><td>How likely is this particular discrete outcome?</td></tr><tr><td>\(P(X\in A)\)</td><td>How likely is a specified range or set of outcomes?</td></tr><tr><td>\(E[X]\)</td><td>What is the probability-weighted average?</td></tr><tr><td>\(\operatorname{Var}(X)\)</td><td>How much do possible outcomes vary around the mean?</td></tr></table>
+
+<h2>Indicator random variables</h2>
+<p>A particularly useful random variable records whether an event occurs:</p>
+\[Y=\begin{cases}1,&\text{if infection occurs},\\0,&\text{if infection does not occur}.\end{cases}\]
+<p>If the probability of infection is \(p\), then</p>
+\[P(Y=1)=p,\qquad P(Y=0)=1-p.\]
+<p>Its expected value is</p>
+\[E[Y]=p.\]
+<p>This simple idea is useful because counts can often be constructed by adding indicators for individual events.</p>
+
+<h2>Random variables in epidemic modelling</h2>
+<p>We can define many useful random variables from the same epidemic:</p>
+<table class="compare"><tr><th>Symbol</th><th>Possible meaning</th></tr><tr><td>\(I(10)\)</td><td>number infectious on day 10</td></tr><tr><td>\(T\)</td><td>time until the next infection</td></tr><tr><td>\(Z\)</td><td>total number infected before the epidemic ends</td></tr><tr><td>\(M\)</td><td>maximum number infectious at any time</td></tr><tr><td>\(Y\)</td><td>indicator that a large outbreak occurs</td></tr></table>
+<p>Each random variable answers a different biological question.</p>
+
+<h2>From a random variable to a stochastic process</h2>
+<p>A random variable such as \(I(10)\) describes uncertainty at one particular time. But an epidemic changes through time. We may want</p>
+\[I(0),\ I(1),\ I(2),\ldots\]
+<p>or, in continuous time,</p>
+\[I(t),\qquad t\geq0.\]
+<p>Now we have a collection of random variables indexed by time. This is the idea of a <strong>stochastic process</strong>, which is the subject of the next section.</p>
+<div class="flow"><span>random outcome</span><b>→</b><span>random variable</span><b>→</b><span>probability distribution</span><b>→</b><span>expectation and variance</span><b>→</b><span>random variables through time</span></div>
+<div class="box"><strong>Key idea.</strong> A random variable turns an uncertain biological outcome into a number. Its <strong>distribution</strong> describes the possible values and their probabilities; its <strong>expectation</strong> describes the average; and its <strong>variance</strong> describes the spread. When random variables are followed through time, they lead naturally to stochastic processes.</div>
+</article></main></body></html>
