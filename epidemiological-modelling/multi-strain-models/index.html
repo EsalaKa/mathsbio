@@ -1,1 +1,127 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Multi-strain models | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><main class="section container"><a class="back-link" href="../">← Epidemiological Modelling</a><article class="lesson-content"><h1 class="section-title">Multi-strain models</h1><p>Multi-strain models represent two or more pathogen variants or strains that circulate in the same host population.</p><h2>Why strains must be distinguished</h2><p>Strains may differ in transmissibility, infectious duration, disease severity, immune escape or response to interventions.</p><h2>Interactions between strains</h2><p>Previous infection with one strain may provide complete, partial or no protection against another. Strains can therefore compete for susceptible hosts or coexist through incomplete cross-immunity.</p><h2>Model structure</h2><p>Separate infected compartments can be introduced for each strain, together with appropriate susceptibility and immunity states. More detailed models may also represent coinfection or sequential infection.</p><div class="box"><strong>Key idea.</strong> Multi-strain models are required when pathogen types differ in epidemiologically important ways or interact through immunity and competition.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Multi-strain models | MathsBio</title><link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.lesson-content h3{font-size:1.2rem;margin-top:1.6rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.diagram,.figure{margin:1.5rem 0;padding:16px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.diagram svg,.figure svg{width:100%;min-width:700px;height:auto;display:block}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.node{fill:#edf5f0;stroke:#39815e;stroke-width:2}.strain1{fill:#edf5f0;stroke:#39815e;stroke-width:2}.strain2{fill:#fff2e6;stroke:#a07042;stroke-width:2}.arrow{stroke:#53635a;stroke-width:2.2;fill:none}.axis{stroke:#53635a;stroke-width:1.6}.line1{fill:none;stroke:#39815e;stroke-width:4}.line2{fill:none;stroke:#a07042;stroke-width:4}.lineT{fill:none;stroke:#6f6b9a;stroke-width:3;stroke-dasharray:7 5}.gtext{font-size:13px;fill:#2d3c34}.glabel{font-size:15px;font-weight:700;fill:#26362e}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}
+</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Epidemiological Modelling</a><article class="lesson-content">
+<h1 class="section-title">Multi-strain models</h1>
+<p>A <strong>multi-strain model</strong> describes a pathogen when two or more distinguishable strains or variants circulate in the same population. The strains may infect the same type of host but behave differently enough that treating them as one infection would hide important epidemic behaviour.</p>
+<div class="box"><strong>Core idea.</strong> A one-strain model asks, “How does this infection spread?” A multi-strain model also asks, “Which strain is causing the infections, how do the strains differ, and how does infection with one strain change susceptibility to another?”</div>
+
+<h2>Start with an ordinary one-strain model</h2>
+<p>In a simple SIR model, all infectious individuals are placed in one compartment \(I\):</p>
+<div class="flow"><span>Susceptible \(S\)</span><b>→</b><span>Infectious \(I\)</span><b>→</b><span>Recovered \(R\)</span></div>
+<p>This is reasonable when the circulating pathogen can be treated as epidemiologically uniform.</p>
+<p>But suppose two strains circulate and strain 2 transmits more easily than strain 1. If both are placed inside the same \(I\) compartment, the model cannot tell which strain is growing or replacing the other.</p>
+
+<h2>Step 1: separate infections by strain</h2>
+<p>For two strains, introduce two infectious compartments:</p>
+\[I_1(t)=\text{hosts infectious with strain 1},\]
+\[I_2(t)=\text{hosts infectious with strain 2}.\]
+<p>A susceptible person can now become infected through either route.</p>
+<div class="diagram"><svg viewBox="0 0 900 360" role="img" aria-label="Susceptible population branching into infection with strain 1 or strain 2"><defs><marker id="msA" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53635a"/></marker></defs><rect class="node" x="70" y="145" width="180" height="70" rx="12"/><rect class="strain1" x="390" y="55" width="200" height="70" rx="12"/><rect class="strain2" x="390" y="235" width="200" height="70" rx="12"/><rect class="node" x="690" y="145" width="160" height="70" rx="12"/><text class="glabel" x="160" y="175" text-anchor="middle">Susceptible</text><text class="gtext" x="160" y="198" text-anchor="middle">S</text><text class="glabel" x="490" y="85" text-anchor="middle">Strain 1 infection</text><text class="gtext" x="490" y="108" text-anchor="middle">I₁</text><text class="glabel" x="490" y="265" text-anchor="middle">Strain 2 infection</text><text class="gtext" x="490" y="288" text-anchor="middle">I₂</text><text class="glabel" x="770" y="175" text-anchor="middle">Recovered</text><text class="gtext" x="770" y="198" text-anchor="middle">R</text><path class="arrow" d="M250 170 C315 140 330 95 385 90" marker-end="url(#msA)"/><path class="arrow" d="M250 190 C315 220 330 270 385 270" marker-end="url(#msA)"/><path class="arrow" d="M590 90 C655 100 675 145 685 165" marker-end="url(#msA)"/><path class="arrow" d="M590 270 C655 260 675 215 685 195" marker-end="url(#msA)"/><text class="gtext" x="310" y="112">strain 1</text><text class="gtext" x="310" y="257">strain 2</text></svg></div>
+<p>The diagram is deliberately simple. It shows the first essential change: <strong>infection is no longer a single pathway.</strong></p>
+
+<h2>Step 2: give each strain its own transmission parameters</h2>
+<p>Let \(\beta_1\) and \(\beta_2\) be the transmission-rate parameters for strains 1 and 2. Their forces of infection can be written</p>
+\[\lambda_1=\beta_1\frac{I_1}{N},\qquad \lambda_2=\beta_2\frac{I_2}{N}.\]
+<p>A susceptible individual is exposed to both strains, so the susceptible equation becomes</p>
+\[\boxed{\frac{dS}{dt}=-\lambda_1S-\lambda_2S}.\]
+<p>The two terms have clear meanings:</p>
+<table class="defs"><tr><th>Flow</th><th>Meaning</th></tr><tr><td>\(\lambda_1S\)</td><td>new infections caused by strain 1 per unit time</td></tr><tr><td>\(\lambda_2S\)</td><td>new infections caused by strain 2 per unit time</td></tr></table>
+
+<h2>A simple numerical interpretation</h2>
+<p>Suppose a population contains 10,000 susceptible people. At a particular time, let</p>
+\[\lambda_1=0.002\text{ day}^{-1},\qquad \lambda_2=0.006\text{ day}^{-1}.\]
+<p>Then the instantaneous infection flows are</p>
+\[0.002(10000)=20\quad\text{strain-1 infections per day},\]
+\[0.006(10000)=60\quad\text{strain-2 infections per day}.\]
+<div class="example"><strong>Interpretation.</strong> Both strains are drawing infections from the same susceptible population, but at this moment strain 2 is generating infection three times as quickly.</div>
+
+<h2>Step 3: strains can differ in more than transmissibility</h2>
+<table class="compare"><tr><th>Difference</th><th>Possible model representation</th></tr><tr><td>transmissibility</td><td>different \(\beta_1,\beta_2\)</td></tr><tr><td>infectious duration</td><td>different recovery rates \(\gamma_1,\gamma_2\)</td></tr><tr><td>latent period</td><td>different progression rates in an SEIR model</td></tr><tr><td>immune escape</td><td>different susceptibility after previous infection or vaccination</td></tr><tr><td>disease severity</td><td>different hospitalisation or mortality probabilities</td></tr><tr><td>response to intervention</td><td>strain-specific vaccine protection or treatment effect</td></tr></table>
+<p>Therefore “strain 2 is different” should not automatically be represented only by changing \(\beta\). The parameter changed should correspond to the biological difference being modelled.</p>
+
+<h2>Step 4: understand competition for susceptible hosts</h2>
+<p>If both strains infect the same susceptible population, they are competing for a shared resource: <strong>susceptible hosts</strong>.</p>
+<div class="flow"><span>strain 1</span><b>→</b><span>shared susceptible population</span><b>←</b><span>strain 2</span></div>
+<p>When strain 1 infects a susceptible person, that person is no longer immediately available to strain 2 under a model with complete post-infection protection. The reverse is also true.</p>
+<p>This indirect interaction is called <strong>competition</strong>. The strains do not need to physically interact with each other; they influence one another by changing the host population available for infection.</p>
+
+<h2>Why a more transmissible strain can replace another</h2>
+<p>Suppose strain 2 has a larger effective reproduction number than strain 1 under the same population conditions. Its infections may increase more rapidly. As strain 2 occupies a larger fraction of new infections, the relative frequency of strain 1 can fall.</p>
+<div class="figure"><svg viewBox="0 0 800 420" role="img" aria-label="Illustrative strain replacement through time"><line class="axis" x1="85" y1="330" x2="730" y2="330"/><line class="axis" x1="85" y1="45" x2="85" y2="330"/><path class="line1" d="M85 250 C180 205 270 165 360 185 C445 205 515 260 730 320"/><path class="line2" d="M85 325 C200 323 285 305 360 245 C440 180 510 105 730 65"/><text class="glabel" x="410" y="380" text-anchor="middle">time</text><text class="glabel" x="27" y="190" text-anchor="middle" transform="rotate(-90 27 190)">strain prevalence</text><line class="line1" x1="520" y1="65" x2="565" y2="65"/><text class="gtext" x="575" y="70">strain 1</text><line class="line2" x1="520" y1="92" x2="565" y2="92"/><text class="gtext" x="575" y="97">strain 2</text><text class="gtext" x="500" y="125">illustrative replacement</text></svg></div>
+<p>This figure shows <strong>replacement</strong>, not a universal rule. Whether replacement occurs depends on immunity, interventions, timing, introductions and other strain characteristics.</p>
+
+<h2>Step 5: previous infection may change susceptibility to another strain</h2>
+<p>The simplest model may assume that recovery from either strain gives complete protection against both. Real pathogens may not behave this way.</p>
+<p>After recovering from strain 1, a person might have:</p>
+<table class="compare"><tr><th>Cross-immunity</th><th>Meaning</th></tr><tr><td>complete</td><td>strain 1 infection fully protects against strain 2</td></tr><tr><td>partial</td><td>strain 1 infection reduces, but does not eliminate, susceptibility to strain 2</td></tr><tr><td>none</td><td>strain 1 infection gives no protection against strain 2</td></tr></table>
+<p>This protection between different strains is called <strong>cross-immunity</strong>.</p>
+
+<h2>Step 6: represent partial cross-immunity</h2>
+<p>Let \(R_1\) denote people recovered from strain 1. Suppose \(\sigma_{12}\) represents their susceptibility to strain 2 relative to a fully susceptible person.</p>
+<table class="defs"><tr><th>Value</th><th>Interpretation</th></tr><tr><td>\(\sigma_{12}=0\)</td><td>complete protection against strain 2</td></tr><tr><td>\(0&lt;\sigma_{12}&lt;1\)</td><td>partial protection</td></tr><tr><td>\(\sigma_{12}=1\)</td><td>no protection</td></tr></table>
+<p>The strain-2 infection flow from this recovered group can then be represented as</p>
+\[\boxed{\sigma_{12}\lambda_2R_1}.\]
+<div class="example"><strong>Example.</strong> If \(\sigma_{12}=0.25\), a person recovered from strain 1 has 25% of the strain-2 susceptibility of a fully susceptible person under this simplified interpretation. Equivalently, the previous infection gives 75% protection against acquisition of strain 2.</div>
+
+<h2>Cross-immunity is directional</h2>
+<p>Protection need not be the same in both directions. We may need both</p>
+\[\sigma_{12}\quad\text{and}\quad\sigma_{21}.\]
+<p>Here \(\sigma_{12}\) describes susceptibility to strain 2 after strain 1, whereas \(\sigma_{21}\) describes susceptibility to strain 1 after strain 2.</p>
+<div class="box"><strong>Important.</strong> Do not automatically assume \(\sigma_{12}=\sigma_{21}\). Whether cross-protection is symmetric is a biological assumption that should be supported by evidence when possible.</div>
+
+<h2>Sequential infection requires extra states</h2>
+<p>If people can recover from one strain and later acquire another, a single recovered compartment \(R\) is no longer enough. The model needs to remember infection history.</p>
+<div class="diagram"><svg viewBox="0 0 920 380" role="img" aria-label="Sequential infection pathways in a two-strain model"><defs><marker id="msB" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53635a"/></marker></defs><rect class="node" x="55" y="150" width="145" height="65" rx="12"/><rect class="strain1" x="285" y="55" width="150" height="65" rx="12"/><rect class="strain2" x="285" y="260" width="150" height="65" rx="12"/><rect class="strain1" x="520" y="55" width="155" height="65" rx="12"/><rect class="strain2" x="520" y="260" width="155" height="65" rx="12"/><rect class="node" x="760" y="150" width="125" height="65" rx="12"/><text class="glabel" x="127" y="188" text-anchor="middle">S</text><text class="glabel" x="360" y="93" text-anchor="middle">I₁</text><text class="glabel" x="360" y="298" text-anchor="middle">I₂</text><text class="glabel" x="597" y="93" text-anchor="middle">R₁</text><text class="glabel" x="597" y="298" text-anchor="middle">R₂</text><text class="glabel" x="822" y="188" text-anchor="middle">R₁₂</text><path class="arrow" d="M200 170 C235 140 250 95 280 90" marker-end="url(#msB)"/><path class="arrow" d="M200 195 C235 225 250 290 280 292" marker-end="url(#msB)"/><line class="arrow" x1="435" y1="87" x2="515" y2="87" marker-end="url(#msB)"/><line class="arrow" x1="435" y1="292" x2="515" y2="292" marker-end="url(#msB)"/><path class="arrow" d="M675 88 C730 95 745 145 755 165" marker-end="url(#msB)"/><path class="arrow" d="M675 292 C730 280 745 225 755 205" marker-end="url(#msB)"/><text class="gtext" x="705" y="110">later strain 2</text><text class="gtext" x="705" y="270">later strain 1</text></svg></div>
+<p>Here \(R_1\) and \(R_2\) retain information about which strain was experienced first, and \(R_{12}\) can represent people who have experienced both. More realistic models may require still more states.</p>
+
+<h2>Coinfection is a different concept</h2>
+<p><strong>Sequential infection</strong> means one strain is followed by another at a later time. <strong>Coinfection</strong> means two strains infect the same host at the same time or with overlapping infection periods.</p>
+<p>If coinfection matters biologically, an additional state such as \(I_{12}\) may be required. It should not be added automatically: extra compartments are useful only when the biological process matters to the modelling question.</p>
+
+<h2>Immune escape</h2>
+<p>A new strain may spread not only because it transmits faster but because existing immunity protects less effectively against it. This is called <strong>immune escape</strong>.</p>
+<p>These mechanisms should be distinguished:</p>
+<table class="compare"><tr><th>Mechanism</th><th>What changes?</th></tr><tr><td>greater transmissibility</td><td>more transmission under otherwise comparable conditions</td></tr><tr><td>immune escape</td><td>previously immune people become more susceptible to the new strain</td></tr><tr><td>longer infectious period</td><td>infectious individuals have more time to transmit</td></tr></table>
+<p>Two strains can therefore have the same intrinsic transmissibility but different growth in a partially immune population.</p>
+
+<h2>Vaccination in a multi-strain model</h2>
+<p>Vaccine protection may differ by strain. If a vaccine strongly protects against strain 1 but less strongly against strain 2, the vaccinated population does not present the same susceptible environment to both strains.</p>
+<p>A model can therefore use strain-specific vaccine efficacies, for example \(e_1\) and \(e_2\), rather than one universal efficacy.</p>
+<div class="box"><strong>Interpretation.</strong> The strain with the highest transmission rate in a completely susceptible population is not necessarily the strain with the greatest advantage in a vaccinated or previously infected population.</div>
+
+<h2>Strain-specific reproduction numbers</h2>
+<p>Each strain can have its own basic reproduction number in a fully susceptible population. In a very simple SIR-type setting,</p>
+\[R_{0,1}=\frac{\beta_1}{\gamma_1},\qquad R_{0,2}=\frac{\beta_2}{\gamma_2}.\]
+<p>But once immunity is already present, the more relevant quantities are effective reproduction numbers, because each strain sees a different amount of effective susceptibility.</p>
+<p>Thus a strain may grow when</p>
+\[R_{e,k}>1\]
+<p>and decline when</p>
+\[R_{e,k}<1.\]
+
+<h2>Why two strains can coexist</h2>
+<p>A higher-transmission strain does not always eliminate every other strain. Coexistence can occur when strains occupy different ecological or immunological niches, cross-immunity is incomplete, immunity wanes, strains are repeatedly introduced, or their advantages vary over time or between host groups.</p>
+<p>Multi-strain dynamics are therefore determined by both <strong>differences between strains</strong> and <strong>interactions between strains</strong>.</p>
+
+<h2>Mutation and the appearance of a new strain</h2>
+<p>A multi-strain model can begin with two strains already present, or introduce a second strain later. The appearance of a new strain may be represented as an external introduction or, in more detailed evolutionary models, through mutation.</p>
+<p>For many epidemiological questions it is not necessary to model the molecular mutation process itself. It may be sufficient to specify when a new strain enters and then study whether it grows, declines or replaces existing strains.</p>
+
+<h2>What the data can tell us</h2>
+<p>Strain-specific case counts or genomic surveillance can be used to estimate the changing proportion of infections caused by each strain. A rapidly increasing strain frequency can indicate a transmission advantage, immune escape, or a combination of mechanisms; additional data are needed to distinguish them.</p>
+<div class="box"><strong>Caution.</strong> Observing that one strain grows faster does not by itself prove why it grows faster. The mathematical model helps separate competing explanations, but the parameters must be informed by biological and epidemiological evidence.</div>
+
+<h2>Main modelling assumptions</h2>
+<table class="compare"><tr><th>Assumption</th><th>Question to ask</th></tr><tr><td>two discrete strains</td><td>is this enough to represent the relevant pathogen diversity?</td></tr><tr><td>fixed strain parameters</td><td>do transmissibility or immune escape change over time?</td></tr><tr><td>specified cross-immunity</td><td>is protection complete, partial, asymmetric or waning?</td></tr><tr><td>no coinfection</td><td>is simultaneous infection biologically important?</td></tr><tr><td>homogeneous population</td><td>do age, contact patterns or vaccination create important structure?</td></tr></table>
+
+<h2>The complete modelling idea</h2>
+<div class="flow"><span>separate strains</span><b>→</b><span>give each strain its own parameters</span><b>→</b><span>let strains compete for hosts</span><b>→</b><span>represent cross-immunity</span><b>→</b><span>track replacement or coexistence</span></div>
+<div class="box"><strong>Key idea.</strong> Multi-strain modelling is not simply an SIR model with two infectious curves. The essential issue is that the strains share the same host population and can interact through <strong>competition, immunity, immune escape and previous infection history</strong>. Those interactions determine whether a strain disappears, replaces another strain, or coexists with it.</div>
+</article></main></body></html>
