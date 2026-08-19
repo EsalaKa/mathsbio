@@ -1,1 +1,101 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Building a mathematical model | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.step{margin:1rem 0;padding:16px 20px;background:#fff;border-left:4px solid #39815e;border-radius:6px}.flow{margin:1.5rem 0;padding:20px;background:#edf5f0;border-radius:8px;text-align:center;font-weight:600}.key{margin:1.5rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}</style></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Foundations of Mathematical Biology</a><article class="lesson-content"><h1 class="section-title">Building a mathematical model</h1><p>A mathematical model begins with a biological question. The mathematics should be chosen to answer that question, rather than added before the biological problem is clear.</p><div class="flow">Question → System boundary → Mathematical representation → Analysis → Interpretation → Comparison with evidence</div><h2>1. Define the question</h2><div class="step">State precisely what the model should investigate. For example: how will a population change through time under specified conditions?</div><h2>2. Decide what the model contains</h2><p>Choose the biological components that are relevant and define the boundary of the system. Details that do not materially affect the question may be omitted.</p><h2>3. Choose mathematical quantities</h2><p>Represent the important biological quantities mathematically. For a population, \(N(t)\) may represent population size. Initial information must also be specified, for example</p>\[N(0)=N_0.\]<h2>4. Represent the biological mechanism</h2><p>Translate the proposed mechanism into mathematical relationships. If population change is assumed to be proportional to population size, a possible representation is</p>\[\frac{dN}{dt}=rN.\]<p>The equation is not the biological system itself; it is a mathematical representation of a stated mechanism.</p><h2>5. Analyse or simulate the model</h2><p>The model can then be studied analytically or computationally to determine its consequences, such as growth, decline, equilibria or other patterns.</p><h2>6. Interpret and evaluate</h2><p>Results must be translated back into biological language. Where observations or data are available, model behaviour can be compared with them. Poor agreement may indicate that parameter values, mechanisms or the model structure need reconsideration.</p><div class="key"><strong>Key principle.</strong> Model building is an iterative process. Biological reasoning determines the model, mathematics determines its consequences, and evidence helps determine whether the representation is useful for its intended purpose.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Building a mathematical model | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.step{margin:1rem 0;padding:16px 20px;background:#fff;border-left:4px solid #39815e;border-radius:6px}.flow{margin:1.5rem 0;padding:20px;background:#edf5f0;border-radius:8px;text-align:center;font-weight:600}.key,.assumptions{margin:1.5rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border:1px solid #dce5e0;border-radius:8px}.lesson-content ul{line-height:1.7}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Foundations of Mathematical Biology</a>
+<article class="lesson-content">
+<h1 class="section-title">Building a mathematical model</h1>
+<p>A mathematical model begins with a biological question. We decide what is important, make simplifying assumptions, represent the biological process mathematically, and then study what the model predicts.</p>
+<div class="flow">Biological question → Assumptions → Variables and parameters → Equation → Result → Biological interpretation</div>
+<p>We will use one simple example throughout this page: <strong>the growth of a bacterial population</strong>.</p>
+
+<h2>1. Start with a biological question</h2>
+<div class="step"><strong>Question:</strong> If we begin with 100 bacteria, how might the population change during the next few hours?</div>
+<p>This question tells us what we want the model to describe: population size through time.</p>
+
+<h2>2. Decide what to include</h2>
+<p>A real bacterial population is affected by nutrients, temperature, space, competition and many other factors. A first model does not need to represent all of them.</p>
+<p>For our simple model, we include only the number of bacteria and their reproduction. We temporarily ignore other biological details.</p>
+
+<h2>3. State the assumptions</h2>
+<p>Assumptions make clear how the real biological system is being simplified. For this first model we assume:</p>
+<div class="assumptions"><ul><li>the environment remains suitable for growth;</li><li>there is enough food and space during the period considered;</li><li>bacteria are not removed from the population;</li><li>each bacterium has the same average reproductive behaviour;</li><li>the per-capita growth rate remains constant.</li></ul></div>
+<p>These assumptions are not claims that real bacterial populations always behave this way. They define the conditions represented by this particular model.</p>
+
+<h2>4. Define the variable and parameter</h2>
+<p>Let</p>
+\[
+N(t)=\text{number of bacteria at time }t.
+\]
+<p>Suppose initially there are 100 bacteria:</p>
+\[
+N(0)=100.
+\]
+<p>Let \(r\) be the <strong>per-capita growth-rate parameter</strong>. For example, we might use</p>
+\[
+r=0.2\ \text{hour}^{-1}.
+\]
+<p>The parameter \(r\) describes the average growth contribution per bacterium per unit time.</p>
+
+<h2>5. Translate the biological idea into mathematics</h2>
+<p>If there are more bacteria, there are more bacteria available to reproduce. Under our assumptions, it is therefore reasonable to suppose that the population's rate of change is proportional to its current size:</p>
+\[
+\text{rate of population change}=r\times\text{current population}.
+\]
+<p>Mathematically,</p>
+\[
+\frac{dN}{dt}=rN.
+\]
+<div class="example"><strong>Reading the equation.</strong> \(dN/dt\) is the rate at which population size changes. The right-hand side, \(rN\), says that this rate becomes larger when the population becomes larger.</div>
+<p>For example, when \(N=100\) and \(r=0.2\ \text{hour}^{-1}\),</p>
+\[
+\frac{dN}{dt}=0.2\times100=20\ \text{bacteria per hour}.
+\]
+<p>This does <strong>not</strong> mean that exactly 20 bacteria must appear during every hour. The differential equation describes a continuous deterministic approximation to the population's average growth behaviour.</p>
+
+<h2>6. Solve the model</h2>
+<p>The equation</p>
+\[
+\frac{dN}{dt}=rN
+\]
+<p>has solution</p>
+\[
+N(t)=N(0)e^{rt}.
+\]
+<p>Using \(N(0)=100\) and \(r=0.2\),</p>
+\[
+N(t)=100e^{0.2t}.
+\]
+<p>After 5 hours the model gives</p>
+\[
+N(5)=100e^{1}\approx272.
+\]
+<p>So, under the assumptions of the model, the predicted population after five hours is approximately 272 bacteria.</p>
+
+<h2>7. Interpret the result biologically</h2>
+<p>The mathematics predicts increasingly rapid growth because the model assumes that the same per-capita growth rate continues as the population becomes larger.</p>
+<p>This is useful over a period when resources are effectively plentiful. Over a longer period, however, food or space may become limited. The assumptions would then become unrealistic and the exponential model would tend to overestimate growth.</p>
+<p>That observation suggests a better model might include resource limitation. For example, logistic growth introduces a carrying-capacity parameter \(K\). Model building therefore develops naturally as biological understanding and evidence reveal which assumptions need improvement.</p>
+
+<h2>The complete modelling process</h2>
+<div class="example"><strong>Biological question:</strong> How does the bacterial population change with time?<br><br><strong>Assumptions:</strong> suitable environment, plentiful resources, no removal, constant per-capita growth rate.<br><br><strong>Variable:</strong> \(N(t)\), population size.<br><br><strong>Parameter:</strong> \(r\), per-capita growth rate.<br><br><strong>Model:</strong> \(dN/dt=rN\).<br><br><strong>Prediction:</strong> \(N(t)=N(0)e^{rt}\).<br><br><strong>Evaluation:</strong> compare the prediction with biological observations and reconsider assumptions when necessary.</div>
+
+<div class="key"><strong>Key principle.</strong> A mathematical model is not simply an equation. It is a biological question together with assumptions, variables, parameters and mathematical relationships. The equation expresses those assumptions mathematically, and its results must always be interpreted in the biological context.</div>
+</article>
+</main>
+</body>
+</html>
