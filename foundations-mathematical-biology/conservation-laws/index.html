@@ -1,1 +1,94 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Conservation laws | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}</style></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Foundations of Mathematical Biology</a><article class="lesson-content"><h1 class="section-title">Conservation laws</h1><p>A conservation law states that a specified total quantity remains constant while its components may change. Such relationships can simplify a biological model and provide an important check on its consistency.</p><h2>A compartment example</h2><p>Suppose a closed population is divided into susceptible, infectious and recovered individuals. If there are no births, deaths or migration, then</p>\[S(t)+I(t)+R(t)=N,\]<p>where the total population \(N\) is constant.</p><div class="example">Individuals can move between the compartments, so \(S(t)\), \(I(t)\) and \(R(t)\) may all change. Their sum remains \(N\).</div><h2>Differential form</h2><p>Differentiating the conservation relationship gives</p>\[\frac{dS}{dt}+\frac{dI}{dt}+\frac{dR}{dt}=0.\]<p>This expresses the same idea in terms of rates: gains in some compartments are exactly balanced by losses from others.</p><h2>When a quantity is not conserved</h2><p>Conservation depends on the model boundary and assumptions. If births, deaths or migration are included, population size may no longer be constant. Instead, its change must equal the net flow across the system boundary.</p><div class="box"><strong>Key idea.</strong> A conservation law is not imposed merely for mathematical convenience. It must follow from the biological structure and assumptions of the model.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conservation laws | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.box,.assumptions{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.flow{margin:1.5rem 0;padding:18px;text-align:center;background:#fff;border:1px solid #dce5e0;border-radius:8px;font-size:1.15rem;font-weight:600}.lesson-content ul{line-height:1.7}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Foundations of Mathematical Biology</a>
+<article class="lesson-content">
+<h1 class="section-title">Conservation laws</h1>
+<p>A conservation law describes a quantity that remains unchanged even though it may move between different parts of a system.</p>
+<p>The simplest way to understand this is to follow people moving between compartments in an epidemic model.</p>
+
+<h2>A simple population example</h2>
+<p>Suppose we have a closed population of exactly 1000 people. We divide the population into three groups:</p>
+\[
+S(t)=\text{number of susceptible people},
+\]
+\[
+I(t)=\text{number of infectious people},
+\]
+\[
+R(t)=\text{number of recovered people}.
+\]
+<p>At the beginning, suppose</p>
+\[
+S(0)=990,\qquad I(0)=10,\qquad R(0)=0.
+\]
+<p>The total population is therefore</p>
+\[
+990+10+0=1000.
+\]
+<p>Later, the numbers might be</p>
+\[
+S(t)=900,\qquad I(t)=70,\qquad R(t)=30.
+\]
+<p>Now the total is still</p>
+\[
+900+70+30=1000.
+\]
+<div class="example"><strong>What has happened?</strong> The individual compartment sizes have changed, but the total population has not. People have moved from one compartment to another; they have not been created or lost from the model.</div>
+
+<h2>Movement between compartments</h2>
+<div class="flow">Susceptible \(S\) &nbsp; → &nbsp; Infectious \(I\) &nbsp; → &nbsp; Recovered \(R\)</div>
+<p>When one susceptible person becomes infected, \(S\) decreases by one and \(I\) increases by one. The total number of people is unchanged.</p>
+<p>Similarly, when one infectious person recovers, \(I\) decreases by one and \(R\) increases by one. Again, the total is unchanged.</p>
+<p>Therefore, at every time \(t\),</p>
+\[
+\boxed{S(t)+I(t)+R(t)=N},
+\]
+<p>where \(N=1000\) is the constant total population.</p>
+
+<h2>The assumptions behind conservation</h2>
+<p>The equation \(S+I+R=N\) is valid here because of the assumptions defining our model.</p>
+<div class="assumptions"><strong>We assume that during the period considered:</strong><ul><li>there are no births;</li><li>there are no deaths;</li><li>nobody enters the population;</li><li>nobody leaves the population.</li></ul></div>
+<p>These assumptions make the population a <strong>closed system</strong>. Movement occurs inside the system, between \(S\), \(I\) and \(R\), but there is no flow across its boundary.</p>
+
+<h2>The same idea using rates</h2>
+<p>Because</p>
+\[
+S(t)+I(t)+R(t)=N
+\]
+<p>and \(N\) is constant, differentiating with respect to time gives</p>
+\[
+\frac{dS}{dt}+\frac{dI}{dt}+\frac{dR}{dt}=0.
+\]
+<p>The zero has a simple meaning: when all changes are added together, the gains and losses cancel.</p>
+<div class="example">An infection is a loss from \(S\) but an equal gain to \(I\). A recovery is a loss from \(I\) but an equal gain to \(R\). These are <strong>internal transfers</strong>, so they do not change the total population.</div>
+
+<h2>When the total is not conserved</h2>
+<p>Suppose births and deaths are now allowed. People can enter or leave the population, so the total population need not remain constant.</p>
+<p>If \(B(t)\) is the birth rate and \(D(t)\) is the death rate, then a simple population balance is</p>
+\[
+\frac{dN}{dt}=B(t)-D(t).
+\]
+<p>If migration is also included, immigration contributes an inflow and emigration contributes an outflow.</p>
+<p>Thus conservation depends on what is inside the model and on the assumptions made about flows across the system boundary.</p>
+
+<div class="box"><strong>Key idea.</strong> Conservation means that movement <em>within</em> a system changes its parts but not its total. A total remains constant only when the model contains no net flow into or out of that total.</div>
+</article>
+</main>
+</body>
+</html>
