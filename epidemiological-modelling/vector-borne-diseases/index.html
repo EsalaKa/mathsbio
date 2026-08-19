@@ -1,1 +1,150 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vector-borne diseases | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Epidemiological Modelling</a><article class="lesson-content"><h1 class="section-title">Vector-borne diseases</h1><p>Vector-borne disease models represent transmission between a host population and a transmitting vector such as a mosquito or tick.</p><h2>Two linked populations</h2><p>Transmission commonly occurs through a cycle</p>\[\text{infectious host}\to\text{susceptible vector}\to\text{infectious vector}\to\text{susceptible host}.\]<p>Host and vector populations therefore require separate state variables.</p><h2>Transmission terms</h2><p>Rates depend on quantities such as biting rate, vector abundance, infection prevalence and probabilities of transmission per bite.</p><h2>Why ordinary SIR structure is insufficient</h2><p>Direct host-to-host transmission is not the main mechanism, so vector dynamics and the coupling between host and vector infection must be represented explicitly.</p><div class="box"><strong>Key idea.</strong> Vector-borne models describe a transmission cycle across two interacting populations rather than a single host population.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vector-borne diseases | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.lesson-content h3{font-size:1.2rem;margin-top:1.6rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.diagram,.figure{margin:1.5rem 0;padding:16px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.diagram svg,.figure svg{width:100%;min-width:700px;height:auto;display:block}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.host{fill:#edf5f0;stroke:#39815e;stroke-width:2}.vector{fill:#fff2e6;stroke:#a07042;stroke-width:2}.arrow{stroke:#53635a;stroke-width:2.2;fill:none}.axis{stroke:#53635a;stroke-width:1.6}.grid{stroke:#dfe7e2;stroke-width:1}.lineH{fill:none;stroke:#39815e;stroke-width:4}.lineV{fill:none;stroke:#a07042;stroke-width:4}.gtext{font-size:13px;fill:#2d3c34}.glabel{font-size:15px;font-weight:700;fill:#26362e}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}
+</style>
+</head>
+<body><main class="section container"><a class="back-link" href="../">← Epidemiological Modelling</a><article class="lesson-content">
+<h1 class="section-title">Vector-borne diseases</h1>
+<p>A <strong>vector-borne disease</strong> is transmitted between hosts through another living organism called a <strong>vector</strong>. Mosquitoes, ticks, sand flies and fleas are important examples of vectors.</p>
+<p>Malaria and dengue are familiar mosquito-borne examples. Lyme disease is transmitted by ticks. The essential modelling idea is different from an ordinary directly transmitted infection: an infectious human usually does not infect another human directly. Transmission passes through the vector population.</p>
+<div class="box"><strong>Core idea.</strong> There are two interacting populations: <strong>hosts</strong> and <strong>vectors</strong>. Infection moves from host to vector and then from vector back to host.</div>
+
+<h2>Start with the biological transmission cycle</h2>
+<p>Imagine a susceptible mosquito biting an infectious human. The mosquito may acquire the pathogen. After becoming capable of transmitting it, that mosquito can later bite a susceptible human and infect that person.</p>
+<div class="flow"><span>infectious host</span><b>→</b><span>susceptible vector bites host</span><b>→</b><span>infected vector</span><b>→</b><span>vector bites susceptible host</span><b>→</b><span>new host infection</span></div>
+<p>This creates a <strong>transmission cycle</strong>. Host infection helps generate vector infection, and vector infection helps generate host infection.</p>
+
+<h2>Why an ordinary SIR model is not enough</h2>
+<p>For a directly transmitted disease, a simple SIR model can use an infection term such as</p>
+\[\beta\frac{S_H I_H}{N_H}.\]
+<p>This assumes infectious hosts generate infection pressure directly on susceptible hosts.</p>
+<p>For a purely vector-borne infection, that is not the main route. A susceptible host is infected by an <strong>infectious vector</strong>, while a susceptible vector becomes infected by biting an <strong>infectious host</strong>.</p>
+<div class="box"><strong>The crucial difference.</strong> Host infection depends on infectious vectors, while vector infection depends on infectious hosts. Therefore the two populations must be modelled together.</div>
+
+<h2>Step 1: create separate host and vector populations</h2>
+<p>Use the subscript \(H\) for hosts and \(V\) for vectors. A simple host population can be divided into</p>
+\[S_H(t),\qquad I_H(t),\qquad R_H(t),\]
+<p>while a simple vector population can be divided into</p>
+\[S_V(t),\qquad I_V(t).\]
+<table class="defs"><tr><th>Symbol</th><th>Meaning</th></tr><tr><td>\(S_H\)</td><td>susceptible hosts</td></tr><tr><td>\(I_H\)</td><td>infectious hosts</td></tr><tr><td>\(R_H\)</td><td>recovered hosts</td></tr><tr><td>\(S_V\)</td><td>susceptible vectors</td></tr><tr><td>\(I_V\)</td><td>infectious vectors</td></tr><tr><td>\(N_H\)</td><td>total host population</td></tr><tr><td>\(N_V\)</td><td>total vector population</td></tr></table>
+
+<h2>The two populations are coupled</h2>
+<div class="diagram"><svg viewBox="0 0 960 430" role="img" aria-label="Host-vector transmission compartment diagram"><defs><marker id="va" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53635a"/></marker></defs><text class="glabel" x="90" y="85">HOSTS</text><rect class="host" x="180" y="45" width="180" height="70" rx="12"/><rect class="host" x="465" y="45" width="180" height="70" rx="12"/><rect class="host" x="750" y="45" width="160" height="70" rx="12"/><text class="glabel" x="270" y="75" text-anchor="middle">Susceptible</text><text class="gtext" x="270" y="98" text-anchor="middle">S_H</text><text class="glabel" x="555" y="75" text-anchor="middle">Infectious</text><text class="gtext" x="555" y="98" text-anchor="middle">I_H</text><text class="glabel" x="830" y="75" text-anchor="middle">Recovered</text><text class="gtext" x="830" y="98" text-anchor="middle">R_H</text><line class="arrow" x1="360" y1="80" x2="460" y2="80" marker-end="url(#va)"/><line class="arrow" x1="645" y1="80" x2="745" y2="80" marker-end="url(#va)"/><text class="gtext" x="410" y="64" text-anchor="middle">infection by vectors</text><text class="gtext" x="695" y="64" text-anchor="middle">recovery</text><text class="glabel" x="90" y="330">VECTORS</text><rect class="vector" x="260" y="290" width="190" height="70" rx="12"/><rect class="vector" x="650" y="290" width="190" height="70" rx="12"/><text class="glabel" x="355" y="320" text-anchor="middle">Susceptible</text><text class="gtext" x="355" y="343" text-anchor="middle">S_V</text><text class="glabel" x="745" y="320" text-anchor="middle">Infectious</text><text class="gtext" x="745" y="343" text-anchor="middle">I_V</text><line class="arrow" x1="450" y1="325" x2="645" y2="325" marker-end="url(#va)"/><text class="gtext" x="548" y="310" text-anchor="middle">infection by hosts</text><path class="arrow" d="M745 290 C745 215 520 195 350 115" marker-end="url(#va)"/><path class="arrow" d="M555 115 C555 205 500 245 355 285" marker-end="url(#va)"/><text class="gtext" x="755" y="205">vector → host</text><text class="gtext" x="445" y="205">host → vector</text></svg></div>
+<p>The horizontal arrows show progression within each population. The curved arrows show the important coupling: infectious vectors create host infections, and infectious hosts create vector infections.</p>
+
+<h2>Step 2: understand the biting rate</h2>
+<p>Let \(a\) be the average number of host bites made by one vector per unit time. For example,</p>
+\[a=0.5\text{ bites per vector per day}\]
+<p>means that, averaged across the vector population, each vector makes one host bite every two days.</p>
+<p>The biting rate is important because transmission requires contact between a vector and a host.</p>
+<div class="example"><strong>Intuition.</strong> If vectors rarely bite hosts, there are few opportunities for transmission. If vectors bite frequently, there are more opportunities in both directions.</div>
+
+<h2>Step 3: not every bite transmits infection</h2>
+<p>A bite is an opportunity for transmission, not a guaranteed infection. We therefore distinguish two transmission probabilities:</p>
+<table class="defs"><tr><th>Parameter</th><th>Meaning</th></tr><tr><td>\(b\)</td><td>probability that a bite by an infectious vector infects a susceptible host</td></tr><tr><td>\(c\)</td><td>probability that a susceptible vector becomes infected when it bites an infectious host</td></tr></table>
+<p>The two probabilities need not be equal because transmission from vector to host and host to vector are different biological processes.</p>
+
+<h2>Step 4: calculate infection pressure on hosts</h2>
+<p>Suppose the vector population contains \(I_V\) infectious vectors out of \(N_V\) total vectors. Then</p>
+\[\frac{I_V}{N_V}\]
+<p>is the infectious proportion of the vector population.</p>
+<p>To understand the host infection rate, combine three ideas:</p>
+<div class="flow"><span>vector biting rate</span><b>×</b><span>vectors available per host</span><b>×</b><span>infectious vector fraction</span><b>×</b><span>transmission probability</span></div>
+<p>Let</p>
+\[m=\frac{N_V}{N_H}\]
+<p>be the number of vectors per host. A common simple force of infection on hosts is then</p>
+\[\boxed{\lambda_H=a b m\frac{I_V}{N_V}}.\]
+<p>Since \(m=N_V/N_H\), this can also be written as</p>
+\[\lambda_H=ab\frac{I_V}{N_H}.\]
+<p>The new-host-infection flow is therefore</p>
+\[\boxed{\lambda_HS_H}.\]
+
+<h2>Work through the host infection term</h2>
+<p>Suppose:</p>
+<table class="defs"><tr><td>biting rate</td><td>\(a=0.5\) bites per vector per day</td></tr><tr><td>vectors per host</td><td>\(m=2\)</td></tr><tr><td>infectious vector proportion</td><td>\(I_V/N_V=0.10\)</td></tr><tr><td>vector-to-host transmission probability</td><td>\(b=0.20\)</td></tr></table>
+<p>Then</p>
+\[\lambda_H=0.5\times0.20\times2\times0.10=0.02\text{ day}^{-1}.\]
+<div class="example"><strong>Interpretation.</strong> Under these illustrative conditions, each susceptible host experiences an instantaneous infection rate of \(0.02\) per day. Over a sufficiently short time \(\Delta t\), the probability of infection is approximately \(0.02\Delta t\).</div>
+
+<h2>Step 5: calculate infection pressure on vectors</h2>
+<p>Now reverse the direction. A susceptible vector becomes infected when it bites an infectious host.</p>
+<p>The infectious fraction of the host population is</p>
+\[\frac{I_H}{N_H}.\]
+<p>If a vector bites at rate \(a\), and the probability of host-to-vector transmission per relevant bite is \(c\), a common simple force of infection on vectors is</p>
+\[\boxed{\lambda_V=ac\frac{I_H}{N_H}}.\]
+<p>The new-vector-infection flow is therefore</p>
+\[\boxed{\lambda_VS_V}.\]
+<div class="box"><strong>Notice the symmetry of the idea.</strong> Hosts look towards the <strong>infectious vector population</strong> for their infection pressure. Vectors look towards the <strong>infectious host population</strong>.</div>
+
+<h2>Step 6: write a simple host-vector model</h2>
+<p>A simple SIR-type host model coupled to susceptible-infectious vectors can be written as</p>
+\[\frac{dS_H}{dt}=-\lambda_HS_H,\]
+\[\frac{dI_H}{dt}=\lambda_HS_H-\gamma I_H,\]
+\[\frac{dR_H}{dt}=\gamma I_H,\]
+<p>and for vectors,</p>
+\[\frac{dS_V}{dt}=\mu_VN_V-\lambda_VS_V-\mu_VS_V,\]
+\[\frac{dI_V}{dt}=\lambda_VS_V-\mu_VI_V.\]
+<table class="defs"><tr><th>Parameter</th><th>Meaning</th></tr><tr><td>\(\gamma\)</td><td>host recovery rate</td></tr><tr><td>\(\mu_V\)</td><td>vector death rate</td></tr><tr><td>\(\mu_VN_V\)</td><td>simple vector recruitment term maintaining a constant vector population in this example</td></tr></table>
+<p>These equations are only one simple model. Their purpose here is to show how the two infection processes fit together.</p>
+
+<h2>Why vectors are often not given a recovered compartment</h2>
+<p>In many mosquito-borne disease models, once a mosquito becomes infectious it remains infectious for the rest of its life. It therefore leaves the infectious class through death rather than recovery.</p>
+<p>This is why a simple vector model may use only susceptible and infectious vector compartments even when the human population uses SIR compartments.</p>
+<div class="box"><strong>Biological assumptions matter.</strong> The correct vector compartments depend on the pathogen-vector system. The model structure should follow the biology rather than automatically copying the human compartments.</div>
+
+<h2>The vector incubation period</h2>
+<p>A vector that acquires a pathogen may not become infectious immediately. The pathogen may need time to develop inside the vector. This delay is called the <strong>extrinsic incubation period</strong>.</p>
+<p>To represent it, an exposed-vector compartment can be added:</p>
+<div class="diagram"><svg viewBox="0 0 900 220" role="img" aria-label="Susceptible exposed infectious vector compartments"><defs><marker id="vb" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53635a"/></marker></defs><rect class="vector" x="75" y="75" width="190" height="70" rx="12"/><rect class="vector" x="355" y="75" width="190" height="70" rx="12"/><rect class="vector" x="635" y="75" width="190" height="70" rx="12"/><text class="glabel" x="170" y="105" text-anchor="middle">Susceptible vector</text><text class="gtext" x="170" y="128" text-anchor="middle">S_V</text><text class="glabel" x="450" y="105" text-anchor="middle">Exposed vector</text><text class="gtext" x="450" y="128" text-anchor="middle">E_V</text><text class="glabel" x="730" y="105" text-anchor="middle">Infectious vector</text><text class="gtext" x="730" y="128" text-anchor="middle">I_V</text><line class="arrow" x1="265" y1="110" x2="350" y2="110" marker-end="url(#vb)"/><line class="arrow" x1="545" y1="110" x2="630" y2="110" marker-end="url(#vb)"/><text class="gtext" x="307" y="94" text-anchor="middle">infected by host</text><text class="gtext" x="587" y="94" text-anchor="middle">incubation</text></svg></div>
+<p>Now infection of a vector moves it from \(S_V\) to \(E_V\). Only after the incubation period does it enter \(I_V\) and become capable of infecting hosts.</p>
+
+<h2>Why vector lifespan matters</h2>
+<p>The extrinsic incubation period creates an important biological constraint. A vector must survive long enough after becoming infected to reach the infectious stage.</p>
+<div class="flow"><span>vector becomes infected</span><b>→</b><span>pathogen develops</span><b>→</b><span>vector survives incubation</span><b>→</b><span>vector becomes infectious</span><b>→</b><span>infectious bite</span></div>
+<p>If most vectors die before the pathogen completes development, transmission can be greatly reduced. This is one reason vector mortality can have a strong effect on vector-borne epidemics.</p>
+
+<h2>Why vector abundance matters</h2>
+<p>The ratio</p>
+\[m=\frac{N_V}{N_H}\]
+<p>measures vector abundance relative to the host population. If there are more vectors per host, hosts can receive more vector bites even if the biting behaviour of each individual vector is unchanged.</p>
+<div class="example"><strong>Example.</strong> Ten mosquitoes and ten people give one mosquito per person on average. One hundred mosquitoes and the same ten people give ten mosquitoes per person. The second setting creates far more opportunities for vector-host contact.</div>
+
+<h2>Why temperature and environment can matter</h2>
+<p>For many vector-borne diseases, environmental conditions affect the vector and pathogen. Temperature, rainfall, humidity and habitat can influence vector abundance, survival, biting behaviour or pathogen development.</p>
+<p>This means parameters such as \(a\), \(N_V\), \(\mu_V\), or the vector incubation rate may vary through time rather than remaining constant.</p>
+<div class="box"><strong>Important distinction.</strong> The environment does not simply “increase \(\beta\)”. It may alter several separate biological mechanisms: how many vectors exist, how often they bite, how long they survive, and how quickly the pathogen develops inside them.</div>
+
+<h2>Host and vector infection curves can be different</h2>
+<p>Because infection must move between two populations, host and vector prevalence need not rise and peak at exactly the same time.</p>
+<div class="figure"><svg viewBox="0 0 800 420" role="img" aria-label="Illustrative host and vector infectious prevalence through time"><line class="axis" x1="85" y1="330" x2="735" y2="330"/><line class="axis" x1="85" y1="45" x2="85" y2="330"/><path class="lineH" d="M85 328 C180 327 220 300 275 215 C330 125 390 110 445 185 C500 260 560 318 735 329"/><path class="lineV" d="M85 329 C205 329 260 315 320 245 C380 165 445 140 500 205 C555 270 615 320 735 329"/><text class="glabel" x="410" y="380" text-anchor="middle">time</text><text class="glabel" x="28" y="190" text-anchor="middle" transform="rotate(-90 28 190)">infectious prevalence</text><line class="lineH" x1="520" y1="65" x2="565" y2="65"/><text class="gtext" x="575" y="70">hosts</text><line class="lineV" x1="520" y1="92" x2="565" y2="92"/><text class="gtext" x="575" y="97">vectors</text><text class="gtext" x="510" y="125">illustrative curves only</text></svg></div>
+<p>The figure illustrates a possible lag between host and vector infection. The exact relationship depends on the disease, incubation periods, recovery, vector survival and other parameters.</p>
+
+<h2>Interventions act at different points in the cycle</h2>
+<p>The transmission cycle makes it clear why vector-borne disease control can target several different mechanisms.</p>
+<table class="compare"><tr><th>Intervention</th><th>Model mechanism affected</th></tr><tr><td>bed nets or repellents</td><td>reduce successful vector-host contact or biting</td></tr><tr><td>vector control</td><td>reduce vector abundance or increase vector mortality</td></tr><tr><td>removing breeding sites</td><td>reduce vector recruitment and future abundance</td></tr><tr><td>host treatment</td><td>shorten infectious duration or reduce host infectiousness</td></tr><tr><td>vaccination, where available</td><td>reduce host susceptibility, disease or transmission depending on vaccine action</td></tr></table>
+<p>A major advantage of the mathematical model is that these interventions can be connected to the specific biological parameter or transition they change.</p>
+
+<h2>The reproduction number is more complicated</h2>
+<p>For directly transmitted infections, a simple model may produce a formula such as \(R_0=\beta/\gamma\). In a vector-borne system, successful spread depends on the complete host-vector-host cycle.</p>
+<p>Consequently, \(R_0\) generally depends on several quantities, including biting rate, vector-to-host and host-to-vector transmission, vector abundance, host infectious duration, vector survival and, when relevant, the probability of surviving the vector incubation period.</p>
+<div class="box"><strong>Interpretation.</strong> A vector-borne pathogen can persist only if the complete cycle generates enough new infection to replace the infection that is lost. Looking at host transmission or vector transmission alone is not sufficient.</div>
+
+<h2>Ross and Macdonald</h2>
+<p>The mathematical study of mosquito-borne transmission is strongly associated with <strong>Ronald Ross</strong>, whose early twentieth-century work showed mathematically that reducing mosquito density could interrupt malaria transmission. <strong>George Macdonald</strong> later developed this framework substantially, leading to what is commonly called the <strong>Ross–Macdonald model</strong> of mosquito-borne disease transmission.</p>
+<p>Modern vector-borne models are often much more detailed, but the central host-vector coupling remains fundamental.</p>
+
+<h2>Main assumptions of the simple model</h2>
+<table class="compare"><tr><th>Simple assumption</th><th>What reality may contain</th></tr><tr><td>all hosts are equally exposed</td><td>some people receive many more bites than others</td></tr><tr><td>all vectors bite at the same rate</td><td>biting behaviour varies</td></tr><tr><td>constant vector population</td><td>vector abundance can be strongly seasonal</td></tr><tr><td>constant parameters</td><td>temperature and environment can change them</td></tr><tr><td>random host-vector mixing</td><td>vectors and hosts are spatially clustered</td></tr><tr><td>simple vector infection states</td><td>incubation and pathogen development may be important</td></tr></table>
+
+<h2>The complete modelling idea</h2>
+<div class="flow"><span>infectious hosts</span><b>→</b><span>infect susceptible vectors</span><b>→</b><span>vector incubation</span><b>→</b><span>infectious vectors</span><b>→</b><span>infect susceptible hosts</span><b>→</b><span>new infectious hosts</span></div>
+<div class="box"><strong>Key idea.</strong> Vector-borne transmission is a <strong>feedback cycle between two populations</strong>. Hosts cannot be modelled correctly without vectors, and vectors cannot be modelled correctly without hosts. Biting rate, transmission per bite, vector abundance, vector survival and incubation determine how strongly the two populations are coupled.</div>
+</article></main></body></html>
