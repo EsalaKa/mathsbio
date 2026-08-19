@@ -1,1 +1,81 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Discrete vs continuous models | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.compare th,.compare td{padding:12px;border-bottom:1px solid #d9e2dd;text-align:left}.compare th{background:#edf5f0}</style></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Foundations of Mathematical Biology</a><article class="lesson-content"><h1 class="section-title">Discrete vs continuous models</h1><p>The terms <strong>discrete</strong> and <strong>continuous</strong> describe how time, state, or both are represented. This distinction is separate from whether a model is deterministic or stochastic.</p><h2>Discrete time</h2><p>A discrete-time model observes or updates the system at separated times</p>\[t_0,t_1,t_2,\ldots\]<p>A population model might be written</p>\[N_{n+1}=f(N_n),\]<p>where \(n\) labels successive time steps.</p><h2>Continuous time</h2><p>In continuous time, the system is defined for every time \(t\) in an interval. A deterministic example is</p>\[\frac{dN}{dt}=f(N).\]<p>Continuous time does not necessarily mean continuous state. A continuous-time Markov chain, for example, can evolve continuously in time while its state is an integer-valued population count.</p><h2>Discrete and continuous state</h2><p>A discrete state takes values from a separated set, such as</p>\[I\in\{0,1,2,\ldots,N\}.\]<p>A continuous state can take values throughout an interval, for example a concentration \(C\geq0\).</p><table class="compare"><tr><th>Feature</th><th>Discrete</th><th>Continuous</th></tr><tr><td>Time</td><td>Specified time steps</td><td>Every time in an interval</td></tr><tr><td>State</td><td>Separated values</td><td>Values over a continuum</td></tr></table><div class="box"><strong>Key idea.</strong> Time and state should be classified separately. A model may have discrete time and discrete state, continuous time and continuous state, or a mixture of the two.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Discrete vs continuous models | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\)'],['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.compare th,.compare td{padding:12px;border-bottom:1px solid #d9e2dd;text-align:left}.compare th{background:#edf5f0}.graphs{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:1.5rem 0}.graph{border:1px solid #dce5e0;border-radius:8px;padding:12px;background:#fff}.graph h3{text-align:center;font-size:1rem;margin:0 0 8px}.graph svg{width:100%;height:auto}.axis{stroke:#56645d;stroke-width:1.5}.grid{stroke:#e2e8e4;stroke-width:1}.curve{fill:none;stroke:#2f6f52;stroke-width:4}.point{fill:#2f6f52}.tick{font-size:12px;fill:#526158}.label{font-size:13px;fill:#25342d;font-weight:600}@media(max-width:700px){.graphs{grid-template-columns:1fr}}</style></head>
+<body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Foundations of Mathematical Biology</a><article class="lesson-content"><h1 class="section-title">Discrete vs continuous models</h1>
+<p>Biological quantities change through time. A mathematical model must decide <strong>when</strong> that change is represented: only at separate time points, or continuously through time. This leads to discrete-time and continuous-time models.</p>
+
+<h2>One biological example</h2>
+<p>Suppose a population starts with \(N_0=100\) individuals and grows at 10% per day. We can represent this same growth idea in two different ways.</p>
+
+<h2>Discrete time: change one step at a time</h2>
+<p>If the population is updated once each day, 10% of the current population is added during each step. Therefore</p>
+\[
+N_{n+1}=N_n+0.1N_n.
+\]
+<p>Collecting \(N_n\) gives</p>
+\[
+N_{n+1}=1.1N_n.
+\]
+<p>Starting from \(N_0=100\), repeated application gives</p>
+\[
+N_1=110,\qquad N_2=121,\qquad N_3=133.1,\ldots
+\]
+<p>Because the same multiplication occurs at every step, after \(n\) steps</p>
+\[
+\boxed{N_n=N_0(1.1)^n.}
+\]
+<div class="example"><strong>How the function was obtained.</strong> The biological rule “increase the current population by 10% each day” first gives the recurrence \(N_{n+1}=1.1N_n\). Repeating that rule produces the explicit function \(N_n=N_0(1.1)^n\).</div>
+
+<h2>Continuous time: change at every instant</h2>
+<p>Now suppose growth occurs continuously rather than only at daily updates. We describe the <strong>instantaneous rate of change</strong> of population by</p>
+\[
+\frac{dN}{dt}=rN.
+\]
+<p>This equation says that the rate of population growth at any time is proportional to the population currently present. The constant \(r\) is the continuous per-capita growth rate.</p>
+<p>To obtain the population as a function of time, separate the variables:</p>
+\[
+\frac{1}{N}\,dN=r\,dt.
+\]
+<p>Integrating gives</p>
+\[
+\ln N=rt+C.
+\]
+<p>Exponentiating,</p>
+\[
+N=Ae^{rt}.
+\]
+<p>At \(t=0\), \(N(0)=N_0\), so \(A=N_0\). Hence</p>
+\[
+\boxed{N(t)=N_0e^{rt}.}
+\]
+<div class="example"><strong>How the function was obtained.</strong> In the continuous model we first state the biological rule as a differential equation, \(dN/dt=rN\). Solving that equation gives the continuous function \(N(t)=N_0e^{rt}\).</div>
+
+<h2>What is the visual difference?</h2>
+<div class="graphs">
+<div class="graph"><h3>Discrete-time model</h3><svg viewBox="0 0 620 320" role="img" aria-label="Discrete population growth shown at separate time points"><line class="grid" x1="60" y1="250" x2="590" y2="250"/><line class="grid" x1="60" y1="180" x2="590" y2="180"/><line class="grid" x1="60" y1="110" x2="590" y2="110"/><line class="axis" x1="60" y1="270" x2="590" y2="270"/><line class="axis" x1="60" y1="30" x2="60" y2="270"/><polyline class="curve" points="60,250 148,236 237,220 325,202 413,181 502,158 590,132"/><circle class="point" cx="60" cy="250" r="6"/><circle class="point" cx="148" cy="236" r="6"/><circle class="point" cx="237" cy="220" r="6"/><circle class="point" cx="325" cy="202" r="6"/><circle class="point" cx="413" cy="181" r="6"/><circle class="point" cx="502" cy="158" r="6"/><circle class="point" cx="590" cy="132" r="6"/><text class="label" x="325" y="305" text-anchor="middle">time step n</text><text class="label" x="18" y="150" text-anchor="middle" transform="rotate(-90 18 150)">population Nₙ</text><text class="tick" x="60" y="287" text-anchor="middle">0</text><text class="tick" x="148" y="287" text-anchor="middle">1</text><text class="tick" x="237" y="287" text-anchor="middle">2</text><text class="tick" x="325" y="287" text-anchor="middle">3</text><text class="tick" x="413" y="287" text-anchor="middle">4</text><text class="tick" x="502" y="287" text-anchor="middle">5</text><text class="tick" x="590" y="287" text-anchor="middle">6</text></svg><p>The model specifies population values at \(n=0,1,2,\ldots\). The connecting line only helps the eye; the model itself is defined at the marked steps.</p></div>
+<div class="graph"><h3>Continuous-time model</h3><svg viewBox="0 0 620 320" role="img" aria-label="Continuous exponential population growth curve"><line class="grid" x1="60" y1="250" x2="590" y2="250"/><line class="grid" x1="60" y1="180" x2="590" y2="180"/><line class="grid" x1="60" y1="110" x2="590" y2="110"/><line class="axis" x1="60" y1="270" x2="590" y2="270"/><line class="axis" x1="60" y1="30" x2="60" y2="270"/><path class="curve" d="M60 250 C145 238,215 226,280 209 C355 190,425 168,485 143 C530 124,560 108,590 90"/><text class="label" x="325" y="305" text-anchor="middle">continuous time t</text><text class="label" x="18" y="150" text-anchor="middle" transform="rotate(-90 18 150)">population N(t)</text><text class="tick" x="60" y="287" text-anchor="middle">0</text><text class="tick" x="590" y="287" text-anchor="middle">t</text></svg><p>The function \(N(t)\) has a value at every time, including times between whole days.</p></div>
+</div>
+
+<h2>They are related, but the rates are not identical</h2>
+<p>A 10% increase per discrete day gives the multiplier \(1.1\). If we want a continuous exponential model that has exactly the same values at whole days, we require</p>
+\[
+e^r=1.1,
+\]
+<p>so</p>
+\[
+r=\ln(1.1)\approx0.0953\text{ day}^{-1}.
+\]
+<p>Then</p>
+\[
+N(t)=100e^{0.0953t}
+\]
+<p>passes through the same population values as \(N_n=100(1.1)^n\) at \(t=n\). The continuous curve additionally describes what happens <em>between</em> those times.</p>
+
+<h2>Discrete and continuous state</h2>
+<p>Time and state are separate choices. A population count such as</p>
+\[
+I\in\{0,1,2,\ldots,N\}
+\]
+<p>is a discrete state, whereas a concentration \(C\geq0\) is often represented as continuous. A model can therefore have continuous time but discrete state, as in a continuous-time Markov chain.</p>
+<table class="compare"><tr><th>Feature</th><th>Discrete</th><th>Continuous</th></tr><tr><td>Time</td><td>Separate steps \(n=0,1,2,\ldots\)</td><td>Every time \(t\)</td></tr><tr><td>Typical equation</td><td>\(N_{n+1}=f(N_n)\)</td><td>\(dN/dt=f(N)\)</td></tr><tr><td>State</td><td>Separated values</td><td>Any value in an interval</td></tr></table>
+<div class="box"><strong>Key idea.</strong> A discrete-time model gives a rule for moving from one time step to the next. A continuous-time model gives an instantaneous rate of change; solving the differential equation produces a function defined for every time. Neither approach is automatically better—the appropriate choice depends on how the biological process is naturally represented.</div>
+</article></main></body></html>
