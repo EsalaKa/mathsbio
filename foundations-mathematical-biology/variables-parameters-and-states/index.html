@@ -6,10 +6,10 @@
 <meta name="description" content="Variables, parameters and states in mathematical biology, with clear biological examples and mathematical notation.">
 <title>Variables, parameters and states | MathsBio</title>
 <link rel="stylesheet" href="../../style.css">
-<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\)']]}};</script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <style>
-.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem;margin-bottom:.7rem}.lesson-content h3{font-size:1.2rem;margin-top:1.6rem}.lesson-content p{margin:.75rem 0}.definition-box,.example-box,.key-point{margin:1.4rem 0;padding:18px 22px;border-radius:8px}.definition-box{background:#edf5f0}.example-box{background:#fff;border-left:4px solid #39815e;box-shadow:0 3px 12px rgba(26,67,45,.04)}.key-point{background:#f5f7f6;border:1px solid #dce5e0}.math-table{width:100%;border-collapse:collapse;margin:1.4rem 0}.math-table th,.math-table td{text-align:left;padding:12px 14px;border-bottom:1px solid #d9e2dd}.math-table th{background:#edf5f0}.state-vector{margin:1.4rem 0;padding:18px;text-align:center;background:#fff;border:1px solid #dce5e0;border-radius:8px}
+.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem;margin-bottom:.7rem}.lesson-content p{margin:.75rem 0}.definition-box,.example-box,.key-point{margin:1.4rem 0;padding:18px 22px;border-radius:8px}.definition-box{background:#edf5f0}.example-box{background:#fff;border-left:4px solid #39815e;box-shadow:0 3px 12px rgba(26,67,45,.04)}.key-point{background:#f5f7f6;border:1px solid #dce5e0}.math-table{width:100%;border-collapse:collapse;margin:1.4rem 0}.math-table th,.math-table td{text-align:left;padding:12px 14px;border-bottom:1px solid #d9e2dd}.math-table th{background:#edf5f0}.state-vector{margin:1.4rem 0;padding:18px;text-align:center;background:#fff;border:1px solid #dce5e0;border-radius:8px}
 </style>
 </head>
 <body>
@@ -18,77 +18,30 @@
 <a class="back-link" href="../">← Foundations of Mathematical Biology</a>
 <article class="lesson-content">
 <h1 class="section-title">Variables, parameters and states</h1>
-
-<p>Mathematical models describe biological systems using mathematical quantities. Three fundamental ideas are <strong>variables</strong>, <strong>parameters</strong> and <strong>states</strong>. They have different roles in a model and should be distinguished clearly.</p>
-
+<p>Mathematical models describe biological systems using mathematical quantities. Three fundamental ideas are <strong>variables</strong>, <strong>parameters</strong> and <strong>states</strong>.</p>
 <h2>Variables</h2>
 <div class="definition-box"><strong>Variable.</strong> A variable is a quantity whose value can change within the model.</div>
-
-<p>In a population model, the population size may change with time. We can write it as</p>
-\[
-N(t),
-\]
-<p>where \(N\) is the population size and \(t\) is time. Writing \(N(t)\) emphasises that the value of \(N\) may be different at different times.</p>
-
-<p>A model can contain several variables. In an epidemic model, for example,</p>
-\[
-S(t),\qquad I(t),\qquad R(t)
-\]
-<p>may represent the numbers of susceptible, infectious and recovered individuals at time \(t\).</p>
-
+<p>For example, population size may change with time:</p>
+\[N(t).\]
+<p>In an epidemic model, \(S(t)\), \(I(t)\) and \(R(t)\) may represent the numbers of susceptible, infectious and recovered individuals.</p>
 <h2>Parameters</h2>
-<div class="definition-box"><strong>Parameter.</strong> A parameter is a quantity used to specify a characteristic of the model. In a particular model run or analysis, it is usually treated as fixed unless the model explicitly allows it to vary.</div>
-
-<p>Consider the simple population equation</p>
-\[
-\frac{dN}{dt}=rN.
-\]
-<p>Here \(N(t)\) is a variable, while \(r\) is a parameter controlling the growth or decline represented by the model.</p>
-
-<div class="example-box"><strong>Example.</strong> If \(r=0.05\ \text{day}^{-1}\), the chosen parameter value remains \(0.05\ \text{day}^{-1}\) during that model run, while \(N(t)\) changes with time.</div>
-
-<p>Parameters often represent biological characteristics such as transmission, recovery, birth or death characteristics. Their precise interpretation depends on the model in which they appear.</p>
-
+<div class="definition-box"><strong>Parameter.</strong> A parameter is a quantity that specifies or controls a characteristic of a model. It is usually treated as fixed during a particular model run.</div>
+<p>A parameter has a <strong>numerical value</strong>, usually together with units. What that value represents depends on the parameter. A parameter may represent a rate, population capacity, probability, diffusion coefficient or another model characteristic.</p>
+<p>For example, consider logistic population growth:</p>
+\[\frac{dN}{dt}=rN\left(1-\frac{N}{K}\right).\]
+<div class="example-box"><strong>Two different parameters.</strong><br><br>\(r=0.2\ \text{day}^{-1}\) is a <strong>rate parameter</strong>. Its numerical value is \(0.2\), with units per day.<br><br>\(K=1000\ \text{individuals}\) is a <strong>capacity parameter</strong>. Its numerical value is \(1000\); it is not a rate.</div>
+<p>Therefore, <strong>parameter</strong>, <strong>parameter value</strong> and <strong>rate</strong> are not the same idea. The parameter is the model quantity, its parameter value is the chosen numerical value, and a rate is one possible biological meaning of a parameter.</p>
+<table class="math-table"><thead><tr><th>Term</th><th>Meaning</th><th>Example</th></tr></thead><tbody><tr><td>Parameter</td><td>A quantity specifying a model characteristic</td><td>\(r\), \(K\)</td></tr><tr><td>Parameter value</td><td>The numerical value assigned to a parameter</td><td>\(r=0.2\), \(K=1000\)</td></tr><tr><td>Rate parameter</td><td>A parameter whose value represents a rate</td><td>\(r=0.2\ \text{day}^{-1}\)</td></tr><tr><td>Non-rate parameter</td><td>A parameter representing another quantity</td><td>\(K=1000\ \text{individuals}\)</td></tr></tbody></table>
 <h2>States</h2>
 <div class="definition-box"><strong>State.</strong> The state of a model is the information needed to describe the system at a particular time.</div>
-
-<p>If population size is the only variable, the state at time \(t\) can simply be \(N(t)\). If several variables are required, the state consists of their values together.</p>
-
-<p>For an SIR epidemic model, the state can be written as the vector</p>
-<div class="state-vector">
-\[
-\mathbf{X}(t)=
-\begin{pmatrix}
-S(t)\\
-I(t)\\
-R(t)
-\end{pmatrix}.
-\]
-</div>
-
+<p>For an SIR epidemic model, the state can be written</p>
+<div class="state-vector">\[\mathbf{X}(t)=\begin{pmatrix}S(t)\\I(t)\\R(t)\end{pmatrix}.\]</div>
 <p>For example,</p>
-\[
-\mathbf{X}(t)=
-\begin{pmatrix}
-900\\
-80\\
-20
-\end{pmatrix}
-\]
-<p>means that at time \(t\) there are 900 susceptible, 80 infectious and 20 recovered individuals. These values describe the epidemic state at that time.</p>
-
+\[\mathbf{X}(t)=\begin{pmatrix}900\\80\\20\end{pmatrix}\]
+<p>means that at time \(t\) there are 900 susceptible, 80 infectious and 20 recovered individuals.</p>
 <h2>How the ideas differ</h2>
-<table class="math-table">
-<thead><tr><th>Concept</th><th>Role</th><th>Example</th></tr></thead>
-<tbody>
-<tr><td>Variable</td><td>A quantity that changes</td><td>\(I(t)\)</td></tr>
-<tr><td>Parameter</td><td>A quantity specifying a model characteristic</td><td>\(r\)</td></tr>
-<tr><td>State</td><td>The collection of values describing the system at a given time</td><td>\((S(t),I(t),R(t))\)</td></tr>
-</tbody>
-</table>
-
-<div class="key-point"><strong>Key distinction.</strong> Variables describe quantities that can change. Parameters specify characteristics of the model. The state records the current values of the variables needed to describe the system.</div>
-
+<table class="math-table"><thead><tr><th>Concept</th><th>Role</th><th>Example</th></tr></thead><tbody><tr><td>Variable</td><td>A quantity that can change</td><td>\(I(t)\)</td></tr><tr><td>Parameter</td><td>A quantity specifying a model characteristic</td><td>\(r\), \(K\)</td></tr><tr><td>State</td><td>Values describing the system at a given time</td><td>\((S(t),I(t),R(t))\)</td></tr></tbody></table>
+<div class="key-point"><strong>Key distinction.</strong> A parameter always has a value, but it is not necessarily a rate. For example, \(r\) can be a rate parameter while \(K\) is a capacity parameter.</div>
 </article>
 </main>
 </body>
