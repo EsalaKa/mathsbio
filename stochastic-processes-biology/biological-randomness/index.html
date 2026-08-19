@@ -1,1 +1,89 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Why biological randomness matters | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Why biological randomness matters</h1><p>Biological events are often uncertain at the individual level. Birth, death, infection, recovery, mutation and molecular reactions do not normally occur at exactly predetermined times.</p><h2>Deterministic and stochastic descriptions</h2><p>A deterministic model gives one trajectory from a fixed initial state and parameter set. A stochastic model assigns probabilities to possible events and therefore produces a distribution of possible trajectories.</p><h2>Why the distinction matters</h2><p>Randomness can be especially important in small populations, at the beginning of an epidemic, near extinction, or when rare events have large consequences. Two populations with identical initial conditions can then have different outcomes.</p><div class="box"><strong>Key idea.</strong> Stochastic modelling is useful when the variability of possible biological outcomes is itself scientifically important.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Why biological randomness matters | MathsBio</title><link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.lesson-content h3{font-size:1.2rem;margin-top:1.6rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.figure{margin:1.5rem 0;padding:16px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:700px;height:auto;display:block}.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.compare th{background:#edf5f0}.axis{stroke:#53635a;stroke-width:1.6}.det{fill:none;stroke:#26362e;stroke-width:4}.st1{fill:none;stroke:#39815e;stroke-width:2.5}.st2{fill:none;stroke:#a07042;stroke-width:2.5}.st3{fill:none;stroke:#6f6b9a;stroke-width:2.5}.mean{fill:none;stroke:#26362e;stroke-width:3;stroke-dasharray:7 5}.gtext{font-size:13px;fill:#2d3c34}.glabel{font-size:15px;font-weight:700;fill:#26362e}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Why biological randomness matters</h1>
+<p>Biological systems contain events whose exact occurrence cannot usually be predicted in advance. We may know how <strong>likely</strong> an infection, birth, death, recovery or mutation is, without knowing exactly <strong>when</strong> it will occur or <strong>which individual</strong> it will happen to.</p>
+<div class="box"><strong>Core idea.</strong> Randomness does not mean that biology has no structure. It means that even when the biological rules and rates are known, the exact sequence of individual events can still be uncertain.</div>
+
+<h2>Begin with one simple biological event</h2>
+<p>Suppose one infectious person meets a susceptible person. Transmission is possible, but it is not certain.</p>
+<div class="flow"><span>infectious person meets susceptible person</span><b>→</b><span>infection may occur</span><b>or</b><span>infection may not occur</span></div>
+<p>A deterministic description tends to represent many such uncertain events through an average rate. A stochastic description represents the uncertainty explicitly.</p>
+
+<h2>Rate does not tell us the exact next event</h2>
+<p>Suppose an infectious individual has a recovery rate</p>
+\[\gamma=0.2\text{ day}^{-1}.\]
+<p>This rate describes the tendency to recover. It does <strong>not</strong> mean that this particular person must recover after exactly 5 days.</p>
+<p>The value</p>
+\[\frac{1}{\gamma}=5\text{ days}\]
+<p>is the mean infectious duration under the usual constant-rate assumption. One person may recover earlier and another later.</p>
+<div class="example"><strong>Important distinction.</strong> A rate describes how frequently an event tends to occur. It does not specify the exact event time for an individual.</div>
+
+<h2>Probability over a short time interval</h2>
+<p>If an event occurs at rate \(r\), then over a sufficiently short interval \(\Delta t\),</p>
+\[\boxed{P(\text{event during }\Delta t)\approx r\Delta t}.\]
+<p>For example, if the recovery rate is \(0.2\) per day and \(\Delta t=0.1\) day,</p>
+\[P(\text{recovery during the next }0.1\text{ day})\approx0.2(0.1)=0.02.\]
+<p>So there is approximately a 2% probability of recovery during that short interval.</p>
+<p>This simple connection between <strong>rates and probabilities</strong> will become fundamental when we construct continuous-time Markov chains.</p>
+
+<h2>What is random in a biological model?</h2>
+<p>Different models may treat different quantities as random.</p>
+<table class="compare"><tr><th>Biological process</th><th>What may be random?</th></tr><tr><td>epidemic</td><td>who becomes infected, when infection occurs, when recovery occurs</td></tr><tr><td>population dynamics</td><td>birth and death events</td></tr><tr><td>genetics</td><td>mutation, inheritance and genetic drift</td></tr><tr><td>cell biology</td><td>molecular reaction and gene-expression events</td></tr><tr><td>ecology</td><td>individual survival, reproduction, movement and encounters</td></tr></table>
+
+<h2>Deterministic model: one trajectory</h2>
+<p>A deterministic model specifies how the state changes from its current value. Once the initial conditions and parameters are fixed, running the model again gives the same trajectory.</p>
+<div class="figure"><svg viewBox="0 0 800 400" role="img" aria-label="One deterministic trajectory"><line class="axis" x1="85" y1="325" x2="735" y2="325"/><line class="axis" x1="85" y1="45" x2="85" y2="325"/><path class="det" d="M85 305 C170 300 220 270 275 195 C335 110 405 75 475 125 C550 180 600 275 735 315"/><text class="glabel" x="410" y="375" text-anchor="middle">time</text><text class="glabel" x="28" y="190" text-anchor="middle" transform="rotate(-90 28 190)">infectious population</text><text class="gtext" x="500" y="105">one deterministic trajectory</text></svg></div>
+<p>This trajectory can be extremely useful. It describes the behaviour implied by the model without random event-to-event variation.</p>
+
+<h2>Stochastic model: many possible trajectories</h2>
+<p>Now imagine starting the same epidemic several times with exactly the same initial state and the same parameter values. If infection and recovery events occur randomly, the epidemics need not follow identical paths.</p>
+<div class="figure"><svg viewBox="0 0 800 420" role="img" aria-label="Several possible stochastic epidemic trajectories"><line class="axis" x1="85" y1="335" x2="735" y2="335"/><line class="axis" x1="85" y1="45" x2="85" y2="335"/><path class="st1" d="M85 315 L125 307 L155 285 L190 295 L225 245 L260 220 L300 155 L335 170 L370 105 L410 125 L450 185 L490 170 L535 245 L575 270 L625 300 L680 315 L735 326"/><path class="st2" d="M85 315 L120 300 L155 310 L195 270 L235 285 L275 235 L315 250 L355 195 L400 210 L445 265 L490 290 L535 310 L590 320 L650 326 L735 330"/><path class="st3" d="M85 315 L120 320 L150 312 L185 325 L220 330 L260 332 L735 333"/><text class="glabel" x="410" y="385" text-anchor="middle">time</text><text class="glabel" x="28" y="195" text-anchor="middle" transform="rotate(-90 28 195)">infectious population</text><text class="gtext" x="500" y="75">same initial state</text><text class="gtext" x="500" y="95">same parameters</text><text class="gtext" x="500" y="115">different possible outcomes</text></svg></div>
+<p>One trajectory produces a substantial outbreak. Another produces a smaller outbreak. A third dies out quickly. None of these differences requires us to change the parameters: they can arise from the random ordering and timing of events.</p>
+
+<h2>A concrete epidemic example</h2>
+<p>Suppose an epidemic begins with one infectious person. During the early stage, that person might:</p>
+<table class="compare"><tr><th>Possible sequence</th><th>Outcome</th></tr><tr><td>recover before infecting anyone</td><td>the outbreak ends immediately</td></tr><tr><td>infect one person and then recover</td><td>infection may continue, but extinction is still possible</td></tr><tr><td>infect several people before recovery</td><td>a larger outbreak becomes more likely</td></tr></table>
+<p>A deterministic model averages over these possibilities. A stochastic model allows each possible event sequence to occur with an appropriate probability.</p>
+<div class="box"><strong>This is why early outbreaks are fundamentally stochastic.</strong> When only one or a few infectious individuals are present, a single recovery or transmission event can completely change what happens next.</div>
+
+<h2>Why not just use the deterministic average?</h2>
+<p>This is one of the most important questions in stochastic modelling. Suppose many stochastic epidemic simulations are performed and their average is similar to a deterministic epidemic curve. Why bother with the stochastic model?</p>
+<p>Because the average does not tell us how widely the individual outcomes vary.</p>
+<div class="figure"><svg viewBox="0 0 800 420" role="img" aria-label="Stochastic trajectories around an average trajectory"><line class="axis" x1="85" y1="335" x2="735" y2="335"/><line class="axis" x1="85" y1="45" x2="85" y2="335"/><path class="st1" d="M85 315 C170 305 220 230 290 125 C350 65 415 110 465 190 C520 270 600 320 735 330"/><path class="st2" d="M85 315 C175 310 235 275 300 210 C360 155 420 175 480 235 C540 295 620 325 735 331"/><path class="st3" d="M85 315 C130 320 170 328 220 331 C350 333 500 333 735 333"/><path class="mean" d="M85 315 C170 308 225 260 290 185 C350 115 415 145 470 215 C530 285 610 322 735 331"/><text class="glabel" x="410" y="385" text-anchor="middle">time</text><text class="glabel" x="28" y="195" text-anchor="middle" transform="rotate(-90 28 195)">infectious population</text><text class="gtext" x="525" y="80">individual stochastic outcomes</text><line class="mean" x1="525" y1="110" x2="570" y2="110"/><text class="gtext" x="580" y="115">average</text></svg></div>
+<p>The average can hide outcomes that are scientifically or practically crucial: early extinction, unusually large outbreaks, very high hospital demand, or rare events.</p>
+<div class="example"><strong>Example.</strong> An average prediction of 100 hospital patients does not tell us whether nearly every simulation produces about 100, or whether many produce 20 while some produce 300. Those situations have very different implications for healthcare planning.</div>
+
+<h2>Expected outcome and possible outcome are different ideas</h2>
+<p>The <strong>expected value</strong> describes an average across the probability distribution. A <strong>single stochastic trajectory</strong> is one possible realisation of the process.</p>
+<p>Therefore</p>
+\[\text{expected trajectory}\neq\text{the trajectory that must occur}.\]
+<p>Indeed, the expected value need not itself be a possible individual outcome in a discrete biological system.</p>
+<div class="example"><strong>Example.</strong> If a random population contains either 0 or 1 infected person with equal probability, then the expected number infected is \(0.5\). But no actual population in this model contains half an infected person.</div>
+
+<h2>When does randomness matter most?</h2>
+<h3>Small populations</h3><p>One event represents a large fraction of the population, so random changes can have a large effect.</p>
+<h3>The beginning of an epidemic</h3><p>With only a few infectious individuals, chance can determine whether infection disappears or establishes itself.</p>
+<h3>Near extinction</h3><p>When only a few infected individuals remain, random recovery or death events can eliminate infection even when a deterministic model approaches zero only gradually.</p>
+<h3>Rare but important events</h3><p>Mutation, emergence, spillover and unusually large transmission events may be uncommon but biologically important.</p>
+<h3>Thresholds and capacity limits</h3><p>When a decision depends on whether a quantity crosses a threshold, the probability of crossing it can matter more than the average value.</p>
+
+<h2>Randomness is not the same as ignorance</h2>
+<p>Two different sources of uncertainty should be distinguished.</p>
+<table class="compare"><tr><th>Type</th><th>Meaning</th></tr><tr><td><strong>Process randomness</strong></td><td>events are represented as random even when model parameters are known</td></tr><tr><td><strong>Parameter uncertainty</strong></td><td>we do not know the true values of quantities such as transmission or recovery parameters exactly</td></tr></table>
+<p>For example, a model can use a known recovery rate and still generate random recovery times. Conversely, uncertainty about the recovery rate itself is a different problem.</p>
+
+<h2>What does a stochastic model give us?</h2>
+<p>Instead of only one predicted curve, a stochastic model can provide quantities such as</p>
+\[P(\text{early extinction}),\]
+\[P(\text{large outbreak}),\]
+\[P(\text{hospital demand exceeds capacity}),\]
+<p>as well as expected values, variances, distributions and ranges of possible outcomes.</p>
+<div class="flow"><span>biological event rates</span><b>→</b><span>event probabilities</span><b>→</b><span>random event sequence</span><b>→</b><span>one trajectory</span><b>→</b><span>many trajectories</span><b>→</b><span>distribution of outcomes</span></div>
+
+<h2>Where this section is going</h2>
+<p>The rest of this topic develops the mathematics needed to describe this randomness precisely. We will move from <strong>random variables</strong> to <strong>stochastic processes</strong>, then to Markov chains, event rates, waiting times, transition and generator matrices, Gillespie simulation, Monte Carlo methods, and finally extinction and outbreak probabilities.</p>
+<div class="box"><strong>Key idea.</strong> Deterministic models describe a single model trajectory. Stochastic models describe a <strong>probability distribution of possible trajectories</strong>. We use stochastic modelling when knowing the average behaviour is not enough and the variability, probability or risk of different biological outcomes matters.</div>
+</article></main></body></html>
