@@ -1,1 +1,96 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dimensional analysis | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.math-table{width:100%;border-collapse:collapse;margin:1.3rem 0}.math-table th,.math-table td{padding:11px;border-bottom:1px solid #d9e2dd;text-align:left}.math-table th{background:#edf5f0}</style></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Foundations of Mathematical Biology</a><article class="lesson-content"><h1 class="section-title">Dimensional analysis</h1><p>Dimensional analysis checks whether mathematical expressions are consistent with the kinds of quantities being measured. It is one of the simplest ways to detect errors in a biological model.</p><h2>Dimensions and units</h2><p>A <strong>dimension</strong> describes the type of quantity, such as time or population. A <strong>unit</strong> specifies how it is measured, such as days or hours.</p><table class="math-table"><tr><th>Quantity</th><th>Possible unit</th></tr><tr><td>Time \(t\)</td><td>day</td></tr><tr><td>Population \(N\)</td><td>individuals</td></tr><tr><td>Per-capita rate \(r\)</td><td>day\(^{-1}\)</td></tr></table><h2>Dimensional consistency</h2><p>Consider</p>\[\frac{dN}{dt}=rN.\]<p>The left-hand side has units</p>\[\frac{\text{individuals}}{\text{day}}.\]<p>If \(r\) has units day\(^{-1}\), then the right-hand side has units</p>\[\frac{1}{\text{day}}\times\text{individuals}=\frac{\text{individuals}}{\text{day}}.\]<p>The two sides are therefore dimensionally consistent.</p><div class="example"><strong>Basic rule.</strong> Quantities that are added or subtracted must have compatible dimensions, and the two sides of an equation must have the same overall dimensions.</div><h2>Why this matters</h2><p>An equation can look algebraically reasonable but still be biologically impossible because its units do not match. Dimensional analysis cannot prove that a model is biologically correct, but dimensional inconsistency usually reveals that something is wrong.</p><div class="box"><strong>Key idea.</strong> Always attach meaning and units to model quantities. Checking units should be a routine part of constructing and interpreting mathematical models.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dimensional analysis | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.math-table{width:100%;border-collapse:collapse;margin:1.3rem 0}.math-table th,.math-table td{padding:11px;border-bottom:1px solid #d9e2dd;text-align:left}.math-table th{background:#edf5f0}</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header>
+<main class="section container"><a class="back-link" href="../">← Foundations of Mathematical Biology</a>
+<article class="lesson-content">
+<h1 class="section-title">Dimensional analysis</h1>
+<p>Dimensional analysis checks whether the quantities in a mathematical model are combined in a physically and biologically meaningful way. It is a simple but powerful method for detecting mistakes and for determining the units that model parameters must have.</p>
+
+<h2>Dimensions and units are different</h2>
+<p>A <strong>dimension</strong> describes the kind of quantity being measured. A <strong>unit</strong> is the particular scale used to measure it.</p>
+<table class="math-table"><tr><th>Quantity</th><th>Dimension</th><th>Possible unit</th></tr><tr><td>Time \(t\)</td><td>time</td><td>day or hour</td></tr><tr><td>Population \(N\)</td><td>population</td><td>individuals</td></tr><tr><td>Per-capita growth rate \(r\)</td><td>inverse time</td><td>day\(^{-1}\)</td></tr></table>
+<p>For example, changing from days to hours changes the <em>unit</em> of time, but time is still the same <em>dimension</em>.</p>
+
+<h2>Checking a population-growth model</h2>
+<p>Consider the model</p>
+\[
+\frac{dN}{dt}=rN.
+\]
+<p>If \(N\) is measured in individuals and \(t\) in days, then \(dN/dt\) represents population change per unit time, so its units are</p>
+\[
+\frac{\text{individuals}}{\text{day}}.
+\]
+<p>The right-hand side must have exactly the same units. Since \(N\) has units individuals, \(r\) must have units</p>
+\[
+\text{day}^{-1}.
+\]
+<p>Therefore,</p>
+\[
+(rN)=\frac{1}{\text{day}}\times\text{individuals}
+=\frac{\text{individuals}}{\text{day}}.
+\]
+<p>Both sides have the same units, so the equation is dimensionally consistent.</p>
+
+<h2>Units can reveal what a parameter means</h2>
+<p>Dimensional analysis is not only a final check. It can tell us what units an unknown parameter must have.</p>
+<p>Using square brackets to mean “units or dimensions of”, the equation</p>
+\[
+\frac{dN}{dt}=rN
+\]
+<p>requires</p>
+\[
+\left[\frac{dN}{dt}\right]=[r][N].
+\]
+<p>Hence</p>
+\[
+[r]=\frac{[dN/dt]}{[N]}
+=\frac{\text{individuals/day}}{\text{individuals}}
+=\text{day}^{-1}.
+\]
+<div class="example"><strong>Interpretation.</strong> The units tell us that \(r\) is a rate parameter. By contrast, a carrying-capacity parameter \(K\) may have units of individuals. Both are parameters, but only \(r\) represents a rate.</div>
+
+<h2>Detecting an impossible expression</h2>
+<p>Suppose someone wrote</p>
+\[
+\frac{dN}{dt}=r+N.
+\]
+<p>If \(r\) has units day\(^{-1}\) and \(N\) has units individuals, the right-hand side tries to add</p>
+\[
+\text{day}^{-1}+\text{individuals}.
+\]
+<p>These are different kinds of quantities and cannot meaningfully be added. The equation is therefore dimensionally inconsistent.</p>
+<div class="example"><strong>Basic rule.</strong> Quantities that are added or subtracted must have compatible dimensions. The two sides of an equation must also have the same overall dimensions.</div>
+
+<h2>An epidemic example</h2>
+<p>Consider the infection term in a frequency-dependent SIR model:</p>
+\[
+\frac{dS}{dt}=-\beta\frac{SI}{N}.
+\]
+<p>Suppose \(S\), \(I\) and \(N\) are all measured in individuals. Then</p>
+\[
+\left[\frac{SI}{N}\right]
+=\frac{\text{individuals}\times\text{individuals}}{\text{individuals}}
+=\text{individuals}.
+\]
+<p>Because \(dS/dt\) has units individuals/day, \(\beta\) must have units</p>
+\[
+[\beta]=\text{day}^{-1}.
+\]
+<p>Thus dimensional analysis tells us the units required for the transmission parameter from the structure of the equation itself.</p>
+
+<h2>What dimensional analysis can and cannot tell us</h2>
+<p>If the dimensions do not match, the model contains an error or the quantities have not been defined consistently. If the dimensions do match, the equation has passed an important check, but this does not prove that the biological assumptions are correct.</p>
+<p>For example, two different biological models can both be dimensionally consistent while making very different assumptions about how organisms interact.</p>
+
+<div class="box"><strong>Key idea.</strong> Dimensional analysis asks: <em>what kind of quantity is each term, and do the units fit together?</em> It helps check equations, determine parameter units and interpret model structure before any numerical calculation is performed.</div>
+</article></main></body></html>
