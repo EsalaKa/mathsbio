@@ -1,155 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Scaling and nondimensionalisation | MathsBio</title>
-<link rel="stylesheet" href="../../style.css">
-<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-<style>.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.box,.idea{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.flow{margin:1.4rem 0;padding:18px;text-align:center;background:#fff;border:1px solid #dce5e0;border-radius:8px;font-weight:600}.math-table{width:100%;border-collapse:collapse;margin:1.3rem 0}.math-table th,.math-table td{padding:11px 13px;border-bottom:1px solid #d9e2dd;text-align:left}.math-table th{background:#edf5f0}</style>
-</head>
-<body>
-<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header>
-<main class="section container"><a class="back-link" href="../">← Foundations of Mathematical Biology</a>
-<article class="lesson-content">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scaling and nondimensionalisation | MathsBio</title><link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.flow{margin:1.4rem 0;padding:18px;text-align:center;background:#fff;border:1px solid #dce5e0;border-radius:8px;font-weight:600}</style>
+</head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header>
+<main class="section container"><a class="back-link" href="../">← Foundations of Mathematical Biology</a><article class="lesson-content">
 <h1 class="section-title">Scaling and nondimensionalisation</h1>
-<p>Biological models are usually written using real quantities such as individuals, days, concentrations or distances. These units are essential when constructing and interpreting a model. However, when we want to understand the mathematical behaviour of the model, the actual numerical sizes and units can sometimes hide its simpler underlying structure.</p>
-<p><strong>Scaling</strong> gives each quantity a natural reference size. <strong>Nondimensionalisation</strong> then expresses the model relative to those scales, so that the new variables have no physical units.</p>
+<p>Biological models use quantities with units: population may be measured in individuals, time in days, and rates per day. These quantities are essential for describing the real system. However, when analysing a model, we often want to see its <strong>relative behaviour</strong> rather than being distracted by a particular population size, time unit or numerical scale.</p>
+<div class="box"><strong>The central idea.</strong> Scaling asks, “How large is this quantity compared with a natural reference value?” Nondimensionalisation uses these scaled quantities to rewrite the model without physical units.</div>
 
-<h2>Why scale a biological quantity?</h2>
-<p>Suppose a population has carrying capacity</p>
+<h2>Why do we scale?</h2>
+<p>Suppose a population has carrying capacity \(K=1000\) individuals. A population of \(N=500\) can be described as 500 individuals, but we can also say that it is <strong>half of its carrying capacity</strong>:</p>
 \[
-K=1000\text{ individuals}.
+x=\frac{N}{K}=\frac{500}{1000}=0.5.
 \]
-<p>If the current population is \(N=500\), we could describe it simply as 500 individuals. But another useful description is:</p>
-\[
-\frac{N}{K}=\frac{500}{1000}=0.5.
-\]
-<p>This says that the population is at <strong>half its characteristic capacity</strong>.</p>
-<p>If \(N=1000\), then</p>
-\[
-\frac{N}{K}=1,
-\]
-<p>and if \(N=200\), then</p>
-\[
-\frac{N}{K}=0.2.
-\]
-<div class="example"><strong>The purpose of scaling.</strong> Instead of asking only “How many individuals are there?”, we ask “How large is the population compared with a biologically meaningful reference size?”</div>
-
-<h2>From scaling to a dimensionless variable</h2>
-<p>Define the scaled population</p>
+<p>The second description tells us something immediately about the population's position relative to its natural scale.</p>
+<p>Thus we choose \(K\) as a <strong>population scale</strong> and define</p>
 \[
 x=\frac{N}{K}.
 \]
-<p>Both \(N\) and \(K\) are measured in individuals. Their units cancel:</p>
-\[
-[x]=\frac{\text{individuals}}{\text{individuals}}=1.
-\]
-<p>Therefore \(x\) is <strong>dimensionless</strong>. It is a ratio, not a population measured in individuals.</p>
-<table class="math-table"><tr><th>Original population</th><th>Scaled value \(x=N/K\)</th><th>Meaning</th></tr><tr><td>200</td><td>0.2</td><td>20% of capacity</td></tr><tr><td>500</td><td>0.5</td><td>50% of capacity</td></tr><tr><td>1000</td><td>1</td><td>At capacity</td></tr></table>
-<p>The biology has not changed. We have only changed how population size is measured.</p>
+<p>Now \(x=0.2\) means 20% of carrying capacity, \(x=0.5\) means 50%, and \(x=1\) means the population is at carrying capacity.</p>
+<p>Because both \(N\) and \(K\) have units of individuals, their units cancel. Therefore \(x\) is dimensionless.</p>
 
-<h2>Why scale time?</h2>
-<p>Suppose a population has per-capita growth rate \(r\), with units time\(^{-1}\). The quantity</p>
+<h2>Scaling time</h2>
+<p>If \(r\) is a growth rate with units time\(^{-1}\), then \(1/r\) has units of time and provides a natural time scale. We define</p>
 \[
-\frac{1}{r}
+\tau=rt=\frac{t}{1/r}.
 \]
-<p>has units of time, so it provides a natural <strong>time scale</strong> for the model.</p>
-<p>Instead of measuring time directly in days or hours, define</p>
+<p>Thus \(\tau\) measures time relative to the natural growth time \(1/r\). For example, \(\tau=1\) means one growth time scale has passed, and \(\tau=2\) means two have passed.</p>
+<p>The units also cancel:</p>
 \[
-\tau=rt.
+[\tau]=\text{time}^{-1}\times\text{time}=1.
 \]
-<p>Because \(r\) has units time\(^{-1}\),</p>
-\[
-[\tau]=\frac{1}{\text{time}}\times\text{time}=1.
-\]
-<p>Thus \(\tau\) is dimensionless.</p>
-<div class="example"><strong>Interpretation.</strong> If \(\tau=1\), one natural model time scale \(1/r\) has passed. If \(\tau=2\), two such time scales have passed. We are measuring time relative to the characteristic speed of the biological process.</div>
 
-<h2>Why scaling is part of nondimensionalisation</h2>
-<p>To remove units from a variable, we must compare it with another quantity having the <strong>same units</strong>. That comparison requires a scale.</p>
-<div class="flow">Dimensional quantity ÷ characteristic scale with the same units → dimensionless quantity</div>
-<p>For population, the characteristic scale can be \(K\):</p>
+<h2>How scaling produces nondimensionalisation</h2>
+<p>A dimensional quantity becomes dimensionless when it is compared with a suitable scale having the same units:</p>
+<div class="flow">quantity ÷ natural scale → scaled dimensionless quantity</div>
 \[
-x=\frac{N}{K}.
+x=\frac{N}{K},\qquad \tau=\frac{t}{1/r}=rt.
 \]
-<p>For time, the characteristic scale is \(1/r\):</p>
-\[
-\tau=\frac{t}{1/r}=rt.
-\]
-<p>So scaling is not an unrelated step performed before nondimensionalisation. <strong>Scaling is the mechanism by which dimensional quantities are converted into dimensionless ones.</strong></p>
+<p>This is why scaling is needed in the nondimensionalisation process. <strong>We first choose meaningful scales; dividing by those scales removes the units.</strong></p>
 
-<h2>Complete example: logistic growth</h2>
+<h2>Example: logistic growth</h2>
 <p>Consider</p>
 \[
 \frac{dN}{dt}=rN\left(1-\frac{N}{K}\right).
 \]
-<p>Here \(N\) is measured in individuals, \(t\) in time, \(K\) in individuals, and \(r\) in time\(^{-1}\).</p>
-<p>The model contains two natural scales:</p>
+<p>Choose the natural population and time scales</p>
 \[
-\text{population scale}=K,
-\qquad
-\text{time scale}=\frac{1}{r}.
+K,\qquad \frac{1}{r},
 \]
-<p>Define</p>
+<p>and define</p>
 \[
-x=\frac{N}{K},
-\qquad
-\tau=rt.
+x=\frac{N}{K},\qquad \tau=rt.
 \]
-<p>Equivalently,</p>
+<p>Equivalently, \(N=Kx\). Since \(d\tau/dt=r\),</p>
 \[
-N=Kx.
+\frac{dN}{dt}=Kr\frac{dx}{d\tau}.
 \]
-<p>Since \(\tau=rt\),</p>
+<p>Substituting into the logistic equation gives</p>
 \[
-\frac{d\tau}{dt}=r.
+Kr\frac{dx}{d\tau}=Kr\,x(1-x),
 \]
-<p>Using the chain rule,</p>
-\[
-\frac{dN}{dt}
-=K\frac{dx}{d\tau}\frac{d\tau}{dt}
-=Kr\frac{dx}{d\tau}.
-\]
-<p>Substituting \(N=Kx\) into the original equation gives</p>
-\[
-Kr\frac{dx}{d\tau}
-=r(Kx)\left(1-\frac{Kx}{K}\right).
-\]
-<p>Therefore,</p>
-\[
-Kr\frac{dx}{d\tau}=Kr\,x(1-x).
-\]
-<p>Cancelling \(Kr\) gives the dimensionless equation</p>
+<p>so</p>
 \[
 \boxed{\frac{dx}{d\tau}=x(1-x)}.
 \]
 
-<h2>What happened to \(r\) and \(K\)?</h2>
-<p>They have not been assumed to be zero or removed from the biology. Their effects have been absorbed into the scales used to measure population and time.</p>
-<p>Instead of asking about a particular population measured in individuals and a particular growth rate measured per day, the dimensionless equation describes logistic growth in terms of:</p>
+<h2>How to interpret the dimensionless equation</h2>
+<p>The equation</p>
 \[
-\text{fraction of carrying capacity }x
+\frac{dx}{d\tau}=x(1-x)
 \]
-<p>and</p>
+<p>has a direct interpretation because both variables are relative quantities:</p>
+<p>\(x\) tells us the <strong>fraction of carrying capacity</strong>, while \(\tau\) tells us <strong>time measured in natural growth-time units</strong>.</p>
+<div class="example"><strong>Example.</strong> If \(x=0.5\), the population is at half its carrying capacity. At this point,
 \[
-\text{time measured relative to the growth time scale }1/r.
-\]</p>
-<div class="example"><strong>This is the main benefit.</strong> Populations with different values of \(K\) and \(r\) can have the same dimensionless logistic equation. Their absolute sizes and speeds differ, but their underlying scaled dynamics have the same mathematical form.</div>
-
-<h2>Why nondimensionalisation is useful</h2>
-<p>Nondimensionalisation can make a model easier to understand because it separates <strong>absolute size</strong> from <strong>relative behaviour</strong>. It can reduce the number of parameters appearing explicitly in equations, reveal important combinations of parameters, allow systems with different units or sizes to be compared, and improve the interpretation of which scales control the dynamics.</p>
-<p>In more complicated biological models, not every parameter disappears. Instead, several dimensional parameters may combine into a smaller number of dimensionless groups. Those groups often determine important qualitative behaviour.</p>
-
-<h2>Returning to biological units</h2>
-<p>The dimensionless variables do not replace the original biological quantities permanently. After analysing \(x\) and \(\tau\), we can return to the original variables using</p>
-\[
-N=Kx,
-\qquad
-t=\frac{\tau}{r}.
+\frac{dx}{d\tau}=0.5(1-0.5)=0.25.
 \]
-<p>This converts dimensionless results back into individuals and real time.</p>
+The value \(0.25\) is a dimensionless rate of change: relative population size is increasing at 0.25 per unit of scaled time.</div>
+<p>The structure is now easy to read. When \(x\) is close to 0, the population can grow. As \(x\) approaches 1, the factor \(1-x\) approaches 0, so growth slows. At \(x=1\),</p>
+\[
+\frac{dx}{d\tau}=0,
+\]
+<p>which means the population has reached carrying capacity.</p>
 
-<div class="box"><strong>Key idea.</strong> Scaling means measuring a quantity relative to a natural reference size. Nondimensionalisation uses those scales to remove units. We do this not because the original units are unimportant, but because relative quantities can reveal the common mathematical structure hidden behind different biological sizes, rates and units.</div>
+<h2>Why is this useful?</h2>
+<p>The original model contains the particular values \(r\) and \(K\). The dimensionless model focuses on the <strong>shape and relative behaviour</strong> of logistic growth. Two populations can have very different carrying capacities and growth rates but still obey the same scaled equation.</p>
+<p>Nondimensionalisation can therefore make models easier to interpret and compare, reduce the number of parameters appearing explicitly, and reveal which parameter combinations actually control the behaviour.</p>
+<p>The parameters have not disappeared biologically. Their roles have been absorbed into the scales: \(K\) determines what counts as one unit of population and \(1/r\) determines what counts as one unit of time.</p>
+
+<h2>Returning to real biological quantities</h2>
+<p>After analysing the dimensionless model, we can recover the original quantities:</p>
+\[
+N=Kx,\qquad t=\frac{\tau}{r}.
+\]
+<p>For example, if \(K=1000\) and the dimensionless result gives \(x=0.8\), then</p>
+\[
+N=1000(0.8)=800\text{ individuals}.
+\]
+
+<div class="box"><strong>In one sentence.</strong> We scale to express biological quantities relative to natural reference values; this removes units and produces a dimensionless model whose underlying behaviour is often easier to see, interpret and compare.</div>
 </article></main></body></html>
