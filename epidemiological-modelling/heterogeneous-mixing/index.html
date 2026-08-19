@@ -1,1 +1,94 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Heterogeneous mixing | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><main class="section container"><a class="back-link" href="../">← Epidemiological Modelling</a><article class="lesson-content"><h1 class="section-title">Heterogeneous mixing</h1><p>Homogeneous mixing assumes that individuals interact without systematic differences. Heterogeneous mixing allows contact and transmission opportunities to vary between individuals or groups.</p><h2>Sources of heterogeneity</h2><p>Mixing can vary by age, household, workplace, school, geography, behaviour, occupation or network position.</p><h2>Why it changes epidemic dynamics</h2><p>Individuals with many contacts may both acquire and transmit infection more frequently. Concentrating transmission in highly connected groups can alter invasion thresholds, epidemic size and intervention effectiveness.</p><h2>Mathematical representation</h2><p>Heterogeneity may be represented using multiple compartments, contact matrices, spatial structure or explicit contact networks.</p><div class="box"><strong>Key idea.</strong> Heterogeneous mixing recognises that transmission opportunities are distributed unevenly across a population.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Heterogeneous mixing | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.lesson-content h3{font-size:1.2rem;margin-top:1.6rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.figure,.diagram{margin:1.5rem 0;padding:16px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg,.diagram svg{width:100%;min-width:680px;height:auto;display:block}.defs,.compare,.matrix-table{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td,.matrix-table th,.matrix-table td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th,.matrix-table th{background:#edf5f0}.matrix-table td{text-align:center}.axis{stroke:#53635a;stroke-width:1.6}.grid{stroke:#dfe7e2;stroke-width:1}.bar1{fill:#9fc6af}.bar2{fill:#69a080}.bar3{fill:#39815e}.line1{fill:none;stroke:#39815e;stroke-width:4}.line2{fill:none;stroke:#a07042;stroke-width:4}.gtext{font-size:13px;fill:#2d3c34}.glabel{font-size:15px;font-weight:700;fill:#26362e}.nodeA{fill:#edf5f0;stroke:#39815e;stroke-width:2}.nodeB{fill:#fff6e8;stroke:#a07042;stroke-width:2}.edge{stroke:#73877c;stroke-width:1.8}.edgeStrong{stroke:#39815e;stroke-width:3}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}
+</style>
+</head>
+<body><main class="section container"><a class="back-link" href="../">← Epidemiological Modelling</a><article class="lesson-content">
+<h1 class="section-title">Heterogeneous mixing</h1>
+<p><strong>Heterogeneous mixing</strong> means that people do not all mix in the same way. Some individuals or groups have more contacts, different types of contacts, or stronger transmission opportunities than others.</p>
+<div class="box"><strong>Core idea.</strong> Homogeneous mixing treats everyone as if they interact with the population in the same average way. Heterogeneous mixing recognises that real contact patterns are uneven.</div>
+
+<h2>Homogeneous mixing first</h2>
+<p>In a simple SIR model, the infection term is often written</p>
+\[\beta\frac{SI}{N}.\]
+<p>This form treats the population as if susceptible and infectious individuals mix uniformly. In effect, it assumes that any susceptible person is exposed to the same average infectious environment.</p>
+<div class="example"><strong>Interpretation.</strong> Homogeneous mixing does not mean every person literally meets every other person. It means the model ignores systematic differences in who meets whom.</div>
+
+<h2>What makes mixing heterogeneous?</h2>
+<p>Mixing can differ because of age, school, household, occupation, workplace, geography, behaviour, social activity, risk status, or network position.</p>
+<table class="compare"><tr><th>Source</th><th>Possible effect on mixing</th></tr><tr><td>Age</td><td>children may contact children more often; adults may mix strongly at work</td></tr><tr><td>Household</td><td>repeated close contacts occur within the same home</td></tr><tr><td>Occupation</td><td>some jobs create many more person-to-person contacts</td></tr><tr><td>Behaviour</td><td>some people attend more gatherings or have more social contacts</td></tr><tr><td>Geography</td><td>people mix more within nearby locations than with distant populations</td></tr><tr><td>Network position</td><td>some individuals are connected to many others and can link otherwise separate groups</td></tr></table>
+
+<h2>A simple two-group example</h2>
+<p>Suppose the population contains two groups:</p>
+<table class="defs"><tr><th>Group</th><th>Contact behaviour</th></tr><tr><td>Group A</td><td>lower contact rate</td></tr><tr><td>Group B</td><td>higher contact rate</td></tr></table>
+<p>If Group A averages 4 relevant contacts per day and Group B averages 12, then the two groups do not experience the same exposure opportunities.</p>
+<div class="figure"><svg viewBox="0 0 760 390" role="img" aria-label="Different contact rates in two groups"><line class="axis" x1="95" y1="315" x2="690" y2="315"/><line class="axis" x1="95" y1="55" x2="95" y2="315"/><rect class="bar1" x="190" y="228" width="130" height="87"/><rect class="bar3" x="440" y="55" width="130" height="260"/><text class="glabel" x="255" y="350" text-anchor="middle">Group A</text><text class="glabel" x="505" y="350" text-anchor="middle">Group B</text><text class="gtext" x="255" y="214" text-anchor="middle">4 contacts/day</text><text class="gtext" x="505" y="42" text-anchor="middle">12 contacts/day</text><text class="glabel" x="28" y="190" text-anchor="middle" transform="rotate(-90 28 190)">relevant contact rate</text></svg></div>
+<p>Group B may be more likely both to <strong>acquire infection</strong> and, once infected, to <strong>transmit infection</strong> because it participates in more contacts.</p>
+
+<h2>Why the average can hide important structure</h2>
+<p>The average contact rate in the example is 8 contacts per day. A homogeneous model could therefore treat everyone as if they had 8 contacts.</p>
+<p>But the real structure is different:</p>
+\[4\quad\text{contacts/day in Group A},\qquad 12\quad\text{contacts/day in Group B}.\]
+<p>Replacing these with a single average removes information about which group experiences the most transmission opportunities.</p>
+<div class="box"><strong>Important.</strong> Two populations can have the same overall average contact rate but very different epidemic dynamics if contacts are distributed differently across people or groups.</div>
+
+<h2>Heterogeneity can occur between groups</h2>
+<p>One common approach is to divide the population into groups and specify how strongly each group mixes with the others. A contact matrix can be used:</p>
+<table class="matrix-table"><tr><th></th><th>Group A</th><th>Group B</th></tr><tr><th>Group A</th><td>6</td><td>2</td></tr><tr><th>Group B</th><td>2</td><td>10</td></tr></table>
+<p>Here the diagonal values are larger, so each group mixes more strongly with itself than with the other group. This is one form of <strong>assortative mixing</strong>.</p>
+<p>The force of infection for group \(i\) can then be written as</p>
+\[\lambda_i=q_i\sum_j c_{ij}\frac{I_j}{N_j}.\]
+<p>This allows the infection pressure experienced by one group to differ from the infection pressure experienced by another.</p>
+
+<h2>Heterogeneity can also occur between individuals</h2>
+<p>Not every difference needs to be represented by broad groups. Individuals can differ in the number of contacts they have. A contact network represents people as nodes and contacts as links.</p>
+<div class="diagram"><svg viewBox="0 0 780 430" role="img" aria-label="Contact network with low and high degree individuals"><line class="edge" x1="150" y1="110" x2="310" y2="180"/><line class="edge" x1="150" y1="110" x2="130" y2="270"/><line class="edge" x1="310" y1="180" x2="500" y2="100"/><line class="edgeStrong" x1="310" y1="180" x2="510" y2="220"/><line class="edgeStrong" x1="310" y1="180" x2="470" y2="340"/><line class="edgeStrong" x1="310" y1="180" x2="240" y2="340"/><line class="edgeStrong" x1="310" y1="180" x2="610" y2="330"/><circle class="nodeA" cx="150" cy="110" r="32"/><circle class="nodeA" cx="130" cy="270" r="32"/><circle class="nodeB" cx="310" cy="180" r="38"/><circle class="nodeA" cx="500" cy="100" r="32"/><circle class="nodeA" cx="510" cy="220" r="32"/><circle class="nodeA" cx="470" cy="340" r="32"/><circle class="nodeA" cx="240" cy="340" r="32"/><circle class="nodeA" cx="610" cy="330" r="32"/><text class="gtext" x="310" y="185" text-anchor="middle">high</text><text class="gtext" x="310" y="202" text-anchor="middle">degree</text><text class="gtext" x="150" y="114" text-anchor="middle">low</text><text class="gtext" x="150" y="131" text-anchor="middle">degree</text><text class="glabel" x="390" y="405" text-anchor="middle">more links = more contact opportunities</text></svg></div>
+<p>The highlighted central person has many connections. In network language, this person has a high <strong>degree</strong>. If infected, such an individual may have more opportunities to pass infection onward.</p>
+
+<h2>Why highly connected individuals matter</h2>
+<p>Suppose one person has 2 contacts and another has 20. The second person has many more routes through which infection can enter or leave their local network.</p>
+<p>This does not mean that every highly connected person will cause a large outbreak. Transmission is still probabilistic. But, on average, highly connected individuals can contribute disproportionately to spread.</p>
+<div class="flow"><span>more contacts</span><b>→</b><span>more exposure opportunities</span><b>→</b><span>more possible onward transmission</span></div>
+
+<h2>Heterogeneous susceptibility and infectiousness</h2>
+<p>Mixing is only one source of heterogeneity. Two people with the same contact pattern may still differ biologically.</p>
+<table class="defs"><tr><th>Type of heterogeneity</th><th>Meaning</th></tr><tr><td>Contact heterogeneity</td><td>different numbers or patterns of contacts</td></tr><tr><td>Susceptibility heterogeneity</td><td>different probability of becoming infected after exposure</td></tr><tr><td>Infectiousness heterogeneity</td><td>different probability of transmitting once infected</td></tr><tr><td>Outcome heterogeneity</td><td>different probabilities of severe disease, hospitalisation or death</td></tr></table>
+<p>A structured force of infection can separate these effects:</p>
+\[\lambda_i=s_i\sum_j c_{ij}\tau_j\frac{I_j}{N_j},\]
+<p>where \(s_i\) represents relative susceptibility of the receiving group and \(\tau_j\) represents relative infectiousness of the source group.</p>
+
+<h2>How heterogeneous mixing changes epidemic curves</h2>
+<p>If a highly connected group becomes infected early, transmission can initially rise faster than a homogeneous model using the same population-average contact rate might suggest. Later, that high-contact group may also lose susceptibility faster.</p>
+<div class="figure"><svg viewBox="0 0 780 420" role="img" aria-label="Illustrative epidemic curves under homogeneous and heterogeneous mixing"><line class="axis" x1="85" y1="330" x2="720" y2="330"/><line class="axis" x1="85" y1="45" x2="85" y2="330"/><path class="line1" d="M85 327 C150 325 195 280 245 160 C285 75 340 85 390 180 C440 270 510 320 720 329"/><path class="line2" d="M85 328 C170 327 230 310 290 230 C350 150 415 145 470 215 C525 280 590 320 720 329"/><text class="glabel" x="400" y="380" text-anchor="middle">time</text><text class="glabel" x="28" y="190" text-anchor="middle" transform="rotate(-90 28 190)">infectious prevalence</text><line x1="475" y1="65" x2="520" y2="65" class="line1"/><text class="gtext" x="530" y="70">heterogeneous example</text><line x1="475" y1="92" x2="520" y2="92" class="line2"/><text class="gtext" x="530" y="97">homogeneous example</text></svg></div>
+<p>The figure is illustrative only. It shows that redistributing the same average level of contact can change the timing and height of the epidemic peak.</p>
+
+<h2>Heterogeneous mixing and interventions</h2>
+<p>When transmission is unevenly distributed, targeted interventions can have a different effect from uniform interventions.</p>
+<p>For example, reducing contacts in a highly connected group may have a larger effect on transmission than applying the same contact reduction to a group with relatively few contacts.</p>
+<div class="example"><strong>Example.</strong> If Group B drives much of the transmission because it has a high contact rate, reducing Group B's contacts from 12 to 6 may change epidemic growth more than reducing Group A's contacts from 4 to 2, even though both are 50% reductions.</div>
+
+<h2>Heterogeneity and the reproduction number</h2>
+<p>In a structured population, transmission occurs through several group-to-group pathways. These can be collected into a next-generation matrix \(K\).</p>
+<p>The basic reproduction number is then</p>
+\[\boxed{R_0=\rho(K)},\]
+<p>where \(\rho(K)\) is the spectral radius. This means that \(R_0\) summarises the combined effect of all structured transmission pathways, rather than depending on one single average contact rate.</p>
+
+<h2>When is heterogeneous mixing important?</h2>
+<p>It becomes especially important when contact patterns or risks differ strongly across the population, when interventions target particular groups, when age-specific or occupational effects matter, or when a small highly connected subgroup may drive much of transmission.</p>
+<p>If mixing differences are small and the modelling question is broad, a homogeneous model may still be useful because it is simpler and requires fewer parameters.</p>
+
+<h2>Ways to represent heterogeneous mixing</h2>
+<table class="compare"><tr><th>Approach</th><th>What it represents</th></tr><tr><td>Multiple compartments</td><td>separate population groups with different parameters</td></tr><tr><td>Contact matrix</td><td>different contact rates within and between groups</td></tr><tr><td>Spatial model</td><td>mixing that depends on location or movement</td></tr><tr><td>Contact network</td><td>explicit person-to-person connections</td></tr><tr><td>Individual-based model</td><td>individual differences in behaviour, biology and contact patterns</td></tr></table>
+
+<h2>Important limitation</h2>
+<p>Adding heterogeneity improves realism only if the additional structure is supported by data or justified assumptions. More groups and parameters can make the model harder to estimate, calibrate and interpret.</p>
+<div class="box"><strong>Key idea.</strong> Heterogeneous mixing means transmission opportunities are distributed unevenly. Some groups or individuals have more contact, stronger exposure, or greater transmission potential than others. Modelling that structure can change predicted epidemic growth, peak size, intervention effects and the interpretation of \(R_0\).</div>
+</article></main></body></html>
