@@ -1,1 +1,162 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stochastic processes | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Stochastic processes</h1><p>A stochastic process is a collection of random variables indexed by time, commonly written</p>\[\{X(t):t\in T\}.\]<p>For each time \(t\), \(X(t)\) is a random variable. One realised sequence through time is called a sample path or trajectory.</p><h2>State and time</h2><p>Time may be discrete or continuous, and the state space may also be discrete or continuous. These choices produce different classes of stochastic models.</p><h2>Biological example</h2><p>If \(I(t)\) is the number of infectious individuals at time \(t\), repeated epidemics can generate different paths even when they start from the same \(I(0)\).</p><div class="box"><strong>Key idea.</strong> A stochastic process describes how a random state evolves through time, not merely one random observation.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stochastic processes | MathsBio</title><link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.lesson-content h3{font-size:1.2rem;margin-top:1.6rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.figure{margin:1.5rem 0;padding:16px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:700px;height:auto;display:block}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.axis{stroke:#53635a;stroke-width:1.6}.path1{fill:none;stroke:#39815e;stroke-width:3}.path2{fill:none;stroke:#a07042;stroke-width:3}.path3{fill:none;stroke:#6f6b9a;stroke-width:3}.dist{fill:#69a080}.guide{stroke:#9eaaa3;stroke-width:1;stroke-dasharray:5 5}.gtext{font-size:13px;fill:#2d3c34}.glabel{font-size:15px;font-weight:700;fill:#26362e}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Stochastic processes</h1>
+<p>A random variable describes an uncertain numerical quantity. Biological systems, however, usually <strong>change through time</strong>. A stochastic process extends the idea of a random variable so that we can describe an uncertain state at every time of interest.</p>
+<div class="box"><strong>Core idea.</strong> A stochastic process describes how a <strong>random state evolves through time</strong>. At each time there is a random variable; together, these random variables describe the whole random evolution of the system.</div>
+
+<h2>From one random variable to a process</h2>
+<p>Suppose</p>
+\[I(10)=\text{number of infectious individuals on day 10}.\]
+<p>This is one random variable. Before observing the epidemic, we do not know whether \(I(10)\) will be 0, 4, 20 or another possible value.</p>
+<p>But we may want to describe the infectious population throughout the epidemic:</p>
+\[I(0),\ I(1),\ I(2),\ I(3),\ldots\]
+<p>or, if time is continuous,</p>
+\[I(t),\qquad t\geq0.\]
+<p>The collection of these time-indexed random variables is a stochastic process.</p>
+<div class="flow"><span>one time</span><b>→</b><span>one random variable \(I(10)\)</span><b>→</b><span>many times</span><b>→</b><span>stochastic process \(I(t)\)</span></div>
+
+<h2>Formal notation</h2>
+<p>A stochastic process is commonly written</p>
+\[\boxed{\{X(t):t\in T\}}.\]
+<table class="defs"><tr><th>Symbol</th><th>Meaning</th></tr><tr><td>\(X(t)\)</td><td>the random state of the system at time \(t\)</td></tr><tr><td>\(t\)</td><td>a particular time</td></tr><tr><td>\(T\)</td><td>the set of times considered</td></tr><tr><td>\(\{X(t):t\in T\}\)</td><td>the complete stochastic process</td></tr></table>
+<p>For every fixed time \(t\), \(X(t)\) is a random variable.</p>
+<div class="example"><strong>Example.</strong> If \(X(t)=I(t)\), then \(I(5)\) is the random number infectious on day 5, \(I(20)\) is the random number infectious on day 20, and the complete collection \(I(t)\) describes how the infectious population evolves.</div>
+
+<h2>Why is \(X(t)\) random?</h2>
+<p>Imagine repeating the same epidemic many times with the same initial state and the same model parameters. Random infection and recovery events can occur at different times and in different orders.</p>
+<p>Therefore, at day 10, different repetitions may contain different numbers of infectious individuals. So \(I(10)\) has a probability distribution.</p>
+<p>The same is true at day 20, day 30, and every other time. The process describes all these linked random quantities.</p>
+
+<h2>One process, many possible trajectories</h2>
+<p>A stochastic process is the <strong>probabilistic model</strong>. It contains all the possible ways the system may evolve, together with their probabilities.</p>
+<p>When one particular sequence of random events occurs, it produces one <strong>sample path</strong>, also called a <strong>realisation</strong> or <strong>trajectory</strong>.</p>
+<div class="figure"><svg viewBox="0 0 800 430" role="img" aria-label="Three sample paths from the same stochastic process"><line class="axis" x1="85" y1="340" x2="735" y2="340"/><line class="axis" x1="85" y1="45" x2="85" y2="340"/><path class="path1" d="M85 315 L125 305 L165 275 L205 285 L245 235 L285 195 L325 145 L365 165 L405 115 L450 150 L495 205 L540 250 L590 290 L650 315 L735 328"/><path class="path2" d="M85 315 L125 295 L165 305 L205 260 L245 275 L285 225 L325 245 L365 205 L410 220 L455 270 L510 295 L575 315 L650 325 L735 330"/><path class="path3" d="M85 315 L125 320 L165 310 L205 325 L245 330 L735 332"/><text class="glabel" x="410" y="395" text-anchor="middle">time</text><text class="glabel" x="28" y="200" text-anchor="middle" transform="rotate(-90 28 200)">number infectious</text><text class="gtext" x="510" y="80">trajectory 1: large outbreak</text><text class="gtext" x="510" y="103">trajectory 2: smaller outbreak</text><text class="gtext" x="510" y="126">trajectory 3: early extinction</text></svg></div>
+<div class="box"><strong>Important distinction.</strong> The stochastic process is <strong>not one of these curves</strong>. It is the probability model that can generate all of them. A trajectory is one realised outcome from that process.</div>
+
+<h2>Before and after observing the process</h2>
+<p>Before an epidemic unfolds, \(I(t)\) is uncertain and is treated as a random variable at each time. After observing one epidemic, we see one particular value at each time.</p>
+<p>For example, before day 10 we may have</p>
+\[P(I(10)=0)=0.25,\quad P(I(10)=1)=0.10,\quad\ldots\]
+<p>After day 10 is observed, that particular epidemic might have</p>
+\[I(10)=7.\]
+<p>The observed value 7 is one realisation; it does not remove the probability distribution that described what could have happened before observation.</p>
+
+<h2>Two kinds of variation must be understood</h2>
+<p>A stochastic process contains uncertainty in the <strong>state at a fixed time</strong> and uncertainty in the <strong>whole path through time</strong>.</p>
+<div class="figure"><svg viewBox="0 0 820 430" role="img" aria-label="Several trajectories intersecting a fixed time to show distribution across paths"><line class="axis" x1="80" y1="340" x2="740" y2="340"/><line class="axis" x1="80" y1="45" x2="80" y2="340"/><path class="path1" d="M80 315 C170 300 235 230 310 130 C385 75 460 155 530 235 C590 295 660 320 740 330"/><path class="path2" d="M80 315 C170 310 235 270 310 210 C385 155 455 195 530 260 C600 310 670 325 740 330"/><path class="path3" d="M80 315 C150 320 220 328 310 330 C450 332 600 332 740 332"/><line class="guide" x1="390" y1="45" x2="390" y2="340"/><circle cx="390" cy="82" r="6" fill="#39815e"/><circle cx="390" cy="160" r="6" fill="#a07042"/><circle cx="390" cy="331" r="6" fill="#6f6b9a"/><text class="glabel" x="390" y="380" text-anchor="middle">fixed time t</text><text class="gtext" x="415" y="75">different possible X(t)</text><text class="gtext" x="415" y="98">values at the same time</text></svg></div>
+<p>If we draw a vertical line at a fixed time \(t\), different trajectories give different values of \(X(t)\). Those values form the probability distribution of the random variable \(X(t)\).</p>
+
+<h2>State: what are we tracking?</h2>
+<p>The <strong>state</strong> contains the information used to describe the biological system at a particular time.</p>
+<p>For a simple SIS epidemic, the state might be only</p>
+\[X(t)=I(t),\]
+<p>because with a fixed population \(N\),</p>
+\[S(t)=N-I(t).\]
+<p>For an SEIR epidemic, the state may need several components:</p>
+\[\mathbf{X}(t)=\big(S(t),E(t),I(t),R(t)\big).\]
+<p>This is a <strong>vector-valued stochastic process</strong>. Each component is random, and together they describe the epidemic state.</p>
+<div class="example"><strong>Example.</strong> If \(\mathbf{X}(t)=(900,40,35,25)\), then at that instant the realised state contains 900 susceptible, 40 exposed, 35 infectious and 25 recovered individuals.</div>
+
+<h2>State space: all states the model allows</h2>
+<p>The <strong>state space</strong> is the set of all possible values that the state can take.</p>
+<p>If \(I(t)\) counts infectious individuals in a population of size \(N\), then</p>
+\[\mathcal{S}=\{0,1,2,\ldots,N\}.\]
+<p>For a compartmental epidemic with several counts, a state might be</p>
+\[(S,E,I,R),\]
+<p>subject to constraints such as</p>
+\[S+E+I+R=N.\]
+<div class="box"><strong>Do not confuse these.</strong> The <strong>state</strong> is where the system is now. The <strong>state space</strong> is the collection of every state the model permits.</div>
+
+<h2>Time can be discrete or continuous</h2>
+<h3>Discrete time</h3>
+<p>The system is considered at separate times:</p>
+\[t=0,1,2,3,\ldots\]
+<p>For example, infection counts may be updated once per day.</p>
+<h3>Continuous time</h3>
+<p>The system can change at any instant:</p>
+\[t\geq0.\]
+<p>An infection might occur at time 2.37 days and a recovery at 2.91 days.</p>
+<div class="box"><strong>Key distinction.</strong> Discrete time asks what happens from one scheduled time point to the next. Continuous time allows events to occur whenever their random event times occur.</div>
+
+<h2>The state can also be discrete or continuous</h2>
+<p>Time and state are separate modelling choices.</p>
+<table class="compare"><tr><th>Time</th><th>State</th><th>Example</th></tr><tr><td>discrete</td><td>discrete</td><td>number infected recorded and updated at daily steps</td></tr><tr><td>continuous</td><td>discrete</td><td>individual infection and recovery events occurring at arbitrary times</td></tr><tr><td>discrete</td><td>continuous</td><td>continuous-valued biomass measured at regular time points</td></tr><tr><td>continuous</td><td>continuous</td><td>a continuously varying stochastic concentration or diffusion process</td></tr></table>
+<p>This distinction is fundamental. A <strong>continuous-time</strong> stochastic process does not necessarily have a continuous-valued state.</p>
+
+<h2>Continuous time does not mean a smooth path</h2>
+<p>This is especially important in epidemic modelling. A continuous-time Markov chain may have continuous time but integer-valued population counts.</p>
+<p>If one infection occurs,</p>
+\[I\longrightarrow I+1.\]
+<p>If one recovery occurs,</p>
+\[I\longrightarrow I-1.\]
+<p>The event can happen at any continuous time, but the state changes in discrete jumps.</p>
+<div class="figure"><svg viewBox="0 0 800 400" role="img" aria-label="Continuous-time process with discrete jumps"><line class="axis" x1="85" y1="325" x2="735" y2="325"/><line class="axis" x1="85" y1="45" x2="85" y2="325"/><path class="path1" d="M85 285 H170 V245 H260 V205 H330 V245 H430 V165 H515 V205 H620 V245 H735"/><text class="glabel" x="410" y="375" text-anchor="middle">continuous time</text><text class="glabel" x="28" y="190" text-anchor="middle" transform="rotate(-90 28 190)">integer-valued state</text><text class="gtext" x="470" y="90">events occur at arbitrary times</text><text class="gtext" x="470" y="112">state changes by jumps</text></svg></div>
+
+<h2>A stochastic process is more than independent random variables</h2>
+<p>The random variables \(X(1),X(2),X(3),\ldots\) are usually <strong>related</strong>. What happens today affects what can happen tomorrow.</p>
+<p>If an epidemic has 100 infectious people today, its distribution tomorrow will usually be different from the distribution tomorrow if it has only 1 infectious person today.</p>
+<p>Therefore a stochastic process must describe not only distributions at individual times, but also the <strong>dependence through time</strong>.</p>
+<div class="box"><strong>Why this matters.</strong> Simply specifying the distribution of \(X(t)\) separately at every time does not fully describe how trajectories behave. We also need rules connecting the states through time.</div>
+
+<h2>Transition probabilities describe movement between states</h2>
+<p>For a discrete-state process, we are often interested in probabilities such as</p>
+\[P(X(t+\Delta t)=j\mid X(t)=i).\]
+<p>This reads:</p>
+<p><strong>“Given that the system is currently in state \(i\), what is the probability that it is in state \(j\) after time \(\Delta t\)?”</strong></p>
+<p>These transition probabilities provide the mathematical rules governing how the stochastic process moves through its state space.</p>
+
+<h2>A simple SIS process</h2>
+<p>Suppose \(I(t)=i\) people are currently infectious. In a simple stochastic SIS model, over a sufficiently short interval \(\Delta t\), three possibilities dominate:</p>
+<table class="defs"><tr><th>Event</th><th>New state</th><th>Approximate probability</th></tr><tr><td>infection</td><td>\(i+1\)</td><td>\(b(i)\Delta t\)</td></tr><tr><td>recovery</td><td>\(i-1\)</td><td>\(d(i)\Delta t\)</td></tr><tr><td>no event</td><td>\(i\)</td><td>\(1-[b(i)+d(i)]\Delta t\)</td></tr></table>
+<p>Here \(b(i)\) and \(d(i)\) are event rates when the current state is \(i\).</p>
+<p>This simple table already defines the local random behaviour of a continuous-time birth–death-type epidemic process.</p>
+
+<h2>Why the current state matters</h2>
+<p>The infection rate may depend on how many susceptible and infectious individuals currently exist. For example,</p>
+\[b(i)=\beta\frac{(N-i)i}{N}.\]
+<p>When \(i\) changes, the rate changes. Therefore the future probability law changes with the current state.</p>
+<p>This leads naturally to the <strong>Markov property</strong>: under a Markov model, once the present state is known, earlier history provides no additional information needed to determine the future transition probabilities. That is the subject of the next page.</p>
+
+<h2>Deterministic trajectory versus stochastic process</h2>
+<table class="compare"><tr><th>Deterministic model</th><th>Stochastic process</th></tr><tr><td>fixed initial state and parameters give one trajectory</td><td>fixed initial state and parameters give a distribution of possible trajectories</td></tr><tr><td>state is determined by the equations</td><td>state at future times is a random variable</td></tr><tr><td>typically focuses on a predicted path</td><td>can quantify probability, variability and risk</td></tr><tr><td>repeating the calculation gives the same path</td><td>repeated simulations may give different paths</td></tr></table>
+
+<h2>Expectation of a stochastic process</h2>
+<p>Because \(X(t)\) is a random variable at each time, it has an expected value:</p>
+\[m(t)=E[X(t)].\]
+<p>This produces a function of time called the <strong>mean function</strong>.</p>
+<p>Similarly,</p>
+\[\operatorname{Var}(X(t))\]
+<p>describes how spread out the possible states are at time \(t\).</p>
+<div class="example"><strong>Important.</strong> The mean trajectory \(E[X(t)]\) summarises the process, but it is not the whole stochastic process. Two processes can have similar means but very different variances, extinction probabilities or extreme outcomes.</div>
+
+<h2>Dependence between different times</h2>
+<p>We may also ask how the state at one time is related to the state at another. Quantities such as</p>
+\[\operatorname{Cov}(X(s),X(t))\]
+<p>measure dependence between the process at times \(s\) and \(t\). This temporal dependence is one reason stochastic-process theory goes beyond ordinary single-variable probability.</p>
+
+<h2>Important biological stochastic processes</h2>
+<table class="compare"><tr><th>Process</th><th>Biological use</th></tr><tr><td>discrete-time Markov chain</td><td>random state changes at fixed time steps</td></tr><tr><td>continuous-time Markov chain</td><td>individual biological events occurring at random continuous times</td></tr><tr><td>birth–death process</td><td>population growth, extinction and epidemic counts</td></tr><tr><td>Poisson process</td><td>counting random events occurring through time under simple assumptions</td></tr><tr><td>branching process</td><td>early epidemic spread and extinction probabilities</td></tr><tr><td>diffusion process / SDE</td><td>continuous stochastic fluctuations in biological quantities</td></tr></table>
+
+<h2>What questions can a stochastic process answer?</h2>
+<p>Once the biological system is represented as a stochastic process, we can ask questions such as</p>
+\[P(I(t)=0),\]
+<p>the probability infection has disappeared by time \(t\);</p>
+\[P\left(\max_t I(t)>K\right),\]
+<p>the probability the infectious population exceeds a threshold \(K\); or</p>
+\[E[I(t)],\qquad \operatorname{Var}(I(t)),\]
+<p>the expected infectious population and its variability through time.</p>
+<p>These are questions that a single deterministic trajectory cannot answer by itself.</p>
+
+<h2>Process, trajectory and simulation</h2>
+<p>These three terms are closely related but should not be confused.</p>
+<table class="defs"><tr><th>Term</th><th>Meaning</th></tr><tr><td>stochastic process</td><td>the complete probability model governing random evolution through time</td></tr><tr><td>trajectory / sample path</td><td>one possible realised evolution of that process</td></tr><tr><td>simulation</td><td>a computational procedure used to generate a trajectory according to the model rules</td></tr></table>
+<div class="flow"><span>stochastic model</span><b>→</b><span>random events</span><b>→</b><span>one simulated trajectory</span><b>→</b><span>repeat many times</span><b>→</b><span>distribution of outcomes</span></div>
+
+<h2>Where we go next</h2>
+<p>We now know what a stochastic process is: a random state evolving through time. The next question is how much of the past we need in order to describe its future.</p>
+<p>This leads to the <strong>Markov property</strong>, which provides the foundation for the discrete-time and continuous-time Markov chains developed in the following sections.</p>
+<div class="box"><strong>Key idea.</strong> A stochastic process is a <strong>family of connected random variables indexed by time</strong>. At each time, the state has a probability distribution; across time, the states are linked by transition rules. One realised history is a trajectory, while the stochastic process describes the entire collection of possible trajectories and their probabilities.</div>
+</article></main></body></html>
