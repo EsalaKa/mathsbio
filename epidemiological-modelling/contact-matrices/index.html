@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Contact matrices | MathsBio</title>
 <link rel="stylesheet" href="../../style.css">
-<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\)']],['\\[','\\]']]}};</script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <style>
 .lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.lesson-content h3{font-size:1.2rem;margin-top:1.6rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.figure{margin:1.5rem 0;padding:16px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:680px;height:auto;display:block}.defs,.matrix-table,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.matrix-table th,.matrix-table td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.matrix-table th,.compare th{background:#edf5f0}.matrix-table td{text-align:center}.axis{stroke:#53635a;stroke-width:1.6}.grid{stroke:#dfe7e2;stroke-width:1}.bar1{fill:#a7c7b4}.bar2{fill:#6e9f82}.bar3{fill:#39815e}.gtext{font-size:13px;fill:#2d3c34}.glabel{font-size:15px;font-weight:700;fill:#26362e}.cell1{fill:#edf5f0;stroke:#d1ddd6}.cell2{fill:#cfe2d7;stroke:#d1ddd6}.cell3{fill:#9fc6af;stroke:#d1ddd6}.cell4{fill:#69a080;stroke:#d1ddd6}.cell5{fill:#39815e;stroke:#d1ddd6}.white{fill:#fff;font-size:15px;font-weight:700}.dark{fill:#24352c;font-size:15px;font-weight:700}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}
@@ -28,10 +28,16 @@
 <div class="box"><strong>Convention.</strong> On this page, the <strong>row index \(i\)</strong> is the group making or experiencing the contacts, and the <strong>column index \(j\)</strong> is the group contacted. This convention must always be stated because some sources use the transpose.</div>
 
 <h2>Step 3: place all contact rates into a matrix</h2>
-<p>For three groups, the contact matrix is</p>
+<p>We now collect all the individual contact rates into one object called the <strong>contact matrix</strong>, written \(C\).</p>
 \[C=(c_{ij}).\]
-<p>Instead of reading this abstractly, it is easier to see the entries directly:</p>
+<p>This notation means:</p>
+<div class="box"><strong>\(C\)</strong> is the whole matrix, while <strong>\(c_{ij}\)</strong> is one particular entry inside it. The first subscript \(i\) tells us the <strong>row</strong>, and therefore the group whose contact behaviour we are describing. The second subscript \(j\) tells us the <strong>column</strong>, and therefore the group they are contacting.</div>
+<p>For example, \(c_{12}\) means:</p>
+<p><strong>row 1 = children</strong>, and <strong>column 2 = adults</strong>. Therefore \(c_{12}\) is the average contact rate of a child with adults.</p>
+<div class="example"><strong>Example.</strong> If \(c_{12}=3\), then the entry in row 1, column 2 is 3. This means one child has, on average, 3 relevant contacts with adults per unit time.</div>
+<p>For three groups, the matrix contains nine contact-rate entries:</p>
 <table class="matrix-table"><tr><th></th><th>Contact with children \(j=1\)</th><th>Contact with adults \(j=2\)</th><th>Contact with older adults \(j=3\)</th></tr><tr><th>Children \(i=1\)</th><td>\(c_{11}\)</td><td>\(c_{12}\)</td><td>\(c_{13}\)</td></tr><tr><th>Adults \(i=2\)</th><td>\(c_{21}\)</td><td>\(c_{22}\)</td><td>\(c_{23}\)</td></tr><tr><th>Older adults \(i=3\)</th><td>\(c_{31}\)</td><td>\(c_{32}\)</td><td>\(c_{33}\)</td></tr></table>
+<p>Each <strong>row</strong> therefore gives the complete contact pattern for one group. For example, the first row \(c_{11},c_{12},c_{13}\) describes how children contact children, adults and older adults.</p>
 <p>The diagonal entries \(c_{11},c_{22},c_{33}\) are contacts <strong>within the same group</strong>. The off-diagonal entries describe contacts <strong>between different groups</strong>.</p>
 
 <h2>Step 4: interpret a numerical matrix</h2>
