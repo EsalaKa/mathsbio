@@ -1,1 +1,128 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Generator matrices | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Generator matrices</h1><p>The generator matrix \(Q\) contains the instantaneous transition rates of a finite-state CTMC.</p><h2>Entries</h2><p>For \(i\ne j\), \(q_{ij}\ge0\) is the rate from state \(i\) to state \(j\). The diagonal entry is</p>\[q_{ii}=-\sum_{j\ne i}q_{ij},\]<p>so each row of \(Q\) sums to zero.</p><h2>Relation to transition probabilities</h2><p>For a small time \(h\),</p>\[P(h)=I+hQ+o(h).\]<p>Under standard finite-state assumptions,</p>\[P(t)=e^{tQ}.\]<div class="box"><strong>Key idea.</strong> A transition matrix contains probabilities; a generator matrix contains continuous-time transition rates.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Generator matrices | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.matrix,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.matrix th,.matrix td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.matrix th,.compare th{background:#edf5f0}.matrix td{text-align:center}.diagram{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.diagram svg{width:100%;min-width:700px;height:auto;display:block}.node{fill:#edf5f0;stroke:#39815e;stroke-width:2}.arrow{stroke:#53635a;stroke-width:2;fill:none}.label{font-size:13px;fill:#2d3c34}.nlabel{font-size:15px;font-weight:700;fill:#26362e}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Generator matrices</h1>
+<p>A <strong>generator matrix</strong> organises the transition <strong>rates</strong> of a continuous-time Markov chain (CTMC). It plays a role in continuous time similar to the role played by a transition matrix in discrete time, but its entries are rates rather than one-step probabilities.</p>
+<div class="box"><strong>Core idea.</strong> From the current state, the generator tells us which jumps are possible and how quickly they occur. From these rates we can recover short-time transition probabilities, waiting times and the probability distribution at later times.</div>
+
+<h2>Why do we need a generator?</h2>
+<p>In a DTMC, time advances in fixed steps, so it is natural to specify the probability of each transition during one step.</p>
+<p>In a CTMC, events can occur at any time. There is no fixed next time step. We therefore describe each possible transition by an <strong>instantaneous rate</strong>.</p>
+<p>The generator matrix</p>\[\boxed{Q=(q_{ij})}\]
+<p>collects all these rates into one object.</p>
+
+<h2>What does an off-diagonal entry mean?</h2>
+<p>For two different states \(i\ne j\),</p>\[\boxed{q_{ij}=\text{rate of transition from state }i\text{ to state }j}.\]
+<p>Therefore</p>\[q_{ij}\ge0\qquad(i\ne j).\]
+<p>If a transition is impossible directly, its rate is zero.</p>
+<div class="box"><strong>Read \(q_{ij}\) as “from \(i\), to \(j\), at this rate”.</strong></div>
+
+<h2>A simple three-state example</h2>
+<p>Suppose the possible transitions are</p>\[0\longrightarrow1\text{ at rate }2,\]\[1\longrightarrow0\text{ at rate }1,\qquad1\longrightarrow2\text{ at rate }3,\]\[2\longrightarrow1\text{ at rate }4.\]
+<div class="diagram"><svg viewBox="0 0 900 270" role="img" aria-label="Three-state continuous-time Markov chain transition-rate diagram"><defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53635a"/></marker></defs><rect class="node" x="70" y="95" width="160" height="65" rx="12"/><rect class="node" x="370" y="95" width="160" height="65" rx="12"/><rect class="node" x="670" y="95" width="160" height="65" rx="12"/><text class="nlabel" x="150" y="134" text-anchor="middle">State 0</text><text class="nlabel" x="450" y="134" text-anchor="middle">State 1</text><text class="nlabel" x="750" y="134" text-anchor="middle">State 2</text><path class="arrow" d="M230 110 C280 65 320 65 370 110" marker-end="url(#a)"/><text class="label" x="300" y="63" text-anchor="middle">rate 2</text><path class="arrow" d="M370 145 C320 195 280 195 230 145" marker-end="url(#a)"/><text class="label" x="300" y="210" text-anchor="middle">rate 1</text><path class="arrow" d="M530 110 C580 65 620 65 670 110" marker-end="url(#a)"/><text class="label" x="600" y="63" text-anchor="middle">rate 3</text><path class="arrow" d="M670 145 C620 195 580 195 530 145" marker-end="url(#a)"/><text class="label" x="600" y="210" text-anchor="middle">rate 4</text></svg></div>
+<p>The off-diagonal entries can therefore be placed immediately:</p>
+<table class="matrix"><tr><th>Current \ Next</th><th>0</th><th>1</th><th>2</th></tr><tr><th>0</th><td>diagonal</td><td>2</td><td>0</td></tr><tr><th>1</th><td>1</td><td>diagonal</td><td>3</td></tr><tr><th>2</th><td>0</td><td>4</td><td>diagonal</td></tr></table>
+
+<h2>What goes on the diagonal?</h2>
+<p>The diagonal entry is <strong>not a transition rate from a state to itself</strong>. It is defined as the negative of the total rate of leaving that state:</p>\[\boxed{q_{ii}=-\sum_{j\ne i}q_{ij}}.\]
+<p>For state 1, the process can leave at rate 1 toward state 0 or at rate 3 toward state 2. The total leaving rate is</p>\[1+3=4.\]
+<p>Therefore</p>\[q_{11}=-4.\]
+<p>Applying the same rule to every state gives</p>\[\boxed{Q=\begin{pmatrix}-2&2&0\\1&-4&3\\0&4&-4\end{pmatrix}}.\]
+
+<h2>Why are the diagonal entries negative?</h2>
+<p>This often looks strange at first because probabilities cannot be negative. But the generator does <strong>not</strong> contain probabilities.</p>
+<p>The positive off-diagonal entries describe probability flowing <em>into other states</em>. The negative diagonal entry represents the corresponding rate at which probability leaves the current state.</p>
+<div class="box"><strong>Positive off-diagonal entries = rates of specific jumps. Negative diagonal entry = total rate of leaving the current state, with a minus sign.</strong></div>
+
+<h2>Why does every row sum to zero?</h2>
+<p>Because</p>\[q_{ii}=-\sum_{j\ne i}q_{ij},\]
+<p>we have</p>\[\boxed{\sum_jq_{ij}=0}.\]
+<p>For row 1 in the example,</p>\[1-4+3=0.\]
+<p>This zero-sum structure is closely related to conservation of total probability.</p>
+
+<h2>From rates to short-time probabilities</h2>
+<p>Suppose the CTMC is currently in state \(i\). During a sufficiently short interval \(\Delta t\),</p>\[\boxed{P(i\to j)\approx q_{ij}\Delta t\qquad(i\ne j)}.\]
+<p>The probability of remaining in state \(i\) is approximately</p>\[P(i\to i)\approx1+q_{ii}\Delta t.\]
+<p>Because \(q_{ii}\) is negative, this is</p>\[P(i\to i)\approx1-\left(\sum_{j\ne i}q_{ij}\right)\Delta t.\]
+<p>So the generator contains exactly the rates needed to construct the short-time transition probabilities.</p>
+
+<h2>A numerical short-time example</h2>
+<p>For state 1 in our example,</p>\[q_{10}=1,\qquad q_{12}=3,\qquad q_{11}=-4.\]
+<p>Take \(\Delta t=0.01\). Then approximately</p>\[P(1\to0)=1(0.01)=0.01,\]\[P(1\to2)=3(0.01)=0.03,\]\[P(1\to1)=1-4(0.01)=0.96.\]
+<p>These add to 1:</p>\[0.01+0.03+0.96=1.\]
+<div class="box"><strong>This gives the meaning of the negative diagonal.</strong> It makes the probability of staying decrease by exactly the total probability assigned to leaving during the short interval.</div>
+
+<h2>The compact matrix form</h2>
+<p>For a small time \(h\), the transition-probability matrix satisfies</p>\[\boxed{P(h)=I+hQ+o(h)}.\]
+<p>Here \(I\) is the identity matrix and \(o(h)\) represents terms that become negligible compared with \(h\) as \(h\to0\).</p>
+<p>Ignoring these smaller terms for intuition gives</p>\[P(h)\approx I+hQ.\]
+<p>The identity matrix supplies the initial “stay where you are” probability 1, while \(hQ\) adjusts those probabilities according to the continuous-time transition rates.</p>
+
+<h2>Why is \(Q\) called the generator?</h2>
+<p>The generator describes how the transition-probability matrix begins to change at time zero:</p>\[\boxed{Q=\lim_{h\to0}\frac{P(h)-I}{h}}.\]
+<p>Equivalently,</p>\[Q=P'(0).\]
+<p>So \(Q\) gives the instantaneous rate of change of the transition probabilities at the starting moment.</p>
+<div class="box"><strong>This is the reason for the name.</strong> The local rate information in \(Q\) generates the transition probabilities over later times.</div>
+
+<h2>From the generator to transition probabilities at time \(t\)</h2>
+<p>For a finite time-homogeneous CTMC,</p>\[\boxed{P(t)=e^{tQ}}.\]
+<p>The matrix exponential is defined by the series</p>\[e^{tQ}=I+tQ+\frac{t^2Q^2}{2!}+\frac{t^3Q^3}{3!}+\cdots.\]
+<p>For very small \(t\), the higher powers of \(t\) are much smaller, giving</p>\[e^{tQ}\approx I+tQ,\]
+<p>which agrees with the short-time formula above.</p>
+<div class="warning"><strong>Do not interpret \(e^{tQ}\) by exponentiating each matrix entry separately.</strong> It is a matrix exponential, defined through matrix powers.</div>
+
+<h2>Generator matrix versus transition matrix</h2>
+<table class="compare"><tr><th>Transition matrix \(P\)</th><th>Generator matrix \(Q\)</th></tr><tr><td>contains probabilities</td><td>contains instantaneous rates off the diagonal</td></tr><tr><td>naturally used for DTMCs</td><td>naturally used for CTMCs</td></tr><tr><td>off-diagonal entries lie between 0 and 1</td><td>off-diagonal entries can exceed 1 because they are rates</td></tr><tr><td>rows sum to 1 in this convention</td><td>rows sum to 0</td></tr><tr><td>\(P^n\) gives \(n\)-step probabilities</td><td>\(e^{tQ}\) gives transition probabilities after continuous time \(t\)</td></tr></table>
+
+<h2>The generator also determines waiting times</h2>
+<p>If the process is currently in state \(i\), the total rate of leaving that state is</p>\[a(i)=\sum_{j\ne i}q_{ij}.\]
+<p>Because</p>\[q_{ii}=-a(i),\]
+<p>we can also write</p>\[\boxed{a(i)=-q_{ii}}.\]
+<p>The waiting time until the next jump is therefore</p>\[\boxed{T\sim\operatorname{Exp}(-q_{ii})}.\]
+<p>Its mean is</p>\[E[T]=\frac{1}{-q_{ii}}.\]
+
+<h2>The generator also determines which jump occurs</h2>
+<p>Once a jump occurs from state \(i\), the probability that it goes specifically to state \(j\) is</p>\[\boxed{P(i\to j\mid\text{a jump occurs})=\frac{q_{ij}}{-q_{ii}}},\qquad j\ne i.\]
+<p>For state 1 in our example, the total leaving rate is 4. Therefore</p>\[P(1\to0\mid\text{jump})=\frac14,\qquad P(1\to2\mid\text{jump})=\frac34.\]
+<p>Thus one row of \(Q\) determines both <strong>when</strong> the process leaves and <strong>where</strong> it goes.</p>
+
+<h2>Birth–death generator</h2>
+<p>For a birth–death process, state \(i\) can move only to its neighbours:</p>\[i\to i+1\text{ at rate }b(i),\qquad i\to i-1\text{ at rate }d(i).\]
+<p>Therefore the non-zero entries of row \(i\) are</p>\[\boxed{q_{i,i+1}=b(i)},\]\[\boxed{q_{i,i-1}=d(i)},\]\[\boxed{q_{ii}=-[b(i)+d(i)]}.\]
+<p>All other entries in that row are zero.</p>
+
+<h2>SIS epidemic generator</h2>
+<p>Let state \(i\) be the number of infectious individuals in an SIS epidemic with total population \(N\). Use</p>\[b(i)=\beta\frac{(N-i)i}{N},\qquad d(i)=\gamma i.\]
+<p>Then</p>\[q_{i,i+1}=\beta\frac{(N-i)i}{N},\]\[q_{i,i-1}=\gamma i,\]\[q_{ii}=-\left[\beta\frac{(N-i)i}{N}+\gamma i\right].\]
+<p>This single row translates the biological mechanisms of infection and recovery into the CTMC generator.</p>
+
+<h2>A small SIS generator written out</h2>
+<p>Suppose the infectious count can take states \(0,1,2,3\). Write</p>\[b_i=b(i),\qquad d_i=d(i).\]
+<p>If state 0 is absorbing, the generator has the structure</p>\[Q=\begin{pmatrix}0&0&0&0\\d_1&-(b_1+d_1)&b_1&0\\0&d_2&-(b_2+d_2)&b_2\\0&0&d_3&-d_3\end{pmatrix}.\]
+<p>The last state cannot move upward in this finite SIS example, so its only possible event is recovery.</p>
+
+<h2>How to build a generator from a biological model</h2>
+<div class="flow"><span>choose states</span><b>→</b><span>list possible events</span><b>→</b><span>derive event rates</span><b>→</b><span>place rates off diagonal</span><b>→</b><span>set each diagonal to minus row total</span></div>
+<p>This procedure is often more useful than memorising a particular matrix.</p>
+
+<h2>Absorbing states</h2>
+<p>If state \(i\) is absorbing, there are no transitions out of it. Therefore</p>\[q_{ij}=0\quad\text{for every }j.\]
+<p>The entire row is zero, including</p>\[q_{ii}=0.\]
+<p>For an epidemic without imported infection, \(I=0\) is often absorbing because no new infection can occur once there are no infectious individuals.</p>
+
+<h2>What does the generator tell us biologically?</h2>
+<p>The generator is more than a matrix of numbers. Each row describes the local stochastic behaviour of the biological system in one state.</p>
+<table class="defs"><tr><th>Part of row \(i\)</th><th>Biological interpretation</th></tr><tr><td>\(q_{ij}>0\)</td><td>a biological event can move the system from \(i\) to \(j\)</td></tr><tr><td>\(-q_{ii}\)</td><td>total rate at which any event occurs in state \(i\)</td></tr><tr><td>\(1/(-q_{ii})\)</td><td>mean time spent in state \(i\) before the next jump</td></tr><tr><td>\(q_{ij}/(-q_{ii})\)</td><td>probability that the next jump is specifically to \(j\)</td></tr></table>
+<div class="box"><strong>So a row of \(Q\) contains two kinds of information at once:</strong> how long the process tends to remain in the current state and which state it is likely to visit next.</div>
+
+<h2>Probability distributions evolve using \(Q\)</h2>
+<p>Let</p>\[\boldsymbol\pi(t)=(P(X(t)=0),P(X(t)=1),\ldots)\]
+<p>be the row probability vector. Its evolution satisfies</p>\[\boxed{\frac{d\boldsymbol\pi(t)}{dt}=\boldsymbol\pi(t)Q}.\]
+<p>This is the Kolmogorov forward equation. It shows that the generator determines how probability flows between states through time.</p>
+<p>The next page develops these Kolmogorov equations carefully and explains where they come from.</p>
+
+<h2>The complete picture</h2>
+<div class="flow"><span>biological events</span><b>→</b><span>transition rates</span><b>→</b><span>generator \(Q\)</span><b>→</b><span>waiting times + jump probabilities</span><b>→</b><span>probability evolution</span></div>
+<div class="box"><strong>Key idea.</strong> The generator matrix is the mathematical core of a finite CTMC. Its off-diagonal entries are transition rates, its diagonal entries are negative total leaving rates, and each row sums to zero. From \(Q\) we obtain short-time probabilities, exponential waiting times, next-jump probabilities and the full transition matrix \(P(t)=e^{tQ}\).</div>
+</article></main></body></html>
