@@ -1,1 +1,151 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gillespie algorithm | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Gillespie algorithm</h1><p>The Gillespie stochastic simulation algorithm generates exact sample paths of a CTMC when the model is specified by discrete events and their current rates.</p><h2>Step 1: calculate rates</h2><p>For event rates \(a_1,\ldots,a_m\), calculate the total</p>\[a_0=\sum_{k=1}^m a_k.\]<h2>Step 2: sample the waiting time</h2>\[\tau=-\frac{\ln U_1}{a_0},\qquad U_1\sim U(0,1).\]<h2>Step 3: choose the event</h2><p>Event \(k\) is selected with probability \(a_k/a_0\). A second uniform random number can select among the cumulative probabilities.</p><h2>Step 4: update</h2><p>Advance time by \(\tau\), update the state according to the chosen event, recalculate rates, and repeat.</p><div class="box"><strong>Key idea.</strong> Gillespie simulation randomises both when the next event occurs and which event occurs, according to the CTMC rates.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gillespie algorithm | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.diagram,.figure{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.diagram svg,.figure svg{width:100%;min-width:700px;height:auto;display:block}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}.step{margin:1.2rem 0;padding:16px 20px;border-left:4px solid #39815e;background:#fff}.step strong{color:#245d43}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Gillespie algorithm</h1>
+<p>The <strong>Gillespie stochastic simulation algorithm</strong> generates individual random trajectories of a continuous-time Markov chain (CTMC) directly from its event rates. It is widely used for epidemic, population, biochemical and other event-based biological models.</p>
+<div class="box"><strong>Core idea.</strong> At every state the algorithm answers two random questions: <strong>when will the next event occur?</strong> and <strong>which event will it be?</strong></div>
+
+<h2>Why do we need it?</h2>
+<p>The Kolmogorov equations can describe the complete probability distribution of a CTMC. But a biological model with many compartments can have an enormous number of possible states, making the full probability system difficult to solve.</p>
+<p>Gillespie simulation takes a different approach. It follows one possible realisation of the process, event by event.</p>
+<div class="flow"><span>current biological state</span><b>→</b><span>calculate event rates</span><b>→</b><span>random waiting time</span><b>→</b><span>random event</span><b>→</b><span>new state</span></div>
+
+<h2>What does “exact” mean here?</h2>
+<p>The direct Gillespie algorithm is called an <strong>exact stochastic simulation algorithm</strong> because, under the CTMC assumptions, it samples the next event time and event type from the correct distributions. It does not approximate time by fixed steps such as \(\Delta t=0.01\).</p>
+<div class="warning"><strong>Exact does not mean predictable.</strong> Every trajectory remains random, and exactness is relative to the stochastic model and its assumptions.</div>
+
+<h2>Start with a simple SIS epidemic</h2>
+<p>Let \(i\) be the current number of infectious individuals in a population of size \(N\). Two events are possible:</p>
+<table class="defs"><tr><th>Event</th><th>State change</th><th>Rate</th></tr><tr><td>infection</td><td>\(i\to i+1\)</td><td>\(b(i)=\beta(N-i)i/N\)</td></tr><tr><td>recovery</td><td>\(i\to i-1\)</td><td>\(d(i)=\gamma i\)</td></tr></table>
+<p>The algorithm does not decide in advance that an infection or recovery happens every fixed number of minutes. Both the event time and event type are random.</p>
+
+<h2>Step 1 — calculate all current event rates</h2>
+<p>Suppose the possible events have rates</p>\[a_1,a_2,\ldots,a_m.\]
+<p>Calculate the total rate</p>\[\boxed{a_0=a_1+a_2+\cdots+a_m}.\]
+<p>For SIS,</p>\[\boxed{a_0=b(i)+d(i)}.\]
+<p>The total rate controls how quickly <strong>some event</strong> occurs.</p>
+
+<h2>Step 2 — generate the waiting time</h2>
+<p>While the current state is unchanged, the total rate \(a_0\) is constant. Therefore the time \(\tau\) until the next event is exponentially distributed:</p>\[\tau\sim\operatorname{Exp}(a_0).\]
+<p>Generate</p>\[U_1\sim\operatorname{Uniform}(0,1)\]
+<p>and calculate</p>\[\boxed{\tau=-\frac{\ln U_1}{a_0}}.\]
+<p>The simulation clock then advances from \(t\) to</p>\[t+\tau.\]
+<div class="box"><strong>Interpretation.</strong> Large total rate → typically short waiting time. Small total rate → typically long waiting time.</div>
+
+<h2>Step 3 — choose which event occurs</h2>
+<p>The total rate tells us when something happens, but not what happens. Event \(k\) is selected with probability</p>\[\boxed{P(\text{event }k\text{ next})=\frac{a_k}{a_0}}.\]
+<p>For SIS,</p>\[P(\text{infection next})=\frac{b(i)}{b(i)+d(i)},\]\[P(\text{recovery next})=\frac{d(i)}{b(i)+d(i)}.\]
+<p>A second independent random number</p>\[U_2\sim\operatorname{Uniform}(0,1)\]
+<p>selects between these possibilities.</p>
+
+<h2>Why are two random numbers used?</h2>
+<p>The two random numbers have different jobs:</p>
+<table class="compare"><tr><th>Random number</th><th>Question answered</th><th>Used for</th></tr><tr><td>\(U_1\)</td><td>When does the next event occur?</td><td>exponential waiting time</td></tr><tr><td>\(U_2\)</td><td>Which event occurs?</td><td>event selection</td></tr></table>
+<div class="box"><strong>This distinction is fundamental.</strong> Random event timing and random event type are separate parts of a CTMC trajectory.</div>
+
+<h2>Step 4 — update the biological state</h2>
+<p>If infection is selected,</p>\[i\leftarrow i+1.\]
+<p>If recovery is selected,</p>\[i\leftarrow i-1.\]
+<p>The simulation time becomes</p>\[t\leftarrow t+\tau.\]
+
+<h2>Step 5 — recalculate the rates</h2>
+<p>This step is essential. In SIS, the rates depend on the current infectious count:</p>\[b(i)=\beta\frac{(N-i)i}{N},\qquad d(i)=\gamma i.\]
+<p>After an event changes \(i\), both rates may change. Therefore the algorithm must recalculate them before generating the next waiting time.</p>
+<div class="warning"><strong>Do not keep the original rates throughout the simulation</strong> unless the model genuinely has constant rates. State-dependent rates are what make the stochastic process respond to its changing biological state.</div>
+
+<h2>The complete algorithm</h2>
+<div class="step"><strong>1. Initialise.</strong> Choose the starting time and starting state.</div>
+<div class="step"><strong>2. Calculate rates.</strong> Evaluate every possible event rate in the current state and add them to obtain \(a_0\).</div>
+<div class="step"><strong>3. Sample time.</strong> Generate \(U_1\) and calculate \(\tau=-\ln(U_1)/a_0\).</div>
+<div class="step"><strong>4. Select event.</strong> Generate \(U_2\) and choose event \(k\) according to the probabilities \(a_k/a_0\).</div>
+<div class="step"><strong>5. Update.</strong> Advance time by \(\tau\) and change the state according to the selected event.</div>
+<div class="step"><strong>6. Repeat.</strong> Recalculate the rates and continue until the final time or a stopping state is reached.</div>
+
+<h2>A complete numerical SIS step</h2>
+<p>Take</p>\[N=100,\qquad i=10,\qquad\beta=0.30,\qquad\gamma=0.10.\]
+<p>The infection rate is</p>\[b(10)=0.30\frac{(100-10)(10)}{100}=2.7\text{ per day}.\]
+<p>The recovery rate is</p>\[d(10)=0.10(10)=1.0\text{ per day}.\]
+<p>Therefore</p>\[a_0=2.7+1.0=3.7\text{ per day}.\]
+
+<h2>Generate the event time</h2>
+<p>Suppose the first random number is</p>\[U_1=0.40.\]
+<p>Then</p>\[\tau=-\frac{\ln(0.40)}{3.7}\approx0.248\text{ days}.\]
+<p>So the next event occurs about 0.248 days after the current time.</p>
+
+<h2>Choose the event</h2>
+<p>The event probabilities are</p>\[P(\text{infection})=\frac{2.7}{3.7}\approx0.730,\]\[P(\text{recovery})=\frac{1.0}{3.7}\approx0.270.\]
+<p>So divide the unit interval as</p>\[0\le U_2<0.730:\quad\text{infection},\]\[0.730\le U_2\le1:\quad\text{recovery}.\]
+<p>Suppose</p>\[U_2=0.62.\]
+<p>Then infection is selected, because \(0.62<0.730\). The new state is</p>\[i=11.\]
+<p>Now the rates are recalculated using \(i=11\), and the procedure begins again.</p>
+
+<h2>How the event-selection interval works</h2>
+<div class="figure"><svg viewBox="0 0 850 230" role="img" aria-label="Unit interval split into infection and recovery probabilities"><rect x="90" y="80" width="489" height="55" fill="#dceee4"/><rect x="579" y="80" width="181" height="55" fill="#f2e3cd"/><line x1="90" y1="145" x2="760" y2="145" stroke="#53635a" stroke-width="2"/><line x1="90" y1="140" x2="90" y2="151" stroke="#53635a"/><line x1="579" y1="140" x2="579" y2="151" stroke="#53635a"/><line x1="760" y1="140" x2="760" y2="151" stroke="#53635a"/><text x="90" y="171" text-anchor="middle" font-size="13">0</text><text x="579" y="171" text-anchor="middle" font-size="13">0.730</text><text x="760" y="171" text-anchor="middle" font-size="13">1</text><text x="335" y="113" text-anchor="middle" font-size="15" font-weight="700">infection</text><text x="669" y="113" text-anchor="middle" font-size="15" font-weight="700">recovery</text><line x1="505" y1="62" x2="505" y2="137" stroke="#26362e" stroke-width="2"/><circle cx="505" cy="62" r="5" fill="#26362e"/><text x="505" y="48" text-anchor="middle" font-size="13">U₂ = 0.62</text></svg><div class="caption">The interval lengths equal the event probabilities. Because \(U_2=0.62\) falls inside the infection interval, infection is selected.</div></div>
+
+<h2>What does a Gillespie trajectory look like?</h2>
+<p>The state remains constant while the process waits. At each random event time, the state jumps by the amount specified by that event. An SIS infectious count therefore produces a step-like trajectory.</p>
+<div class="figure"><svg id="traj" viewBox="0 0 850 430" role="img" aria-label="Illustrative Gillespie SIS trajectory generated from fixed random numbers"></svg><div class="caption">Illustrative SIS Gillespie trajectory generated directly from the stated rates and a fixed reproducible sequence of uniform random numbers. Horizontal sections are random waiting periods; each vertical jump is an infection (+1) or recovery (−1).</div></div>
+<p>This shape is important. The CTMC does <strong>not</strong> change smoothly between events. Nothing happens during the waiting time, then a discrete biological event changes the state.</p>
+
+<h2>Why is the trajectory irregular?</h2>
+<p>There are two sources of visible randomness:</p>
+<table class="defs"><tr><th>Random feature</th><th>Cause</th></tr><tr><td>unequal horizontal lengths</td><td>random exponential waiting times</td></tr><tr><td>upward or downward jumps</td><td>random selection between infection and recovery</td></tr></table>
+<p>Even if two simulations start from exactly the same state with exactly the same parameters, they usually follow different trajectories.</p>
+
+<h2>One trajectory is not the model prediction</h2>
+<p>A single Gillespie path is only one possible realisation of the stochastic model. Another run uses different random numbers and can produce a different epidemic history.</p>
+<div class="box"><strong>To understand uncertainty, we repeat the simulation many times.</strong> The collection of trajectories can then be used to estimate means, variances, extinction probabilities, outbreak probabilities and threshold-crossing probabilities.</div>
+
+<h2>Extinction appears naturally</h2>
+<p>In an SIS epidemic without imported infection, if</p>\[i=0,\]
+<p>then</p>\[b(0)=0,\qquad d(0)=0.\]
+<p>No further event can occur. The process has reached an absorbing state and the epidemic is extinct.</p>
+<p>A deterministic SIS model may approach a positive endemic level, while a finite stochastic SIS model can still reach \(i=0\) through random fluctuations. Gillespie simulation makes this possibility visible trajectory by trajectory.</p>
+
+<h2>Why not just use a very small fixed time step?</h2>
+<p>A fixed-step simulation divides time into intervals \(\Delta t\) and approximates event probabilities within each interval. This can work when \(\Delta t\) is sufficiently small, but it introduces a time-discretisation approximation.</p>
+<p>The direct Gillespie method instead jumps directly from one event time to the next.</p>
+<table class="compare"><tr><th>Small fixed-step method</th><th>Direct Gillespie method</th></tr><tr><td>advance by chosen \(\Delta t\)</td><td>advance by random \(\tau\)</td></tr><tr><td>approximates short-time event probabilities</td><td>samples CTMC event time exactly under model assumptions</td></tr><tr><td>may contain many steps with no event</td><td>jumps directly to the next event</td></tr><tr><td>accuracy depends on time-step choice</td><td>no arbitrary simulation time step</td></tr></table>
+
+<h2>Connection to the generator matrix</h2>
+<p>If the CTMC is in state \(i\), the generator contains rates \(q_{ij}\) for all possible jumps \(i\to j\). The total leaving rate is</p>\[a_0=-q_{ii}=\sum_{j\ne i}q_{ij}.\]
+<p>Gillespie then uses</p>\[\tau\sim\operatorname{Exp}(a_0)\]
+<p>and chooses destination \(j\) with probability</p>\[\frac{q_{ij}}{a_0}.\]
+<p>So the Gillespie algorithm is a direct simulation procedure for the CTMC encoded by \(Q\).</p>
+
+<h2>Connection to Poisson and exponential ideas</h2>
+<p>The earlier sections now fit together:</p>
+<div class="flow"><span>event rates</span><b>→</b><span>total rate \(a_0\)</span><b>→</b><span>exponential waiting time</span><b>→</b><span>weighted event choice</span><b>→</b><span>CTMC trajectory</span></div>
+<p>The Poisson-process idea explains random event occurrence at a constant rate while the state is fixed. The exponential distribution gives the next-event waiting time. Gillespie repeatedly applies these ideas while recalculating the rates after each state change.</p>
+
+<h2>General reaction or compartment models</h2>
+<p>The method is not limited to SIS. Suppose the state is a vector</p>\[\mathbf X=(X_1,X_2,\ldots,X_r)\]
+<p>and event \(k\) changes the state by a vector \(\boldsymbol\nu_k\). If its current rate is \(a_k(\mathbf X)\), then after selecting event \(k\),</p>\[\boxed{\mathbf X\leftarrow\mathbf X+\boldsymbol\nu_k}.\]
+<p>This notation allows the same algorithm to handle SIR, SEIR, predator–prey systems, biochemical reaction networks and many other compartment models.</p>
+
+<h2>SIR example of event vectors</h2>
+<p>For state</p>\[\mathbf X=(S,I,R),\]
+<p>an infection event</p>\[S+I\to2I\]
+<p>changes the compartment counts by</p>\[\boldsymbol\nu_1=(-1,+1,0),\]
+<p>while a recovery event</p>\[I\to R\]
+<p>has</p>\[\boldsymbol\nu_2=(0,-1,+1).\]
+<p>Once the corresponding event rates are defined, the same Gillespie steps apply without changing the underlying algorithm.</p>
+
+<h2>When the direct method can become expensive</h2>
+<p>If event rates are extremely large, the waiting times can become very short and the algorithm may need to simulate a huge number of individual events. Larger systems can therefore be computationally expensive.</p>
+<p>Approximate methods such as tau-leaping or diffusion/SDE approximations may then be useful, but they trade some exact CTMC event-level detail for computational efficiency.</p>
+
+<h2>What Gillespie simulation gives us</h2>
+<p>One run gives one possible biological history. Repeated runs give a sample from the model's distribution of possible histories.</p>
+<table class="defs"><tr><th>From repeated simulations</th><th>Example biological question</th></tr><tr><td>extinction frequency</td><td>What is the probability the infection dies out?</td></tr><tr><td>outbreak frequency</td><td>What is the probability it reaches a specified outbreak level?</td></tr><tr><td>distribution of peak size</td><td>How uncertain is the epidemic peak?</td></tr><tr><td>distribution of peak time</td><td>When might the peak occur?</td></tr><tr><td>capacity exceedance frequency</td><td>What is the probability demand exceeds a hospital threshold?</td></tr></table>
+
+<h2>The complete picture</h2>
+<div class="flow"><span>state</span><b>→</b><span>rates \(a_k\)</span><b>→</b><span>total \(a_0\)</span><b>→</b><span>sample \(\tau\)</span><b>→</b><span>choose event</span><b>→</b><span>update state</span><b>→</b><span>repeat</span></div>
+<div class="box"><strong>Key idea.</strong> Gillespie simulation follows a CTMC exactly at the event level under its modelling assumptions. The total rate determines the random time of the next event, the relative event rates determine which event occurs, and every event changes the state and therefore may change the rates. One run is one random trajectory; repeated runs reveal the distribution of possible biological outcomes.</div>
+
+<h2>What comes next?</h2>
+<p>To estimate probabilities and summary statistics reliably, we need many independent stochastic runs rather than one. The next section introduces <strong>Monte Carlo simulation</strong> and shows how repeated Gillespie trajectories can be turned into quantitative estimates of biological uncertainty.</p>
+</article></main>
+<script>(function(){const svg=document.getElementById('traj'),NS='http://www.w3.org/2000/svg';function E(n,a,t){const z=document.createElementNS(NS,n);Object.keys(a).forEach(k=>z.setAttribute(k,a[k]));if(t!==undefined)z.textContent=t;svg.appendChild(z);return z}const L=75,R=770,T=45,B=330,xmax=5,ymin=5,ymax=22,sx=x=>L+(R-L)*x/xmax,sy=y=>B-(B-T)*(y-ymin)/(ymax-ymin);E('line',{x1:L,y1:B,x2:R,y2:B,stroke:'#53635a','stroke-width':1.6});E('line',{x1:L,y1:T,x2:L,y2:B,stroke:'#53635a','stroke-width':1.6});for(let x=0;x<=5;x++){E('line',{x1:sx(x),y1:B,x2:sx(x),y2:B+5,stroke:'#53635a'});E('text',{x:sx(x),y:B+22,'text-anchor':'middle','font-size':12},x)}[5,10,15,20].forEach(y=>{E('line',{x1:L-5,y1:sy(y),x2:L,y2:sy(y),stroke:'#53635a'});E('text',{x:L-10,y:sy(y)+4,'text-anchor':'end','font-size':12},y)});E('text',{x:(L+R)/2,y:385,'text-anchor':'middle','font-size':15,'font-weight':700},'time (days)');let yl=E('text',{x:24,y:190,'text-anchor':'middle','font-size':15,'font-weight':700},'infectious individuals I(t)');yl.setAttribute('transform','rotate(-90 24 190)');let N=100,beta=.30,gamma=.10,i=10,t=0,seed=24681357;function rnd(){seed=(1664525*seed+1013904223)>>>0;return (seed+.5)/4294967296}let pts=[[0,i]];while(t<xmax&&i>0){let b=beta*(N-i)*i/N,d=gamma*i,a=b+d,u1=rnd(),tau=-Math.log(u1)/a;t+=tau;if(t>xmax)break;let u2=rnd();i+=(u2<b/a?1:-1);pts.push([t,i])}let path='M '+sx(0)+' '+sy(pts[0][1]);for(let k=1;k<pts.length;k++){path+=' H '+sx(pts[k][0])+' V '+sy(pts[k][1])}path+=' H '+sx(xmax);E('path',{d:path,fill:'none',stroke:'#39815e','stroke-width':3});pts.slice(1).forEach(p=>E('circle',{cx:sx(p[0]),cy:sy(p[1]),r:3.2,fill:'#39815e'}));})();</script>
+</body></html>
