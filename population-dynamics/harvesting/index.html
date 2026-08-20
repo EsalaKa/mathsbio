@@ -40,7 +40,7 @@ G(N)=rN\left(1-\frac{N}{K}\right).
 \boxed{\frac{dN}{dt}=rN\left(1-\frac{N}{K}\right)-H}.
 \]
 <table class="defs"><tr><th>Symbol</th><th>Meaning</th></tr><tr><td>\(N(t)\)</td><td>population size</td></tr><tr><td>\(r\)</td><td>intrinsic growth-rate parameter</td></tr><tr><td>\(K\)</td><td>carrying capacity</td></tr><tr><td>\(H\)</td><td>constant number removed per unit time</td></tr></table>
-<div class="box"><strong>Interpretation.</strong> The population increases when \(G(N)>H\) and decreases when \(G(N)<H\).</div>
+<div class="box"><strong>Interpretation.</strong> The population increases when \(G(N)\gt H\) and decreases when \(G(N)\lt H\).</div>
 
 <h2>Natural production and harvest</h2>
 <div class="figure"><svg id="balancePlot" viewBox="0 0 850 510" role="img" aria-label="Logistic population production and constant harvest levels"></svg><div class="caption">Natural logistic production is the curved line. A constant harvest is horizontal because the same number is removed regardless of population size. Intersections are equilibria.</div></div>
@@ -58,10 +58,10 @@ rN\left(1-\frac{N}{K}\right)=H.
 \[
 \boxed{H\leq\frac{rK}{4}}.
 \]
-<table class="defs"><tr><th>Harvest level</th><th>Model behaviour</th></tr><tr><td>\(0<H<rK/4\)</td><td>two positive equilibria</td></tr><tr><td>\(H=rK/4\)</td><td>one repeated equilibrium at \(K/2\)</td></tr><tr><td>\(H>rK/4\)</td><td>no positive equilibrium</td></tr></table>
+<table class="defs"><tr><th>Harvest level</th><th>Model behaviour</th></tr><tr><td>\(0\lt H\lt rK/4\)</td><td>two positive equilibria</td></tr><tr><td>\(H=rK/4\)</td><td>one repeated equilibrium at \(K/2\)</td></tr><tr><td>\(H\gt rK/4\)</td><td>no positive equilibrium</td></tr></table>
 
 <h2>The lower equilibrium is a threshold</h2>
-<p>When \(0<H<rK/4\), the upper equilibrium \(N_+\) is stable and the lower equilibrium \(N_-\) is unstable. Below \(N_-\), natural production is too small to balance the fixed harvest, so the population continues to decline in this deterministic model.</p>
+<p>When \(0\lt H\lt rK/4\), the upper equilibrium \(N_+\) is stable and the lower equilibrium \(N_-\) is unstable. Below \(N_-\), natural production is too small to balance the fixed harvest, so the population continues to decline in this deterministic model.</p>
 <div class="box"><strong>Why this happens.</strong> A fixed harvest does not automatically become smaller when the population becomes scarce.</div>
 
 <h2>Maximum sustainable yield in the simple model</h2>
@@ -114,10 +114,10 @@ r\left(1-\frac{N}{K}\right)-h=0,
 \[
 \boxed{N^*=K\left(1-\frac{h}{r}\right)}.
 \]
-<p>A positive equilibrium requires \(h<r\).</p>
+<p>A positive equilibrium requires \(h\lt r\).</p>
 
 <h2>Constant and proportional harvesting</h2>
-<table class="defs"><tr><th>Feature</th><th>Constant harvest \(H\)</th><th>Proportional harvest \(hN\)</th></tr><tr><td>amount removed</td><td>fixed number</td><td>depends on population size</td></tr><tr><td>when abundance falls</td><td>removal stays fixed</td><td>removal decreases</td></tr><tr><td>positive equilibria</td><td>two, one or none</td><td>one when \(h<r\)</td></tr><tr><td>low-population threshold</td><td>can occur</td><td>not generated in the same way</td></tr></table>
+<table class="defs"><tr><th>Feature</th><th>Constant harvest \(H\)</th><th>Proportional harvest \(hN\)</th></tr><tr><td>amount removed</td><td>fixed number</td><td>depends on population size</td></tr><tr><td>when abundance falls</td><td>removal stays fixed</td><td>removal decreases</td></tr><tr><td>positive equilibria</td><td>two, one or none</td><td>one when \(h\lt r\)</td></tr><tr><td>low-population threshold</td><td>can occur</td><td>not generated in the same way</td></tr></table>
 
 <h2>Effort and catchability</h2>
 <p>In fisheries, harvest is often modelled as</p>
