@@ -1,1 +1,119 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Discrete-time Markov chains | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Discrete-time Markov chains</h1><p>A discrete-time Markov chain (DTMC) is observed at fixed steps \(n=0,1,2,\ldots\) and satisfies the Markov property.</p><h2>Transition probabilities</h2>\[p_{ij}=P(X_{n+1}=j\mid X_n=i).\]<p>For each current state \(i\), the probabilities of all possible next states sum to one.</p><h2>Evolution of a distribution</h2><p>With a row probability vector \(\boldsymbol\pi_n\) and transition matrix \(P\),</p>\[\boldsymbol\pi_{n+1}=\boldsymbol\pi_nP.\]<h2>Trajectory versus distribution</h2><p>A random draw selects one next state and generates one trajectory. Matrix propagation instead gives probabilities across all states.</p><div class="box"><strong>Key idea.</strong> A DTMC combines fixed observation steps with probabilistic transitions determined by the current state.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Discrete-time Markov chains | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.lesson-content h3{font-size:1.2rem;margin-top:1.6rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.compare,.matrix-table{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td,.matrix-table th,.matrix-table td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th,.matrix-table th{background:#edf5f0}.matrix-table td{text-align:center}.diagram{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.diagram svg{width:100%;min-width:700px;height:auto;display:block}.node{fill:#edf5f0;stroke:#39815e;stroke-width:2}.arrow{stroke:#53635a;stroke-width:2;fill:none}.label{font-size:13px;fill:#2d3c34}.nlabel{font-size:15px;font-weight:700;fill:#26362e}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Discrete-time Markov chains</h1>
+<p>A <strong>discrete-time Markov chain (DTMC)</strong> is a stochastic process that moves between states at fixed time steps and satisfies the Markov property.</p>
+<div class="box"><strong>Core idea.</strong> At each step, the system is in one state. The current state determines the probabilities of the possible states at the next step.</div>
+
+<h2>Why “discrete time”?</h2>
+<p>Time is considered at separate steps</p>\[n=0,1,2,3,\ldots\]
+<p>rather than allowing events to occur at arbitrary times. For example, we might update an epidemic once per day:</p>\[t_0,\ t_1,\ t_2,\ldots\]
+<p>with a fixed time interval \(\Delta t\) between updates.</p>
+<div class="example"><strong>Example.</strong> If \(\Delta t=1\) day, then \(X_0\) is the state today, \(X_1\) tomorrow, \(X_2\) the day after tomorrow, and so on.</div>
+
+<h2>Step 1: define the state</h2>
+<p>Let \(X_n\) denote the state of the system at step \(n\).</p>
+<p>For a simple SIS epidemic, we can choose</p>\[X_n=I_n,\]
+<p>where \(I_n\) is the number of infectious individuals at step \(n\).</p>
+<p>If the population size is \(N\), the possible states are</p>\[\mathcal S=\{0,1,2,\ldots,N\}.\]
+<p>State \(i\) simply means that there are \(i\) infectious individuals at that step.</p>
+
+<h2>Step 2: identify the possible next states</h2>
+<p>Suppose the current state is \(i\). In a simple one-event-per-step SIS approximation, three next states are possible:</p>
+<table class="defs"><tr><th>Event during the step</th><th>Next state</th></tr><tr><td>one infection</td><td>\(i+1\)</td></tr><tr><td>one recovery</td><td>\(i-1\)</td></tr><tr><td>no change</td><td>\(i\)</td></tr></table>
+<p>The DTMC therefore does not say exactly which event will happen. It gives a probability to each possibility.</p>
+
+<h2>Step 3: assign transition probabilities</h2>
+<p>The probability of moving from current state \(i\) to next state \(j\) is written</p>\[\boxed{p_{ij}=P(X_{n+1}=j\mid X_n=i)}.\]
+<table class="defs"><tr><th>Symbol</th><th>Meaning</th></tr><tr><td>\(i\)</td><td>current state</td></tr><tr><td>\(j\)</td><td>next state</td></tr><tr><td>\(p_{ij}\)</td><td>probability of moving from \(i\) to \(j\) in one time step</td></tr></table>
+<p>For every current state \(i\), the probabilities of all possible next states must add to 1.</p>
+
+<h2>A simple transition diagram</h2>
+<p>For an interior state \(i\), the three possible one-step moves can be shown visually:</p>
+<div class="diagram"><svg viewBox="0 0 900 300" role="img" aria-label="DTMC transition diagram from state i to i minus one, i, and i plus one"><defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53635a"/></marker></defs><rect class="node" x="350" y="115" width="180" height="70" rx="12"/><rect class="node" x="70" y="115" width="180" height="70" rx="12"/><rect class="node" x="650" y="115" width="180" height="70" rx="12"/><text class="nlabel" x="440" y="145" text-anchor="middle">Current state</text><text class="label" x="440" y="168" text-anchor="middle">i</text><text class="nlabel" x="160" y="145" text-anchor="middle">Recovery</text><text class="label" x="160" y="168" text-anchor="middle">i − 1</text><text class="nlabel" x="740" y="145" text-anchor="middle">Infection</text><text class="label" x="740" y="168" text-anchor="middle">i + 1</text><line class="arrow" x1="350" y1="150" x2="255" y2="150" marker-end="url(#a)"/><line class="arrow" x1="530" y1="150" x2="645" y2="150" marker-end="url(#a)"/><path class="arrow" d="M395 115 C380 45 500 45 485 115" marker-end="url(#a)"/><text class="label" x="300" y="132" text-anchor="middle">pᵢ,ᵢ₋₁</text><text class="label" x="590" y="132" text-anchor="middle">pᵢ,ᵢ₊₁</text><text class="label" x="440" y="55" text-anchor="middle">pᵢ,ᵢ</text></svg></div>
+<p>The self-loop represents staying in the same state during that time step.</p>
+
+<h2>Step 4: connect biological rates to step probabilities</h2>
+<p>Suppose the SIS infection and recovery rates in state \(i\) are</p>\[b(i)=\beta\frac{(N-i)i}{N},\qquad d(i)=\gamma i.\]
+<p>If the time step \(\Delta t\) is sufficiently small, a common approximation is</p>\[p_{i,i+1}\approx b(i)\Delta t,\]\[p_{i,i-1}\approx d(i)\Delta t,\]\[p_{i,i}\approx1-[b(i)+d(i)]\Delta t.\]
+<p>The three probabilities add approximately to 1.</p>
+<div class="warning"><strong>Important.</strong> This small-step construction assumes that the probability of two or more events within one step is negligible. If \(\Delta t\) is too large, these approximations can become inaccurate or even produce invalid probabilities.</div>
+
+<h2>A worked SIS example</h2>
+<p>Suppose</p>\[N=100,\qquad i=10,\qquad \beta=0.30,\qquad \gamma=0.10,\qquad \Delta t=0.1\text{ day}.\]
+<p>The infection rate is</p>\[b(10)=0.30\frac{(100-10)(10)}{100}=2.7\text{ day}^{-1}.\]
+<p>The recovery rate is</p>\[d(10)=0.10(10)=1.0\text{ day}^{-1}.\]
+<p>Therefore</p>\[p_{10,11}\approx2.7(0.1)=0.27,\]\[p_{10,9}\approx1.0(0.1)=0.10,\]\[p_{10,10}\approx1-(2.7+1.0)(0.1)=0.63.\]
+<p>So, from state 10, the next step has a 27% chance of moving to 11, a 10% chance of moving to 9, and a 63% chance of remaining at 10.</p>
+
+<h2>Step 5: arrange all probabilities into a transition matrix</h2>
+<p>The transition matrix \(P\) contains every one-step transition probability.</p>
+<p>For a three-state example with states 0, 1 and 2,</p>
+<table class="matrix-table"><tr><th>Current \ Next</th><th>0</th><th>1</th><th>2</th></tr><tr><th>0</th><td>\(p_{00}\)</td><td>\(p_{01}\)</td><td>\(p_{02}\)</td></tr><tr><th>1</th><td>\(p_{10}\)</td><td>\(p_{11}\)</td><td>\(p_{12}\)</td></tr><tr><th>2</th><td>\(p_{20}\)</td><td>\(p_{21}\)</td><td>\(p_{22}\)</td></tr></table>
+<p>Each <strong>row</strong> corresponds to a current state. Each <strong>column</strong> corresponds to a possible next state. Therefore every row sums to 1.</p>
+<div class="box"><strong>Reading the matrix.</strong> Entry \(p_{12}\) means: current state 1, next state 2.</div>
+
+<h2>A numerical transition matrix</h2>
+<p>Consider</p>\[P=\begin{pmatrix}1&0&0\\0.2&0.5&0.3\\0&0.4&0.6\end{pmatrix}.\]
+<p>Read the second row as follows:</p>
+<table class="defs"><tr><th>From state 1</th><th>Probability</th></tr><tr><td>move to 0</td><td>0.2</td></tr><tr><td>stay at 1</td><td>0.5</td></tr><tr><td>move to 2</td><td>0.3</td></tr></table>
+<p>The row sum is</p>\[0.2+0.5+0.3=1.\]
+<p>The first row \((1,0,0)\) means that state 0 is absorbing: once the chain enters state 0, it remains there.</p>
+
+<h2>Step 6: distinguish one trajectory from the probability distribution</h2>
+<p>Suppose the chain is currently in state 1. The second row gives the probabilities 0.2, 0.5 and 0.3.</p>
+<p>To generate <strong>one trajectory</strong>, we draw one random number \(U\) from the uniform distribution on \([0,1]\) and divide the interval according to these probabilities:</p>
+<table class="defs"><tr><th>Random number \(U\)</th><th>Next state</th></tr><tr><td>\(0\le U&lt;0.2\)</td><td>0</td></tr><tr><td>\(0.2\le U&lt;0.7\)</td><td>1</td></tr><tr><td>\(0.7\le U\le1\)</td><td>2</td></tr></table>
+<div class="example"><strong>Example.</strong> If \(U=0.76\), the next state is 2. If the simulation is repeated, another random number may produce a different next state.</div>
+
+<h2>Probability vector: where might the chain be?</h2>
+<p>Instead of following one random trajectory, we can describe the probability of being in every state.</p>
+<p>With row-vector convention, write</p>\[\boldsymbol\pi_n=(\pi_0(n),\pi_1(n),\ldots,\pi_N(n)).\]
+<p>Here \(\pi_i(n)=P(X_n=i)\), and</p>\[\sum_i\pi_i(n)=1.\]
+<p>If we know with certainty that the process starts in state 1, then for a three-state chain</p>\[\boldsymbol\pi_0=(0,1,0).\]
+
+<h2>Step 7: propagate the distribution</h2>
+<p>With the row-vector convention used here,</p>\[\boxed{\boldsymbol\pi_{n+1}=\boldsymbol\pi_nP}.\]
+<p>Using</p>\[\boldsymbol\pi_0=(0,1,0)\]
+<p>and the numerical matrix above,</p>\[\boldsymbol\pi_1=(0,1,0)P=(0.2,0.5,0.3).\]
+<p>This means that after one step,</p>
+<table class="defs"><tr><th>State</th><th>Probability</th></tr><tr><td>0</td><td>0.2</td></tr><tr><td>1</td><td>0.5</td></tr><tr><td>2</td><td>0.3</td></tr></table>
+<p>No random number was needed for this calculation because we were propagating the <strong>entire probability distribution</strong>, not selecting one realised state.</p>
+
+<h2>One trajectory and the distribution answer different questions</h2>
+<table class="compare"><tr><th>One simulated trajectory</th><th>Probability distribution</th></tr><tr><td>shows one possible sequence of states</td><td>shows probabilities across all states</td></tr><tr><td>uses random draws</td><td>uses matrix propagation</td></tr><tr><td>can differ each simulation</td><td>is fixed once the model and initial distribution are fixed</td></tr><tr><td>useful for sample-path behaviour</td><td>useful for exact state probabilities</td></tr></table>
+
+<h2>Multi-step transition probabilities</h2>
+<p>One application of matrix multiplication is to obtain transitions over several steps. For a time-homogeneous DTMC,</p>\[P^2\]
+<p>contains two-step transition probabilities, and more generally</p>\[P^n\]
+<p>contains \(n\)-step transition probabilities.</p>
+<p>Therefore</p>\[\boldsymbol\pi_n=\boldsymbol\pi_0P^n.\]
+
+<h2>Time-homogeneous versus time-dependent DTMCs</h2>
+<p>If the same transition matrix \(P\) is used at every step, the chain is called <strong>time-homogeneous</strong>.</p>
+<p>If interventions, seasonality or other effects change the transition probabilities through time, we may instead use matrices</p>\[P_0,P_1,P_2,\ldots\]
+<p>with</p>\[\boldsymbol\pi_{n+1}=\boldsymbol\pi_nP_n.\]
+<p>The process can still be Markovian because the next-step probabilities depend on the current state and the current time, rather than the full past history.</p>
+
+<h2>Absorbing states</h2>
+<p>An absorbing state is one that cannot be left once entered.</p>
+<p>In many epidemic models, state 0 is absorbing:</p>\[P(0\to0)=1.\]
+<p>Biologically, once there are no infectious individuals and there is no external introduction of infection, the epidemic cannot restart.</p>
+
+<h2>Boundary states need special treatment</h2>
+<p>The interior-state rules cannot always be copied directly to the boundaries.</p>
+<p>At \(i=0\), recovery to \(-1\) is impossible. At \(i=N\), infection to \(N+1\) is impossible. The transition probabilities must respect the biologically allowed state space.</p>
+
+<h2>What a DTMC assumes</h2>
+<p>A DTMC makes three important modelling choices:</p>
+<table class="compare"><tr><th>Choice</th><th>Meaning</th></tr><tr><td>discrete time</td><td>state is updated at fixed steps</td></tr><tr><td>Markov property</td><td>next-step probabilities are determined by the present state</td></tr><tr><td>specified transition probabilities</td><td>biology is translated into probabilities of moving between states</td></tr></table>
+
+<h2>When is a DTMC useful?</h2>
+<p>A DTMC is useful when observations or decisions naturally occur at fixed intervals, or when a discrete-time approximation is sufficient. It can also provide an intuitive introduction to stochastic epidemic modelling before moving to continuous-time event models.</p>
+<p>However, when biological events occur at irregular random times and the exact timing matters, a <strong>continuous-time Markov chain</strong> is often more natural.</p>
+
+<h2>The full DTMC workflow</h2>
+<div class="flow"><span>define states</span><b>→</b><span>define one-step transitions</span><b>→</b><span>assign probabilities</span><b>→</b><span>build transition matrix</span><b>→</b><span>simulate a trajectory or propagate a distribution</span></div>
+<div class="box"><strong>Key idea.</strong> A DTMC describes a random system observed at fixed steps. From the current state, transition probabilities determine the possible next states. A random draw produces one trajectory, while multiplication by the transition matrix propagates the full probability distribution.</div>
+</article></main></body></html>
