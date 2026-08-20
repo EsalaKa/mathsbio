@@ -1,1 +1,135 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Brownian motion | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><article class="lesson-content"><h1 class="section-title">Brownian motion</h1><p>Brownian motion \(W(t)\) is a continuous-time stochastic process used to represent irregular random fluctuations.</p><p>It satisfies \(W(0)=0\), has independent increments, and for \(0\le s&lt;t\),</p>\[W(t)-W(s)\sim N(0,t-s).\]<p>Its sample paths are continuous but almost surely nowhere differentiable.</p><div class="box"><strong>Key idea.</strong> Brownian motion changes continuously in time, although its path is random and extremely irregular.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Brownian motion | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.figure{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:700px;height:auto;display:block}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><article class="lesson-content">
+<h1 class="section-title">Brownian motion</h1>
+<p>Brownian motion is the basic random process used to model continuously evolving stochastic fluctuations in many stochastic differential equations.</p>
+<div class="box"><strong>Core idea.</strong> Brownian motion \(W(t)\) changes continuously through time, but its future movement is random. Over a short interval, it can move up or down, and the size of that random movement is governed by the length of the interval.</div>
+
+<h2>Start with the simplest question</h2>
+<p>Suppose we know the current value \(W(t)\). What happens during the next short time interval \(\Delta t\)?</p>
+<p>The change is</p>\[\boxed{\Delta W=W(t+\Delta t)-W(t)}.\]
+<p>For Brownian motion,</p>\[\boxed{\Delta W\sim N(0,\Delta t)}.\]
+<p>This one statement contains the central rule.</p>
+<table class="defs"><tr><th>Part</th><th>Meaning</th></tr><tr><td>mean \(0\)</td><td>the increment has no preferred upward or downward direction</td></tr><tr><td>variance \(\Delta t\)</td><td>the spread of the random increment grows with the time interval</td></tr><tr><td>standard deviation \(\sqrt{\Delta t}\)</td><td>the typical size of a Brownian increment is of order \(\sqrt{\Delta t}\)</td></tr></table>
+
+<h2>Why do we write \(\Delta W=\sqrt{\Delta t}\,Z\)?</h2>
+<p>If</p>\[Z\sim N(0,1),\]
+<p>then multiplying by \(\sqrt{\Delta t}\) gives</p>\[\boxed{\Delta W=\sqrt{\Delta t}\,Z}.\]
+<p>Its mean remains zero:</p>\[E[\Delta W]=0,\]
+<p>and its variance becomes</p>\[\operatorname{Var}(\Delta W)=\Delta t.\]
+<div class="box"><strong>This is why the square root appears.</strong> Variance scales with the square of the multiplier. To obtain variance \(\Delta t\), the normal random number must be multiplied by \(\sqrt{\Delta t}\).</div>
+
+<h2>A numerical example</h2>
+<p>Suppose</p>\[\Delta t=0.04.\]
+<p>Then</p>\[\sqrt{\Delta t}=0.2.\]
+<p>If a standard normal draw gives</p>\[Z=1.3,\]
+<p>then</p>\[\Delta W=0.2(1.3)=0.26.\]
+<p>If instead \(Z=-0.8\), then</p>\[\Delta W=0.2(-0.8)=-0.16.\]
+<p>So the process may move either upward or downward.</p>
+
+<h2>What does a Brownian path look like?</h2>
+<div class="figure"><svg id="pathsPlot" viewBox="0 0 850 430" role="img" aria-label="Three simulated Brownian motion paths"></svg><div class="caption">Three numerical Brownian paths generated using independent increments \(\Delta W=\sqrt{\Delta t}Z\) with a small \(\Delta t\). They start from the same point but quickly separate because their random increments differ.</div></div>
+<p>Every path starts at</p>\[W(0)=0.\]
+<p>After that, each path follows its own random sequence of increments.</p>
+<div class="warning"><strong>The plotted curves are numerical approximations.</strong> A computer can only simulate Brownian motion at finitely many time points. The mathematical Brownian path is defined continuously for every \(t\ge0\).</div>
+
+<h2>Brownian motion is continuous, not discrete</h2>
+<p>A simulation may use points such as</p>\[0,\Delta t,2\Delta t,3\Delta t,\ldots\]
+<p>to approximate the process. That does <strong>not</strong> make Brownian motion a discrete-time process.</p>
+<p>The true mathematical process is indexed by continuous time:</p>\[\boxed{W(t),\qquad t\ge0}.\]
+<p>The discrete grid is only a computational approximation used to draw or simulate the continuous-time process.</p>
+
+<h2>The formal properties</h2>
+<p>Standard Brownian motion satisfies four key properties.</p>
+<table class="defs"><tr><th>Property</th><th>Meaning</th></tr><tr><td>\(W(0)=0\)</td><td>the process starts at zero</td></tr><tr><td>independent increments</td><td>changes over non-overlapping time intervals are independent</td></tr><tr><td>normal increments</td><td>\(W(t)-W(s)\sim N(0,t-s)\)</td></tr><tr><td>continuous paths</td><td>the path has no jumps</td></tr></table>
+
+<h2>Independent increments</h2>
+<p>Consider two non-overlapping intervals:</p>\[[t_1,t_2]\qquad\text{and}\qquad[t_3,t_4],\qquad t_2\le t_3.\]
+<p>The increments</p>\[W(t_2)-W(t_1)\]
+<p>and</p>\[W(t_4)-W(t_3)\]
+<p>are independent.</p>
+<p>Knowing what Brownian motion did in one interval does not tell us the random increment in a separate future interval.</p>
+
+<h2>The distribution depends only on interval length</h2>
+<p>For \(0\le s<t\),</p>\[\boxed{W(t)-W(s)\sim N(0,t-s)}.\]
+<p>The distribution depends on the interval length \(t-s\), not on the absolute starting time \(s\).</p>
+<div class="example"><strong>Example.</strong> The Brownian increment from time 1 to time 2 has the same distribution as the increment from time 10 to time 11: both are \(N(0,1)\).</div>
+
+<h2>Brownian motion at a fixed time</h2>
+<p>Because \(W(0)=0\), taking \(s=0\) gives</p>\[\boxed{W(t)\sim N(0,t)}.\]
+<p>Therefore</p>\[E[W(t)]=0,\qquad\operatorname{Var}(W(t))=t.\]
+<p>Its standard deviation is</p>\[\sqrt{t}.\]
+<p>So the possible Brownian values spread out as time increases.</p>
+
+<h2>The distribution at different times</h2>
+<div class="figure"><svg id="densityPlot" viewBox="0 0 850 430" role="img" aria-label="Normal densities of Brownian motion at several times"></svg><div class="caption">Because \(W(t)\sim N(0,t)\), the distribution remains centred at zero while its spread increases with time.</div></div>
+<p>At small \(t\), the distribution is narrow. At larger \(t\), it is wider because the variance equals \(t\).</p>
+
+<h2>Why Brownian motion does not simply average back to zero</h2>
+<p>The expected value is zero:</p>\[E[W(t)]=0.\]
+<p>But this does not mean that one Brownian path stays near zero. It means that if we average many independent paths at the same time \(t\), the positive and negative values balance on average.</p>
+<div class="box"><strong>Expected value and individual path are different ideas.</strong> A particular trajectory can wander far from zero even though the ensemble mean remains zero.</div>
+
+<h2>The size of a Brownian increment</h2>
+<p>For a small interval \(\Delta t\),</p>\[\operatorname{SD}(\Delta W)=\sqrt{\Delta t}.\]
+<p>For example:</p>
+<table class="defs"><tr><th>\(\Delta t\)</th><th>standard deviation of \(\Delta W\)</th></tr><tr><td>1</td><td>1</td></tr><tr><td>0.01</td><td>0.1</td></tr><tr><td>0.0001</td><td>0.01</td></tr></table>
+<p>As the time interval shrinks, Brownian increments shrink—but only like the square root of time.</p>
+
+<h2>Why Brownian paths are so rough</h2>
+<p>An ordinary differentiable function changes approximately like</p>\[\Delta x\propto\Delta t.\]
+<p>Brownian motion changes on the larger scale</p>\[\Delta W\propto\sqrt{\Delta t}.\]
+<p>Therefore</p>\[\frac{\Delta W}{\Delta t}\sim\frac{1}{\sqrt{\Delta t}},\]
+<p>whose typical magnitude grows without bound as \(\Delta t\to0\).</p>
+<div class="box"><strong>This explains the roughness.</strong> Brownian motion is continuous, but almost surely nowhere differentiable. It has no ordinary instantaneous velocity \(dW/dt\).</div>
+
+<h2>Continuous but nowhere differentiable</h2>
+<p>These two statements are not contradictory:</p>
+<table class="compare"><tr><th>Continuous</th><th>Not differentiable</th></tr><tr><td>there are no jumps in the path</td><td>the path is too irregular to have a finite ordinary slope</td></tr><tr><td>nearby times have nearby values</td><td>zooming in does not make the path look smooth</td></tr></table>
+<p>This unusual combination is exactly why ordinary calculus must be modified when Brownian motion appears in differential equations.</p>
+
+<h2>Brownian motion and ordinary time behave differently</h2>
+<p>In ordinary calculus, a small time increment is \(dt\). Brownian motion has a random increment \(dW_t\).</p>
+<p>Their characteristic sizes are different:</p>\[dt\sim dt,\qquad dW_t\sim\sqrt{dt}.\]
+<p>This means Brownian fluctuations are much larger than \(dt\) on very small time scales.</p>
+
+<h2>Why does \((dW_t)^2\) behave like \(dt\)?</h2>
+<p>Since a Brownian increment has typical size \(\sqrt{dt}\), squaring gives</p>\[(dW_t)^2\sim dt.\]
+<p>In Itô calculus this becomes the formal rule</p>\[\boxed{(dW_t)^2=dt}.\]
+<p>This does not mean that ordinary algebra has suddenly made a random number exactly equal to time. It is shorthand for a precise limiting property called <strong>quadratic variation</strong>.</p>
+<div class="warning"><strong>Do not treat \(dW_t\) as an ordinary differential.</strong> Rules involving \(dW_t\) belong to stochastic calculus.</div>
+
+<h2>Quadratic variation intuition</h2>
+<p>Divide \([0,T]\) into many short intervals. Ordinary smooth increments satisfy squared changes that vanish when summed over a very fine partition. Brownian increments behave differently:</p>\[\boxed{\sum_k(\Delta W_k)^2\longrightarrow T}.\]
+<p>This non-zero quadratic variation is the mathematical reason that second-order terms survive in Itô's formula.</p>
+
+<h2>Brownian motion as accumulated random shocks</h2>
+<p>Brownian motion can be viewed informally as the continuous-time limit of many tiny independent random shocks.</p>
+<div class="flow"><span>many tiny independent fluctuations</span><b>→</b><span>accumulate through time</span><b>→</b><span>continuous random path</span><b>→</b><span>Brownian motion</span></div>
+<p>This viewpoint explains why Brownian motion is useful for representing unresolved environmental or demographic fluctuations when a continuous approximation is appropriate.</p>
+
+<h2>Connection to stochastic differential equations</h2>
+<p>A stochastic differential equation often has the form</p>\[\boxed{dX_t=f(X_t,t)\,dt+g(X_t,t)\,dW_t}.\]
+<table class="defs"><tr><th>Term</th><th>Role</th></tr><tr><td>\(f(X_t,t)dt\)</td><td>deterministic drift</td></tr><tr><td>\(g(X_t,t)dW_t\)</td><td>random fluctuation</td></tr><tr><td>\(W_t\)</td><td>Brownian motion driving the noise</td></tr></table>
+<p>The Brownian term does not mean that the biological variable itself is Brownian motion. It means Brownian increments are being used to drive random fluctuations in that variable.</p>
+
+<h2>A simple SDE step</h2>
+<p>For</p>\[dX_t=\mu\,dt+\sigma\,dW_t,\]
+<p>over a small interval \(\Delta t\),</p>\[\Delta X\approx\mu\Delta t+\sigma\Delta W.\]
+<p>Using</p>\[\Delta W=\sqrt{\Delta t}Z,\qquad Z\sim N(0,1),\]
+<p>gives</p>\[\boxed{\Delta X\approx\mu\Delta t+\sigma\sqrt{\Delta t}Z}.\]
+<p>This is the basic structure behind the Euler–Maruyama method developed later.</p>
+
+<h2>Brownian motion versus a CTMC path</h2>
+<table class="compare"><tr><th>CTMC</th><th>Brownian motion</th></tr><tr><td>state often changes by discrete jumps</td><td>path is continuous</td></tr><tr><td>event times are individually identifiable</td><td>fluctuation is represented continuously</td></tr><tr><td>useful for event-level population models</td><td>useful for diffusion and SDE approximations</td></tr></table>
+<p>A CTMC may be more natural when individual infections or recoveries matter explicitly. Brownian-driven SDEs can be useful when populations are large enough that a continuous random approximation is appropriate.</p>
+
+<h2>What Brownian motion does not mean</h2>
+<p>Brownian motion is a mathematical model of continuous stochastic fluctuation. It does not claim that every biological source of randomness is literally Gaussian, independent or memoryless. Whether Brownian noise is appropriate depends on the biological mechanism and the modelling scale.</p>
+
+<div class="box"><strong>Key idea.</strong> Brownian motion is a continuous-time stochastic process with \(W(0)=0\), independent Gaussian increments and \(W(t)-W(s)\sim N(0,t-s)\). Its increments scale like \(\sqrt{\Delta t}\), making paths continuous but extremely rough. This unusual scaling is the foundation of the \(dW_t\) term in stochastic differential equations and of Itô calculus.</div>
+</article></main>
+<script>(function(){const NS='http://www.w3.org/2000/svg';function E(s,n,a,t){const z=document.createElementNS(NS,n);for(const k in a)z.setAttribute(k,a[k]);if(t!==undefined)z.textContent=t;s.appendChild(z);return z}function ax(s,xm,ymin,ymax,xl,yl){const L=72,R=775,T=42,B=330,X=x=>L+(R-L)*x/xm,Y=y=>B-(B-T)*(y-ymin)/(ymax-ymin);E(s,'line',{x1:L,y1:Y(0),x2:R,y2:Y(0),stroke:'#89938d','stroke-width':1});E(s,'line',{x1:L,y1:T,x2:L,y2:B,stroke:'#53635a','stroke-width':1.4});E(s,'text',{x:(L+R)/2,y:385,'text-anchor':'middle','font-size':14},xl);const q=E(s,'text',{x:20,y:190,'text-anchor':'middle','font-size':14},yl);q.setAttribute('transform','rotate(-90 20 190)');return{L,R,T,B,X,Y}}function rng(seed){let x=seed>>>0;return()=>{x=(1664525*x+1013904223)>>>0;return(x+.5)/4294967296}}function normal(u){let a=Math.max(u(),1e-12),b=u();return Math.sqrt(-2*Math.log(a))*Math.cos(2*Math.PI*b)}const paths=document.getElementById('pathsPlot'),a=ax(paths,1,-2.6,2.6,'time t','W(t)'),cols=['#39815e','#a07042','#6f6b9a'];for(let r=0;r<3;r++){let u=rng(100+r),dt=1/500,w=0,pts=[a.X(0)+','+a.Y(0)];for(let k=1;k<=500;k++){w+=Math.sqrt(dt)*normal(u);pts.push(a.X(k*dt)+','+a.Y(w))}E(paths,'polyline',{points:pts.join(' '),fill:'none',stroke:cols[r],'stroke-width':2});}E(paths,'text',{x:a.X(.78),y:a.Y(2.15),'font-size':12},'same W(0)=0');
+const den=document.getElementById('densityPlot'),b=ax(den,6,-.02,.85,'possible value of W(t)','density');function pdf(x,t){return Math.exp(-x*x/(2*t))/Math.sqrt(2*Math.PI*t)}const times=[.25,1,4],dcols=['#39815e','#a07042','#6f6b9a'];times.forEach((t,j)=>{let p=[];for(let k=0;k<=400;k++){let x=-3+6*k/400;p.push(b.X(x+3)+','+b.Y(pdf(x,t)))}E(den,'polyline',{points:p.join(' '),fill:'none',stroke:dcols[j],'stroke-width':2.6});E(den,'line',{x1:555,y1:70+j*24,x2:595,y2:70+j*24,stroke:dcols[j],'stroke-width':3});E(den,'text',{x:605,y:75+j*24,'font-size':12},'t = '+t);});[-3,-2,-1,0,1,2,3].forEach(x=>E(den,'text',{x:b.X(x+3),y:b.B+20,'text-anchor':'middle','font-size':11},x));})();</script>
+</body></html>
