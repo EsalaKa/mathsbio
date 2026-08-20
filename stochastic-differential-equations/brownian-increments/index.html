@@ -1,12 +1,12 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Brownian increments | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left}.defs th{background:#edf5f0}.figure{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:700px;height:auto;display:block}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}</style></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><article class="lesson-content"><h1 class="section-title">Brownian increments</h1>
 <p>Brownian motion describes a complete random path \(W(t)\). A <strong>Brownian increment</strong> describes how much that path changes over one particular time interval.</p><div class="box"><strong>Core idea.</strong> Brownian motion is the process; a Brownian increment is one change in that process.</div>
 <h2>What exactly is an increment?</h2><p>Take two times, \(t\) and \(t+\Delta t\). The change in Brownian motion between them is</p>\[\boxed{\Delta W=W(t+\Delta t)-W(t)}.\]<p>This has exactly the same structure as an ordinary change:</p>\[\Delta x=x_{\mathrm{new}}-x_{\mathrm{old}}.\]<p>The difference is that \(\Delta W\) is random.</p>
-<div class="figure"><svg id="incPlot" viewBox="0 0 850 430"></svg><div class="caption">A simulated Brownian path. The marked points show one Brownian increment: the vertical change from \(W(t)\) to \(W(t+\Delta t)\) over the horizontal interval \(\Delta t\).</div></div>
+<div class="figure"><svg id="incPlot" viewBox="0 0 850 460" role="img" aria-label="Brownian path with an exactly positioned Brownian increment"></svg><div class="caption">A numerically generated Brownian path. Both marked points are taken directly from the same simulated path data. The horizontal bracket is exactly \(\Delta t\); the vertical bracket is exactly \(\Delta W=W(t+\Delta t)-W(t)\).</div></div>
 <h2>The distribution of an increment</h2><p>For standard Brownian motion,</p>\[\boxed{\Delta W\sim N(0,\Delta t)}.\]<p>Here \(N(0,\Delta t)\) means a normal distribution with</p>\[\text{mean}=0,\qquad\text{variance}=\Delta t.\]<p>Therefore</p>\[\boxed{\operatorname{SD}(\Delta W)=\sqrt{\Delta t}}.\]
 <table class="defs"><tr><th>Property</th><th>Meaning</th></tr><tr><td>mean \(0\)</td><td>no preferred positive or negative direction</td></tr><tr><td>variance \(\Delta t\)</td><td>uncertainty grows with the length of the interval</td></tr><tr><td>standard deviation \(\sqrt{\Delta t}\)</td><td>sets the typical scale of the random change</td></tr></table>
 <h2>Why \(\sqrt{\Delta t}\), not \(\Delta t\)?</h2><p>Start with a standard normal random variable</p>\[Z\sim N(0,1).\]<p>If a random variable is multiplied by a constant \(a\), its variance is multiplied by \(a^2\):</p>\[\operatorname{Var}(aZ)=a^2\operatorname{Var}(Z)=a^2.\]<p>We need the variance to equal \(\Delta t\), so</p>\[a^2=\Delta t,\qquad a=\sqrt{\Delta t}.\]<p>Hence</p>\[\boxed{\Delta W=\sqrt{\Delta t}\,Z,\qquad Z\sim N(0,1)}.\]<div class="box"><strong>The square root is not an arbitrary convention.</strong> It is exactly the scaling required to make the increment variance equal to the elapsed time.</div>
 <h2>A step-by-step numerical example</h2><p>Suppose the simulation step is</p>\[\Delta t=0.01.\]<p>Then</p>\[\sqrt{\Delta t}=0.1.\]<p>Generate one standard normal random number. Suppose</p>\[Z=-1.4.\]<p>Then</p>\[\Delta W=0.1(-1.4)=-0.14.\]<p>If the current Brownian value is \(W(t)=0.35\), the next value is</p>\[W(t+\Delta t)=0.35-0.14=0.21.\]<p>A new independent normal number is generated for the next interval.</p>
-<h2>How interval length changes the distribution</h2><div class="figure"><svg id="distPlot" viewBox="0 0 850 430"></svg><div class="caption">Brownian-increment distributions for three interval lengths. All are centred at zero, but longer intervals produce wider distributions because \(\operatorname{Var}(\Delta W)=\Delta t\).</div></div><p>For example,</p><table class="defs"><tr><th>\(\Delta t\)</th><th>distribution</th><th>standard deviation</th></tr><tr><td>1</td><td>\(N(0,1)\)</td><td>1</td></tr><tr><td>0.25</td><td>\(N(0,0.25)\)</td><td>0.5</td></tr><tr><td>0.01</td><td>\(N(0,0.01)\)</td><td>0.1</td></tr></table>
+<h2>How interval length changes the distribution</h2><div class="figure"><svg id="distPlot" viewBox="0 0 850 460" role="img" aria-label="Normal distributions of Brownian increments for different time intervals"></svg><div class="caption">These curves are calculated directly from the normal density with variance \(\Delta t\). All are centred at zero. Smaller \(\Delta t\) gives a narrower, taller distribution because the standard deviation is \(\sqrt{\Delta t}\).</div></div><p>For example,</p><table class="defs"><tr><th>\(\Delta t\)</th><th>distribution</th><th>standard deviation</th></tr><tr><td>1</td><td>\(N(0,1)\)</td><td>1</td></tr><tr><td>0.25</td><td>\(N(0,0.25)\)</td><td>0.5</td></tr><tr><td>0.01</td><td>\(N(0,0.01)\)</td><td>0.1</td></tr></table>
 <h2>Independent increments</h2><p>Brownian changes over non-overlapping intervals are independent. For example,</p>\[W(1)-W(0)\quad\text{and}\quad W(2)-W(1)\]<p>are independent random variables.</p><p>A positive increment in the first interval does not make a positive or negative increment more likely in the second interval.</p>
 <h2>Same interval length, same distribution</h2><p>The increment distribution depends only on the <strong>length</strong> of the interval:</p>\[W(t+h)-W(t)\sim N(0,h).\]<p>Thus</p>\[W(2)-W(1)\sim N(0,1)\]<p>and</p>\[W(101)-W(100)\sim N(0,1).\]<p>Their locations in time differ, but both intervals have length 1.</p>
 <h2>Adding increments builds Brownian motion</h2><p>Suppose the time grid is</p>\[t_0,t_1,t_2,\ldots\]<p>and we generate independent increments</p>\[\Delta W_0,\Delta W_1,\Delta W_2,\ldots\]<p>Then</p>\[W(t_{n+1})=W(t_n)+\Delta W_n.\]<p>Starting from \(W(0)=0\),</p>\[\boxed{W(t_n)=\sum_{k=0}^{n-1}\Delta W_k}.\]<p>So a simulated Brownian path is constructed by accumulating Brownian increments.</p>
@@ -16,4 +16,67 @@
 <h2>Deterministic and stochastic increments scale differently</h2><p>The deterministic part has size proportional to</p>\[\Delta t,\]<p>whereas the Brownian part has characteristic size proportional to</p>\[\sqrt{\Delta t}.\]<p>For very small \(\Delta t\), \(\sqrt{\Delta t}\) is much larger than \(\Delta t\). This difference in scaling is fundamental to stochastic calculus.</p>
 <h2>The connection with \((dW_t)^2=dt\)</h2><p>Because a Brownian increment is of order \(\sqrt{\Delta t}\), its square is of order</p>\[(\Delta W)^2\sim\Delta t.\]<p>In the stochastic-calculus limit, this leads to the Itô rule</p>\[\boxed{(dW_t)^2=dt}.\]<p>The precise mathematical idea behind this is quadratic variation, discussed later.</p>
 <h2>A common misunderstanding</h2><p>The statement</p>\[\Delta W\sim N(0,\Delta t)\]<p>does <strong>not</strong> mean that \(\Delta W=0\) because its mean is zero. Individual increments are usually non-zero. Zero is the average over many possible increments.</p><div class="box"><strong>Key idea.</strong> A Brownian increment over a time interval \(\Delta t\) is a random change with mean zero, variance \(\Delta t\), and standard deviation \(\sqrt{\Delta t}\). In simulation it is generated as \(\Delta W=\sqrt{\Delta t}Z\). Independent increments are accumulated to construct a Brownian path and provide the random component of an SDE.</div></article></main>
-<script>(function(){const NS='http://www.w3.org/2000/svg';function E(s,n,a,t){let z=document.createElementNS(NS,n);for(let k in a)z.setAttribute(k,a[k]);if(t!==undefined)z.textContent=t;s.appendChild(z);return z}function rng(seed){let x=seed>>>0;return()=>{x=(1664525*x+1013904223)>>>0;return(x+.5)/4294967296}}function norm(u){let a=Math.max(u(),1e-12),b=u();return Math.sqrt(-2*Math.log(a))*Math.cos(2*Math.PI*b)}let s=document.getElementById('incPlot'),L=70,R=780,T=45,B=330,X=x=>L+(R-L)*x,Y=y=>B-(B-T)*(y+1.5)/3;E(s,'line',{x1:L,y1:Y(0),x2:R,y2:Y(0),stroke:'#8a948e'});E(s,'line',{x1:L,y1:T,x2:L,y2:B,stroke:'#53635a'});let u=rng(12),w=0,dt=.002,vals=[0],pts=[X(0)+','+Y(0)];for(let k=1;k<=500;k++){w+=Math.sqrt(dt)*norm(u);vals.push(w);pts.push(X(k/500)+','+Y(w))}E(s,'polyline',{points:pts.join(' '),fill:'none',stroke:'#39815e','stroke-width':2});let i1=175,i2=300,x1=X(i1/500),x2=X(i2/500),y1=Y(vals[i1]),y2=Y(vals[i2]);E(s,'circle',{cx:x1,cy:y1,r:5,fill:'#9a6944'});E(s,'circle',{cx:x2,cy:y2,r:5,fill:'#9a6944'});E(s,'line',{x1:x1,y1:B+8,x2:x2,y2:B+8,stroke:'#9a6944','stroke-width':2});E(s,'text',{x:(x1+x2)/2,y:B+29,'text-anchor':'middle','font-size':13},'Δt');E(s,'line',{x1:x2+13,y1:y1,x2:x2+13,y2:y2,stroke:'#9a6944','stroke-width':2});E(s,'text',{x:x2+27,y:(y1+y2)/2,'font-size':13},'ΔW');E(s,'text',{x:420,y:390,'text-anchor':'middle','font-size':14},'time');let d=document.getElementById('distPlot'),DL=72,DR=775,DT=45,DB=330,DX=x=>DL+(DR-DL)*(x+2)/4,DY=y=>DB-(DB-DT)*y/4.3;E(d,'line',{x1:DL,y1:DB,x2:DR,y2:DB,stroke:'#53635a'});E(d,'line',{x1:DL,y1:DT,x2:DL,y2:DB,stroke:'#53635a'});function pdf(x,v){return Math.exp(-x*x/(2*v))/Math.sqrt(2*Math.PI*v)}let vs=[1,.25,.01],cs=['#6f6b9a','#a07042','#39815e'];vs.forEach((v,j)=>{let p=[];for(let k=0;k<=500;k++){let x=-2+4*k/500;p.push(DX(x)+','+DY(pdf(x,v)))}E(d,'polyline',{points:p.join(' '),fill:'none',stroke:cs[j],'stroke-width':2.5});E(d,'line',{x1:575,y1:65+25*j,x2:610,y2:65+25*j,stroke:cs[j],'stroke-width':3});E(d,'text',{x:620,y:70+25*j,'font-size':12},'Δt = '+v)});[-2,-1,0,1,2].forEach(x=>E(d,'text',{x:DX(x),y:DB+20,'text-anchor':'middle','font-size':11},x));E(d,'text',{x:425,y:385,'text-anchor':'middle','font-size':14},'Brownian increment ΔW');})();</script></body></html>
+<script>(function(){
+const NS='http://www.w3.org/2000/svg';
+function E(svg,name,attrs,text){const n=document.createElementNS(NS,name);for(const k in attrs)n.setAttribute(k,attrs[k]);if(text!==undefined)n.textContent=text;svg.appendChild(n);return n;}
+function rng(seed){let x=seed>>>0;return()=>{x=(1664525*x+1013904223)>>>0;return(x+.5)/4294967296;};}
+function normal(u){const a=Math.max(u(),1e-12),b=u();return Math.sqrt(-2*Math.log(a))*Math.cos(2*Math.PI*b);}
+function nice(v){if(v===0)return 0;const p=Math.pow(10,Math.floor(Math.log10(Math.abs(v))));const m=Math.abs(v)/p;const n=m<=1?1:m<=2?2:m<=5?5:10;return n*p;}
+
+/* Brownian path and exact increment */
+const svg=document.getElementById('incPlot');
+const L=82,R=765,T=45,B=345;
+const steps=500,dt=1/steps,u=rng(12),vals=[0];
+let w=0;
+for(let k=1;k<=steps;k++){w+=Math.sqrt(dt)*normal(u);vals.push(w);}
+const ymin0=Math.min(...vals),ymax0=Math.max(...vals),pad=Math.max(.18,(ymax0-ymin0)*.12);
+const ymin=ymin0-pad,ymax=ymax0+pad;
+const X=t=>L+(R-L)*t;
+const Y=y=>B-(B-T)*(y-ymin)/(ymax-ymin);
+E(svg,'line',{x1:L,y1:B,x2:R,y2:B,stroke:'#53635a','stroke-width':1.5});
+E(svg,'line',{x1:L,y1:T,x2:L,y2:B,stroke:'#53635a','stroke-width':1.5});
+for(let t=0;t<=1.0001;t+=.2){E(svg,'line',{x1:X(t),y1:B,x2:X(t),y2:B+5,stroke:'#53635a'});E(svg,'text',{x:X(t),y:B+20,'text-anchor':'middle','font-size':11,fill:'#2d3c34'},t.toFixed(1));}
+const yrange=ymax-ymin,ystep=nice(yrange/5);let ystart=Math.ceil(ymin/ystep)*ystep;for(let y=ystart;y<=ymax+1e-9;y+=ystep){E(svg,'line',{x1:L-5,y1:Y(y),x2:L,y2:Y(y),stroke:'#53635a'});E(svg,'text',{x:L-9,y:Y(y)+4,'text-anchor':'end','font-size':10,fill:'#2d3c34'},Math.abs(y)<1e-10?'0':y.toFixed(2));}
+E(svg,'polyline',{points:vals.map((v,k)=>X(k/steps)+','+Y(v)).join(' '),fill:'none',stroke:'#39815e','stroke-width':2});
+const i1=175,i2=300,t1=i1/steps,t2=i2/steps,v1=vals[i1],v2=vals[i2],x1=X(t1),x2=X(t2),y1=Y(v1),y2=Y(v2);
+/* guides calculated from exact data points */
+E(svg,'line',{x1:x1,y1:y1,x2:x1,y2:B,stroke:'#9a6944','stroke-width':1.2,'stroke-dasharray':'5 4'});
+E(svg,'line',{x1:x2,y1:y2,x2:x2,y2:B,stroke:'#9a6944','stroke-width':1.2,'stroke-dasharray':'5 4'});
+E(svg,'line',{x1:L,y1:y1,x2:x1,y2:y1,stroke:'#9a6944','stroke-width':1,'stroke-dasharray':'4 4'});
+E(svg,'line',{x1:L,y1:y2,x2:x2,y2:y2,stroke:'#9a6944','stroke-width':1,'stroke-dasharray':'4 4'});
+E(svg,'circle',{cx:x1,cy:y1,r:5,fill:'#9a6944',stroke:'#fff','stroke-width':2});
+E(svg,'circle',{cx:x2,cy:y2,r:5,fill:'#9a6944',stroke:'#fff','stroke-width':2});
+/* exact horizontal Δt bracket */
+const bracketY=B+42;
+E(svg,'line',{x1:x1,y1:bracketY,x2:x2,y2:bracketY,stroke:'#9a6944','stroke-width':2});
+E(svg,'line',{x1:x1,y1:bracketY-6,x2:x1,y2:bracketY+6,stroke:'#9a6944','stroke-width':2});
+E(svg,'line',{x1:x2,y1:bracketY-6,x2:x2,y2:bracketY+6,stroke:'#9a6944','stroke-width':2});
+E(svg,'text',{x:(x1+x2)/2,y:bracketY+20,'text-anchor':'middle','font-size':12,fill:'#8a6239'},'Δt = '+(t2-t1).toFixed(2));
+/* exact vertical ΔW bracket */
+const bx=x2+28,ytop=Math.min(y1,y2),ybot=Math.max(y1,y2);
+E(svg,'line',{x1:bx,y1:ytop,x2:bx,y2:ybot,stroke:'#9a6944','stroke-width':2});
+E(svg,'line',{x1:bx-6,y1:y1,x2:bx+6,y2:y1,stroke:'#9a6944','stroke-width':2});
+E(svg,'line',{x1:bx-6,y1:y2,x2:bx+6,y2:y2,stroke:'#9a6944','stroke-width':2});
+E(svg,'text',{x:bx+9,y:(y1+y2)/2+4,'font-size':12,fill:'#8a6239'},'ΔW = '+(v2-v1).toFixed(3));
+E(svg,'text',{x:x1,y:B+35,'text-anchor':'middle','font-size':11,fill:'#2d3c34'},'t');
+E(svg,'text',{x:x2,y:B+35,'text-anchor':'middle','font-size':11,fill:'#2d3c34'},'t + Δt');
+E(svg,'text',{x:x1+7,y:y1-10,'font-size':11,fill:'#8a6239'},'W(t)');
+E(svg,'text',{x:x2+7,y:y2-10,'font-size':11,fill:'#8a6239'},'W(t+Δt)');
+E(svg,'text',{x:(L+R)/2,y:448,'text-anchor':'middle','font-size':14,fill:'#26362e'},'time');
+const yl=E(svg,'text',{x:22,y:(T+B)/2,'text-anchor':'middle','font-size':14,fill:'#26362e'},'Brownian motion W(t)');yl.setAttribute('transform','rotate(-90 22 '+((T+B)/2)+')');
+
+/* Brownian increment distributions */
+const dsvg=document.getElementById('distPlot');
+const DL=82,DR=765,DT=45,DB=345,xmin=-2,xmax=2,ymaxD=4.2;
+const DX=x=>DL+(DR-DL)*(x-xmin)/(xmax-xmin),DY=y=>DB-(DB-DT)*y/ymaxD;
+E(dsvg,'line',{x1:DL,y1:DB,x2:DR,y2:DB,stroke:'#53635a','stroke-width':1.5});
+E(dsvg,'line',{x1:DL,y1:DT,x2:DL,y2:DB,stroke:'#53635a','stroke-width':1.5});
+[-2,-1,0,1,2].forEach(x=>{E(dsvg,'line',{x1:DX(x),y1:DB,x2:DX(x),y2:DB+5,stroke:'#53635a'});E(dsvg,'text',{x:DX(x),y:DB+20,'text-anchor':'middle','font-size':11,fill:'#2d3c34'},x);});
+[0,1,2,3,4].forEach(y=>{E(dsvg,'line',{x1:DL-5,y1:DY(y),x2:DL,y2:DY(y),stroke:'#53635a'});E(dsvg,'text',{x:DL-9,y:DY(y)+4,'text-anchor':'end','font-size':11,fill:'#2d3c34'},y);});
+function pdf(x,v){return Math.exp(-x*x/(2*v))/Math.sqrt(2*Math.PI*v);}
+const series=[{v:1,c:'#6f6b9a',lab:'Δt = 1, SD = 1'},{v:.25,c:'#a07042',lab:'Δt = 0.25, SD = 0.5'},{v:.01,c:'#39815e',lab:'Δt = 0.01, SD = 0.1'}];
+series.forEach((s,j)=>{let pts=[];for(let k=0;k<=800;k++){const x=xmin+(xmax-xmin)*k/800;pts.push(DX(x)+','+DY(pdf(x,s.v)));}E(dsvg,'polyline',{points:pts.join(' '),fill:'none',stroke:s.c,'stroke-width':2.5});E(dsvg,'line',{x1:520,y1:65+25*j,x2:558,y2:65+25*j,stroke:s.c,'stroke-width':3});E(dsvg,'text',{x:568,y:70+25*j,'font-size':11,fill:'#2d3c34'},s.lab);});
+E(dsvg,'line',{x1:DX(0),y1:DT,x2:DX(0),y2:DB,stroke:'#9eaaa3','stroke-width':1,'stroke-dasharray':'5 5'});
+E(dsvg,'text',{x:(DL+DR)/2,y:400,'text-anchor':'middle','font-size':14,fill:'#26362e'},'Brownian increment ΔW');
+const dyl=E(dsvg,'text',{x:22,y:(DT+DB)/2,'text-anchor':'middle','font-size':14,fill:'#26362e'},'probability density');dyl.setAttribute('transform','rotate(-90 22 '+((DT+DB)/2)+')');
+})();</script></body></html>
