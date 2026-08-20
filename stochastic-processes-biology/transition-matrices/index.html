@@ -1,1 +1,142 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Transition matrices | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Transition matrices</h1><p>A transition matrix stores the one-step transition probabilities of a finite-state DTMC.</p>\[P=(p_{ij}),\qquad p_{ij}=P(X_{n+1}=j\mid X_n=i).\]<h2>Probability rules</h2>\[p_{ij}\ge0,\qquad \sum_jp_{ij}=1.\]<p>Thus every row is a probability distribution over possible next states when the row-vector convention is used.</p><h2>Multiple steps</h2><p>The \(m\)-step transition matrix is</p>\[P^m,\]<p>and its \((i,j)\) entry gives the probability of being in state \(j\) after \(m\) steps given initial state \(i\).</p><div class="box"><strong>Key idea.</strong> A transition matrix collects the complete one-step probabilistic rule of a finite DTMC.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Transition matrices | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.matrix,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.matrix th,.matrix td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.matrix th,.compare th{background:#edf5f0}.matrix td{text-align:center}.diagram{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.diagram svg{width:100%;min-width:700px;height:auto;display:block}.node{fill:#edf5f0;stroke:#39815e;stroke-width:2}.arrow{stroke:#53635a;stroke-width:2;fill:none}.label{font-size:13px;fill:#2d3c34}.nlabel{font-size:15px;font-weight:700;fill:#26362e}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Transition matrices</h1>
+<p>A <strong>transition matrix</strong> is a compact way to store all one-step transition probabilities of a finite discrete-time Markov chain (DTMC).</p>
+<div class="box"><strong>Core idea.</strong> Choose the current state. The corresponding row of the transition matrix gives the complete probability distribution for the state at the next time step.</div>
+
+<h2>Why do we need a matrix?</h2>
+<p>Suppose a model has several possible states. From each current state there may be several possible next states, each with its own probability.</p>
+<p>Writing every probability separately quickly becomes inconvenient. A matrix organises them into one mathematical object.</p>
+<p>If the states are</p>\[0,1,2,\ldots,N,\]
+<p>we write</p>\[\boxed{P=(p_{ij})},\]
+<p>where</p>\[\boxed{p_{ij}=P(X_{n+1}=j\mid X_n=i)}.\]
+
+<h2>What do the two indices mean?</h2>
+<table class="defs"><tr><th>Symbol</th><th>Meaning</th></tr><tr><td>\(i\)</td><td>current state</td></tr><tr><td>\(j\)</td><td>next state</td></tr><tr><td>\(p_{ij}\)</td><td>probability of moving from state \(i\) to state \(j\) in one step</td></tr></table>
+<div class="box"><strong>Read \(p_{ij}\) as “from \(i\), to \(j\)”.</strong> In the row-vector convention used throughout this page, the first index selects the row and the second selects the column.</div>
+
+<h2>How the matrix is arranged</h2>
+<p>For three states \(0,1,2\),</p>
+<table class="matrix"><tr><th>Current \ Next</th><th>0</th><th>1</th><th>2</th></tr><tr><th>0</th><td>\(p_{00}\)</td><td>\(p_{01}\)</td><td>\(p_{02}\)</td></tr><tr><th>1</th><td>\(p_{10}\)</td><td>\(p_{11}\)</td><td>\(p_{12}\)</td></tr><tr><th>2</th><td>\(p_{20}\)</td><td>\(p_{21}\)</td><td>\(p_{22}\)</td></tr></table>
+<p>The same information is written mathematically as</p>\[P=\begin{pmatrix}p_{00}&p_{01}&p_{02}\\p_{10}&p_{11}&p_{12}\\p_{20}&p_{21}&p_{22}\end{pmatrix}.\]
+<p>Rows represent where the process <strong>is now</strong>. Columns represent where it <strong>goes next</strong>.</p>
+
+<h2>A concrete three-state example</h2>
+<p>Consider</p>\[\boxed{P=\begin{pmatrix}1&0&0\\0.2&0.5&0.3\\0&0.4&0.6\end{pmatrix}}.\]
+<p>The second row is</p>\[(0.2,0.5,0.3).\]
+<p>Therefore, if the current state is 1,</p>
+<table class="defs"><tr><th>Transition</th><th>Probability</th></tr><tr><td>\(1\to0\)</td><td>0.2</td></tr><tr><td>\(1\to1\)</td><td>0.5</td></tr><tr><td>\(1\to2\)</td><td>0.3</td></tr></table>
+<p>So the process may move down, stay where it is, or move up.</p>
+
+<h2>The same information as a transition diagram</h2>
+<div class="diagram"><svg viewBox="0 0 900 350" role="img" aria-label="Transition diagram corresponding to the numerical transition matrix"><defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53635a"/></marker></defs><rect class="node" x="80" y="135" width="150" height="65" rx="12"/><rect class="node" x="375" y="135" width="150" height="65" rx="12"/><rect class="node" x="670" y="135" width="150" height="65" rx="12"/><text class="nlabel" x="155" y="174" text-anchor="middle">State 0</text><text class="nlabel" x="450" y="174" text-anchor="middle">State 1</text><text class="nlabel" x="745" y="174" text-anchor="middle">State 2</text><path class="arrow" d="M375 150 C315 95 285 95 230 150" marker-end="url(#a)"/><text class="label" x="302" y="100" text-anchor="middle">0.2</text><path class="arrow" d="M525 150 C585 95 615 95 670 150" marker-end="url(#a)"/><text class="label" x="598" y="100" text-anchor="middle">0.3</text><path class="arrow" d="M670 190 C610 245 585 245 525 190" marker-end="url(#a)"/><text class="label" x="598" y="250" text-anchor="middle">0.4</text><path class="arrow" d="M410 135 C390 60 510 60 490 135" marker-end="url(#a)"/><text class="label" x="450" y="58" text-anchor="middle">0.5</text><path class="arrow" d="M710 135 C690 60 800 60 780 135" marker-end="url(#a)"/><text class="label" x="745" y="58" text-anchor="middle">0.6</text><path class="arrow" d="M120 135 C100 60 210 60 190 135" marker-end="url(#a)"/><text class="label" x="155" y="58" text-anchor="middle">1</text></svg></div>
+<p>Every arrow corresponds directly to an entry in the matrix. Missing arrows have transition probability zero.</p>
+
+<h2>Why must every row sum to 1?</h2>
+<p>If the process is currently in state \(i\), it must be in <em>some</em> allowed state at the next step. The row contains all mutually exclusive possibilities.</p>
+<p>Therefore</p>\[\boxed{\sum_j p_{ij}=1}.\]
+<p>For state 1 in the example,</p>\[0.2+0.5+0.3=1.\]
+<p>Every matrix entry must also satisfy</p>\[0\le p_{ij}\le1.\]
+<div class="warning"><strong>Do not confuse the row sum with the sum of the whole matrix.</strong> Each individual row must sum to 1 because each row is a probability distribution conditional on one current state.</div>
+
+<h2>Why can a diagonal entry be non-zero?</h2>
+<p>An entry such as \(p_{11}\) means</p>\[P(X_{n+1}=1\mid X_n=1).\]
+<p>This is the probability that the process remains in the same state during one step.</p>
+<p>In the example, \(p_{11}=0.5\), so there is a 50% chance of remaining in state 1.</p>
+
+<h2>Absorbing states</h2>
+<p>The first row of the example is</p>\[(1,0,0).\]
+<p>This means</p>\[P(0\to0)=1.\]
+<p>Once the chain reaches state 0, it can never leave. State 0 is therefore an <strong>absorbing state</strong>.</p>
+<p>In an epidemic model without imported infections, state 0 may represent extinction of infection.</p>
+
+<h2>From a known state to a probability vector</h2>
+<p>Suppose the process starts with certainty in state 1. Its initial probability distribution is</p>\[\boldsymbol\pi_0=(0,1,0).\]
+<p>The entries mean</p>\[P(X_0=0)=0,\qquad P(X_0=1)=1,\qquad P(X_0=2)=0.\]
+<p>The probabilities sum to 1.</p>
+
+<h2>One matrix multiplication gives the next distribution</h2>
+<p>Using the row-vector convention,</p>\[\boxed{\boldsymbol\pi_{n+1}=\boldsymbol\pi_nP}.\]
+<p>Therefore</p>\[\boldsymbol\pi_1=(0,1,0)\begin{pmatrix}1&0&0\\0.2&0.5&0.3\\0&0.4&0.6\end{pmatrix}.\]
+<p>The result is</p>\[\boxed{\boldsymbol\pi_1=(0.2,0.5,0.3)}.\]
+<p>This is exactly the second row of \(P\), because we started with certainty in state 1.</p>
+
+<h2>What does matrix multiplication mean here?</h2>
+<p>Suppose the current distribution is not concentrated in one state:</p>\[\boldsymbol\pi_n=(\pi_0,\pi_1,\pi_2).\]
+<p>Then the probability of being in state 2 at the next step is</p>\[\boxed{\pi_0p_{02}+\pi_1p_{12}+\pi_2p_{22}}.\]
+<p>Each term has a simple interpretation:</p>
+<table class="defs"><tr><th>Term</th><th>Meaning</th></tr><tr><td>\(\pi_0p_{02}\)</td><td>probability of currently being in 0 and then moving to 2</td></tr><tr><td>\(\pi_1p_{12}\)</td><td>probability of currently being in 1 and then moving to 2</td></tr><tr><td>\(\pi_2p_{22}\)</td><td>probability of currently being in 2 and then staying in 2</td></tr></table>
+<p>Adding them accounts for <strong>all possible ways of arriving at state 2</strong>. This is the probabilistic meaning of the matrix multiplication.</p>
+<div class="box"><strong>This is why matrices are so useful.</strong> One multiplication simultaneously performs this “sum over all ways of arriving” calculation for every possible next state.</div>
+
+<h2>Two steps: why do we use \(P^2\)?</h2>
+<p>After one step,</p>\[\boldsymbol\pi_1=\boldsymbol\pi_0P.\]
+<p>After another step,</p>\[\boldsymbol\pi_2=\boldsymbol\pi_1P.\]
+<p>Substituting the first equation into the second gives</p>\[\boldsymbol\pi_2=(\boldsymbol\pi_0P)P=\boldsymbol\pi_0P^2.\]
+<p>Thus \(P^2\) contains two-step transition probabilities.</p>
+
+<h2>What does an entry of \(P^2\) mean?</h2>
+<p>The \((i,j)\) entry of \(P^2\) is</p>\[(P^2)_{ij}=\sum_k p_{ik}p_{kj}.\]
+<p>This says: to travel from state \(i\) to state \(j\) in two steps, the process may pass through any intermediate state \(k\).</p>
+<div class="flow"><span>start at \(i\)</span><b>→</b><span>intermediate state \(k\)</span><b>→</b><span>end at \(j\)</span></div>
+<p>For each possible intermediate state, we multiply the probability of the first transition by the probability of the second, then add across all possible intermediate states.</p>
+
+<h2>A numerical two-step calculation</h2>
+<p>What is the probability of going from state 1 to state 0 in two steps?</p>
+<p>There are three possible intermediate states:</p>\[(P^2)_{10}=p_{10}p_{00}+p_{11}p_{10}+p_{12}p_{20}.\]
+<p>Using the example matrix,</p>\[(P^2)_{10}=(0.2)(1)+(0.5)(0.2)+(0.3)(0).\]
+<p>Therefore</p>\[\boxed{(P^2)_{10}=0.30}.\]
+<p>So, starting in state 1, the probability of being in state 0 after two steps is 30%.</p>
+
+<h2>Many steps</h2>
+<p>Repeating the same reasoning gives</p>\[\boxed{\boldsymbol\pi_n=\boldsymbol\pi_0P^n}.\]
+<p>The entry</p>\[(P^n)_{ij}\]
+<p>is the probability that the chain is in state \(j\) after \(n\) steps, given that it started in state \(i\).</p>
+<div class="box"><strong>One-step information determines multi-step behaviour.</strong> Once \(P\) and the initial distribution are known, powers of \(P\) describe the probability distribution at later discrete times for a time-homogeneous DTMC.</div>
+
+<h2>One trajectory is different from the probability distribution</h2>
+<p>The transition matrix gives probabilities. It does not by itself choose which state actually occurs in one simulated realisation.</p>
+<table class="compare"><tr><th>Distribution calculation</th><th>Single simulation</th></tr><tr><td>multiply \(\boldsymbol\pi_nP\)</td><td>draw a random number</td></tr><tr><td>keeps probabilities for all states</td><td>selects one next state</td></tr><tr><td>gives the exact model distribution</td><td>gives one random trajectory</td></tr></table>
+<p>Repeating many simulated trajectories allows their empirical frequencies to approximate the probabilities encoded by the matrix.</p>
+
+<h2>How a row is used to simulate one transition</h2>
+<p>Suppose the current state is 1, so the relevant row is</p>\[(0.2,0.5,0.3).\]
+<p>Divide the interval \([0,1]\) according to the cumulative probabilities:</p>
+<table class="defs"><tr><th>Uniform random number \(U\)</th><th>Next state</th></tr><tr><td>\(0\le U&lt;0.2\)</td><td>0</td></tr><tr><td>\(0.2\le U&lt;0.7\)</td><td>1</td></tr><tr><td>\(0.7\le U\le1\)</td><td>2</td></tr></table>
+<p>If \(U=0.81\), the next state is 2. A new random number is then generated for the following step using the row corresponding to state 2.</p>
+
+<h2>Transition matrices in an epidemic model</h2>
+<p>Suppose the state \(i\) is the number of infectious individuals in a discrete-time SIS model. For an interior state, possible one-step transitions may be</p>\[i\to i-1,\qquad i\to i,\qquad i\to i+1.\]
+<p>The corresponding row of the matrix therefore contains non-zero probabilities only in the columns for \(i-1\), \(i\), and \(i+1\), under the simple one-event-per-step construction.</p>
+<p>If infection and recovery rates are \(b(i)\) and \(d(i)\), then for sufficiently small \(\Delta t\),</p>\[p_{i,i+1}\approx b(i)\Delta t,\]\[p_{i,i-1}\approx d(i)\Delta t,\]\[p_{i,i}\approx1-[b(i)+d(i)]\Delta t.\]
+<p>This shows how biological assumptions become entries in a transition matrix.</p>
+
+<h2>Boundary rows must reflect biology</h2>
+<p>At a boundary, some transitions are impossible. For example, if \(i=0\) represents no infectious individuals and infection cannot be imported, then</p>\[p_{00}=1\]
+<p>and all other entries in row 0 are zero.</p>
+<p>Likewise, if \(N\) is the maximum possible infectious count, the model cannot assign positive probability to state \(N+1\).</p>
+
+<h2>Time-homogeneous and time-dependent matrices</h2>
+<p>If the same matrix is used at every step,</p>\[P_0=P_1=P_2=\cdots=P,\]
+<p>the DTMC is <strong>time-homogeneous</strong>.</p>
+<p>If interventions, seasonality or changing environmental conditions alter the transition probabilities, the matrix may depend on time:</p>\[P_0,P_1,P_2,\ldots\]
+<p>and then</p>\[\boldsymbol\pi_{n+1}=\boldsymbol\pi_nP_n.\]
+<p>In that case, simply using \(P^n\) is no longer generally correct because the transition rule changes between steps.</p>
+
+<h2>Row-vector versus column-vector conventions</h2>
+<p>This page uses probability distributions as <strong>row vectors</strong>, so</p>\[\boldsymbol\pi_{n+1}=\boldsymbol\pi_nP\]
+<p>and rows of \(P\) sum to 1.</p>
+<p>Some books instead use column probability vectors. Their matrices may be written with the opposite orientation, leading to a formula such as</p>\[\mathbf p_{n+1}=P\mathbf p_n.\]
+<div class="warning"><strong>Both conventions can be valid.</strong> The important point is to define the convention and use it consistently. Do not copy a matrix formula from another source without checking whether probabilities are stored in rows or columns.</div>
+
+<h2>Transition matrix versus generator matrix</h2>
+<p>A transition matrix belongs naturally to a DTMC. A continuous-time Markov chain is instead described locally by a generator matrix.</p>
+<table class="compare"><tr><th>Transition matrix \(P\)</th><th>Generator matrix \(Q\)</th></tr><tr><td>contains probabilities</td><td>contains transition rates off the diagonal</td></tr><tr><td>used for discrete-time steps</td><td>used for continuous-time dynamics</td></tr><tr><td>entries are non-negative</td><td>diagonal entries are non-positive</td></tr><tr><td>rows sum to 1 in this convention</td><td>rows sum to 0 in the corresponding convention</td></tr></table>
+<p>The next section develops generator matrices carefully.</p>
+
+<h2>The complete interpretation</h2>
+<div class="flow"><span>biological states</span><b>→</b><span>one-step probabilities</span><b>→</b><span>transition matrix \(P\)</span><b>→</b><span>multiply distributions or simulate paths</span><b>→</b><span>multi-step behaviour</span></div>
+<div class="box"><strong>Key idea.</strong> A transition matrix stores the complete one-step probabilistic rule of a finite DTMC. Row \(i\) tells us where the process can go next from state \(i\). Matrix multiplication combines all possible routes through the state space, which is why powers of \(P\) describe behaviour over multiple steps.</div>
+</article></main></body></html>
