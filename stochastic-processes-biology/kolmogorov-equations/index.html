@@ -1,1 +1,149 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kolmogorov equations | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Kolmogorov equations</h1><p>The Kolmogorov equations describe how CTMC transition probabilities change through continuous time.</p><h2>Transition matrix</h2><p>Let \(P(t)\) have entries \(p_{ij}(t)=P(X(t)=j\mid X(0)=i)\), and let \(Q\) be the generator.</p><h2>Forward equation</h2>\[\frac{dP(t)}{dt}=P(t)Q.\]<h2>Backward equation</h2>\[\frac{dP(t)}{dt}=QP(t).\]<p>For a finite time-homogeneous CTMC, both are satisfied and \(P(t)=e^{tQ}\).</p><h2>Probability-vector form</h2><p>For a row probability vector \(\boldsymbol\pi(t)\),</p>\[\frac{d\boldsymbol\pi(t)}{dt}=\boldsymbol\pi(t)Q.\]<div class="box"><strong>Key idea.</strong> The generator specifies instantaneous rates; the Kolmogorov equations convert those rates into time-dependent state probabilities.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kolmogorov equations | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.diagram{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.diagram svg{width:100%;min-width:700px;height:auto;display:block}.node{fill:#edf5f0;stroke:#39815e;stroke-width:2}.arrow{stroke:#53635a;stroke-width:2;fill:none}.label{font-size:13px;fill:#2d3c34}.nlabel{font-size:15px;font-weight:700;fill:#26362e}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Kolmogorov equations</h1>
+<p>The <strong>Kolmogorov equations</strong> describe how the probabilities of a continuous-time Markov chain (CTMC) change through time. The generator matrix gives the instantaneous transition rates; the Kolmogorov equations turn those rates into time-dependent probabilities.</p>
+<div class="box"><strong>Core idea.</strong> Think of probability as flowing between states. The probability of a state increases when probability flows into it from other states and decreases when probability flows out of it.</div>
+
+<h2>Why do we need these equations?</h2>
+<p>A CTMC can generate one random trajectory by sampling waiting times and events. But often we want a different question:</p>\[\text{What is the probability of being in each state at time }t?\]
+<p>Instead of simulating one possible path, the Kolmogorov equations describe the <strong>whole probability distribution</strong> through time.</p>
+
+<h2>State probabilities</h2>
+<p>Suppose the states are \(0,1,\ldots,N\). Define</p>\[\pi_i(t)=P(X(t)=i).\]
+<p>The row probability vector is</p>\[\boldsymbol\pi(t)=(\pi_0(t),\pi_1(t),\ldots,\pi_N(t)).\]
+<p>Because the process must be in one of the states,</p>\[\sum_i\pi_i(t)=1.\]
+
+<h2>The probability-flow idea</h2>
+<p>Consider one state \(i\). Its probability can change for two reasons:</p>
+<div class="flow"><span>probability flows in from other states</span><b>→</b><span>state \(i\)</span><b>→</b><span>probability flows out to other states</span></div>
+<p>Therefore</p>\[\boxed{\text{rate of change} = \text{inflow rate} - \text{outflow rate}}.\]
+<p>This simple balance is the intuitive basis of the forward equations.</p>
+
+<h2>A two-state example first</h2>
+<p>Suppose a biological system switches between states 0 and 1:</p>\[0\xrightarrow{\alpha}1,\qquad1\xrightarrow{\beta}0.\]
+<div class="diagram"><svg viewBox="0 0 850 250" role="img" aria-label="Two-state CTMC showing probability flow"><defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53635a"/></marker></defs><rect class="node" x="130" y="90" width="180" height="70" rx="12"/><rect class="node" x="540" y="90" width="180" height="70" rx="12"/><text class="nlabel" x="220" y="132" text-anchor="middle">State 0</text><text class="nlabel" x="630" y="132" text-anchor="middle">State 1</text><path class="arrow" d="M310 105 C390 45 460 45 540 105" marker-end="url(#a)"/><text class="label" x="425" y="48" text-anchor="middle">rate α</text><path class="arrow" d="M540 145 C460 205 390 205 310 145" marker-end="url(#a)"/><text class="label" x="425" y="218" text-anchor="middle">rate β</text></svg></div>
+<p>Let</p>\[\pi_0(t)=P(X(t)=0),\qquad\pi_1(t)=P(X(t)=1).\]
+
+<h2>Deriving the equation for state 1</h2>
+<p>Probability enters state 1 from state 0. The amount of probability currently in state 0 is \(\pi_0(t)\), and its transition rate to state 1 is \(\alpha\). Therefore the inflow rate is</p>\[\alpha\pi_0(t).\]
+<p>Probability leaves state 1 for state 0 at rate \(\beta\), so the outflow rate is</p>\[\beta\pi_1(t).\]
+<p>Hence</p>\[\boxed{\frac{d\pi_1}{dt}=\alpha\pi_0-\beta\pi_1}.\]
+<p>Similarly,</p>\[\boxed{\frac{d\pi_0}{dt}=\beta\pi_1-\alpha\pi_0}.\]
+<div class="box"><strong>Notice the structure:</strong> every incoming transition contributes a positive term; every outgoing transition contributes a negative term.</div>
+
+<h2>Why is probability conserved?</h2>
+<p>Add the two equations:</p>\[\frac{d\pi_0}{dt}+\frac{d\pi_1}{dt}=(\beta\pi_1-\alpha\pi_0)+(\alpha\pi_0-\beta\pi_1)=0.\]
+<p>Therefore</p>\[\frac{d}{dt}(\pi_0+\pi_1)=0.\]
+<p>If the probabilities initially sum to 1, they continue to sum to 1. Probability moves between states but is neither created nor destroyed.</p>
+
+<h2>The generator for the two-state example</h2>
+<p>The generator is</p>\[Q=\begin{pmatrix}-\alpha&\alpha\\\beta&-\beta\end{pmatrix}.\]
+<p>The probability equations can be written together as</p>\[\boxed{\frac{d\boldsymbol\pi(t)}{dt}=\boldsymbol\pi(t)Q}.\]
+<p>This compact matrix equation is the <strong>Kolmogorov forward equation</strong> for the state distribution.</p>
+
+<h2>Understanding the matrix multiplication</h2>
+<p>The \(j\)-th component of \(\boldsymbol\pi Q\) is</p>\[\sum_i\pi_i(t)q_{ij}.\]
+<p>For \(i\ne j\), each term \(\pi_iq_{ij}\) represents probability currently in state \(i\) multiplied by the rate of moving from \(i\) to \(j\). These are inflows into \(j\).</p>
+<p>The diagonal contribution</p>\[\pi_jq_{jj}\]
+<p>is negative because \(q_{jj}\) is minus the total leaving rate. It represents outflow from state \(j\).</p>
+<div class="box"><strong>So \(\boldsymbol\pi Q\) is simply the inflow-minus-outflow calculation performed simultaneously for every state.</strong></div>
+
+<h2>The general forward equation for one state</h2>
+<p>For state \(j\),</p>\[\boxed{\frac{d\pi_j(t)}{dt}=\sum_{i\ne j}\pi_i(t)q_{ij}-\pi_j(t)\sum_{k\ne j}q_{jk}}.\]
+<p>The first sum is all probability flowing into \(j\). The second is all probability flowing out of \(j\).</p>
+<p>Because</p>\[q_{jj}=-\sum_{k\ne j}q_{jk},\]
+<p>this becomes</p>\[\frac{d\pi_j(t)}{dt}=\sum_i\pi_i(t)q_{ij}.\]
+
+<h2>Birth–death processes</h2>
+<p>For a birth–death process, state \(i\) can move only to \(i+1\) at rate \(b(i)\) or to \(i-1\) at rate \(d(i)\).</p>
+<div class="diagram"><svg viewBox="0 0 920 260" role="img" aria-label="Probability flows into and out of state i in a birth-death process"><defs><marker id="b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53635a"/></marker></defs><rect class="node" x="45" y="95" width="180" height="65" rx="12"/><rect class="node" x="370" y="95" width="180" height="65" rx="12"/><rect class="node" x="695" y="95" width="180" height="65" rx="12"/><text class="nlabel" x="135" y="134" text-anchor="middle">i − 1</text><text class="nlabel" x="460" y="134" text-anchor="middle">i</text><text class="nlabel" x="785" y="134" text-anchor="middle">i + 1</text><path class="arrow" d="M225 108 C275 60 320 60 370 108" marker-end="url(#b)"/><text class="label" x="298" y="58" text-anchor="middle">in: b(i−1)</text><path class="arrow" d="M695 108 C645 60 600 60 550 108" marker-end="url(#b)"/><text class="label" x="622" y="58" text-anchor="middle">in: d(i+1)</text><path class="arrow" d="M370 148 C320 205 275 205 225 148" marker-end="url(#b)"/><text class="label" x="298" y="220" text-anchor="middle">out: d(i)</text><path class="arrow" d="M550 148 C600 205 645 205 695 148" marker-end="url(#b)"/><text class="label" x="622" y="220" text-anchor="middle">out: b(i)</text></svg></div>
+
+<h2>Deriving the birth–death forward equation</h2>
+<p>Let</p>\[p_i(t)=P(X(t)=i).\]
+<p>Probability enters state \(i\) in two ways:</p>\[i-1\to i\quad\text{at rate }b(i-1),\]\[i+1\to i\quad\text{at rate }d(i+1).\]
+<p>Therefore the inflow rate is</p>\[b(i-1)p_{i-1}(t)+d(i+1)p_{i+1}(t).\]
+<p>Probability leaves state \(i\) through</p>\[i\to i+1\quad\text{at rate }b(i),\qquad i\to i-1\quad\text{at rate }d(i).\]
+<p>Therefore the outflow rate is</p>\[[b(i)+d(i)]p_i(t).\]
+<p>Combining inflow and outflow gives</p>\[\boxed{\frac{dp_i}{dt}=b(i-1)p_{i-1}+d(i+1)p_{i+1}-[b(i)+d(i)]p_i}.\]
+<div class="box"><strong>This equation has a direct interpretation:</strong> probability arrives from the two neighbouring states and leaves toward the same two neighbours.</div>
+
+<h2>SIS epidemic example</h2>
+<p>For a stochastic SIS epidemic with infectious count \(i\),</p>\[b(i)=\beta\frac{(N-i)i}{N},\qquad d(i)=\gamma i.\]
+<p>Substituting these rates into the birth–death equation gives the evolution of the probability that exactly \(i\) people are infectious at time \(t\).</p>
+<p>Writing the structure before expanding the rates is often clearer:</p>\[\frac{dp_i}{dt}=b(i-1)p_{i-1}+d(i+1)p_{i+1}-[b(i)+d(i)]p_i.\]
+<p>This is fundamentally different from the deterministic SIS equation: here \(p_i(t)\) is a <strong>probability of a discrete epidemic state</strong>, not the infectious population itself.</p>
+
+<h2>Why this gives more than a deterministic trajectory</h2>
+<p>A deterministic model gives one value such as \(I(t)\). The Kolmogorov equations give the entire distribution</p>\[p_0(t),p_1(t),\ldots,p_N(t).\]
+<p>From this distribution we can calculate quantities such as</p>\[P(I(t)=0)=p_0(t),\]
+<p>which is the probability that infection is extinct by time \(t\), and</p>\[P(I(t)\ge m)=\sum_{i=m}^{N}p_i(t),\]
+<p>which can represent the probability that an epidemic exceeds a chosen level.</p>
+
+<h2>Transition probabilities rather than one initial distribution</h2>
+<p>So far we have followed one probability vector \(\boldsymbol\pi(t)\). We can instead ask for transition probabilities</p>\[p_{ij}(t)=P(X(t)=j\mid X(0)=i).\]
+<p>Collect all of them into the transition matrix</p>\[P(t)=(p_{ij}(t)).\]
+<p>Each row corresponds to a different possible initial state.</p>
+
+<h2>The Kolmogorov forward equation</h2>
+<p>For a finite time-homogeneous CTMC using our row convention,</p>\[\boxed{\frac{dP(t)}{dt}=P(t)Q}.\]
+<p>This is the matrix version of the probability-flow equations derived above.</p>
+<p>The generator acts on the <strong>destination side</strong>: probability that has reached intermediate states then moves onward according to the rates in \(Q\).</p>
+
+<h2>Where does the forward equation come from?</h2>
+<p>The Markov property gives the Chapman–Kolmogorov relation</p>\[P(t+h)=P(t)P(h).\]
+<p>For a very small \(h\),</p>\[P(h)=I+hQ+o(h).\]
+<p>Therefore</p>\[P(t+h)=P(t)[I+hQ+o(h)].\]
+<p>Subtract \(P(t)\):</p>\[P(t+h)-P(t)=hP(t)Q+o(h).\]
+<p>Divide by \(h\) and let \(h\to0\):</p>\[\boxed{P'(t)=P(t)Q}.\]
+<p>This derivation shows exactly how the local rates in \(Q\) determine probability evolution over time.</p>
+
+<h2>The Kolmogorov backward equation</h2>
+<p>The Chapman–Kolmogorov relation can also be written</p>\[P(t+h)=P(h)P(t).\]
+<p>Using</p>\[P(h)=I+hQ+o(h),\]
+<p>gives</p>\[P(t+h)=[I+hQ+o(h)]P(t).\]
+<p>Following the same limit gives</p>\[\boxed{\frac{dP(t)}{dt}=QP(t)}.\]
+<p>This is the <strong>Kolmogorov backward equation</strong>.</p>
+
+<h2>What is the intuitive difference between forward and backward?</h2>
+<table class="compare"><tr><th>Forward equation</th><th>Backward equation</th></tr><tr><td>\(P'(t)=P(t)Q\)</td><td>\(P'(t)=QP(t)\)</td></tr><tr><td>focuses naturally on probability flow into and out of destination states</td><td>focuses naturally on how the first transition from the initial state affects later outcomes</td></tr><tr><td>especially intuitive for evolving a current probability distribution</td><td>especially useful for quantities viewed as functions of the starting state</td></tr></table>
+<p>For a finite time-homogeneous CTMC, both equations describe the same transition matrix.</p>
+
+<h2>Why can both equations be true?</h2>
+<p>The solution is</p>\[\boxed{P(t)=e^{tQ}}.\]
+<p>Because a matrix commutes with any power series in itself,</p>\[Qe^{tQ}=e^{tQ}Q.\]
+<p>Therefore</p>\[P'(t)=QP(t)=P(t)Q.\]
+<p>There is no contradiction between the two equations.</p>
+
+<h2>Initial condition</h2>
+<p>At time zero, no time has passed, so a process starting in state \(i\) is still in state \(i\). Hence</p>\[\boxed{P(0)=I}.\]
+<p>The matrix differential equation</p>\[P'(t)=P(t)Q,\qquad P(0)=I\]
+<p>has solution</p>\[P(t)=e^{tQ}.\]
+
+<h2>Probability-vector form</h2>
+<p>If the initial distribution is \(\boldsymbol\pi(0)\), then</p>\[\boldsymbol\pi(t)=\boldsymbol\pi(0)P(t).\]
+<p>Using \(P(t)=e^{tQ}\),</p>\[\boxed{\boldsymbol\pi(t)=\boldsymbol\pi(0)e^{tQ}}.\]
+<p>Differentiating gives</p>\[\boxed{\frac{d\boldsymbol\pi(t)}{dt}=\boldsymbol\pi(t)Q}.\]
+
+<h2>Boundary equations matter</h2>
+<p>The general birth–death equation applies to interior states, but boundary states must be treated according to the biology.</p>
+<p>For example, if state 0 is absorbing, probability can enter state 0 through a transition \(1\to0\), but it cannot leave. Therefore</p>\[\frac{dp_0}{dt}=d(1)p_1(t).\]
+<p>In an epidemic, this describes probability accumulating in the extinction state.</p>
+<div class="warning"><strong>Do not blindly apply the interior-state formula at a boundary.</strong> Impossible states such as \(-1\) or \(N+1\) must not be introduced.</div>
+
+<h2>Kolmogorov equations versus simulation</h2>
+<table class="compare"><tr><th>Kolmogorov equations</th><th>Stochastic simulation</th></tr><tr><td>evolve the complete probability distribution</td><td>generate one random trajectory at a time</td></tr><tr><td>deterministic equations for probabilities</td><td>random sequence of events and waiting times</td></tr><tr><td>can be exact for manageable finite state spaces</td><td>useful even when the state space is too large for all probability equations</td></tr><tr><td>state space can make the system very large</td><td>many repetitions are needed to estimate probabilities accurately</td></tr></table>
+<p>These are not competing descriptions. They are two ways of studying the same stochastic model.</p>
+
+<h2>Why the equations become difficult for large biological models</h2>
+<p>For a simple SIS model with population size \(N\), there are \(N+1\) possible infectious counts. But a model with several compartments may have a very large number of possible combinations of \(S,E,I,R,\ldots\).</p>
+<p>The Kolmogorov equations then require one probability equation for every possible state. This rapid growth of the state space is one reason simulation methods such as the Gillespie algorithm are so important.</p>
+
+<h2>The complete picture</h2>
+<div class="flow"><span>biological events</span><b>→</b><span>rates</span><b>→</b><span>generator \(Q\)</span><b>→</b><span>Kolmogorov equations</span><b>→</b><span>state probabilities through time</span></div>
+<div class="box"><strong>Key idea.</strong> The Kolmogorov forward equations are probability-balance equations: probability flowing into a state increases its probability, while probability flowing out decreases it. In matrix form, \(\boldsymbol\pi'(t)=\boldsymbol\pi(t)Q\). The backward equation provides a complementary starting-state view, and both lead to \(P(t)=e^{tQ}\) for a finite time-homogeneous CTMC.</div>
+
+<h2>What comes next?</h2>
+<p>The Kolmogorov equations describe the full probability distribution mathematically. When the state space becomes large, solving all these equations can be impractical. The next section develops the <strong>Gillespie algorithm</strong>, which generates exact CTMC sample paths directly from the event rates.</p>
+</article></main></body></html>
