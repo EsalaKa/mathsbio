@@ -1,1 +1,97 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>SDE biological models | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><article class="lesson-content"><h1 class="section-title">SDE biological models</h1><p>SDEs extend differential-equation models by including continuous random fluctuations.</p><p>A stochastic population model may be written</p>\[dX_t=f(X_t)dt+g(X_t)dW_t.\]<p>The function \(f\) represents the deterministic biological mechanism, while \(g\) specifies how noise magnitude depends on the state.</p><h2>Choosing the noise</h2><p>The diffusion term should have a biological or mathematical justification. In diffusion approximations of event-based models, it can be derived from underlying transition rates rather than added arbitrarily.</p><div class="box"><strong>Key idea.</strong> A biological SDE should specify both the mechanism governing average change and the mechanism governing variability.</div></article></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SDE biological models | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.figure{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:700px;height:auto;display:block}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}</style></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><article class="lesson-content"><h1 class="section-title">SDE biological models</h1>
+<p>Stochastic differential equations extend ordinary differential-equation models by allowing the biological variables to fluctuate randomly through continuous time.</p>
+<div class="box"><strong>Core idea.</strong> A biological SDE should describe both <strong>how the system tends to change</strong> and <strong>how random variability enters that change</strong>.</div>
+
+<h2>From a deterministic model to an SDE</h2><p>Suppose a deterministic biological model is</p>\[\frac{dX}{dt}=f(X,t).\]
+<p>In differential notation,</p>\[dX_t=f(X_t,t)dt.\]
+<p>An SDE adds a stochastic contribution:</p>\[\boxed{dX_t=f(X_t,t)dt+g(X_t,t)dW_t}.\]
+<table class="defs"><tr><th>Part</th><th>Biological meaning</th></tr><tr><td>\(f(X_t,t)dt\)</td><td>systematic biological change: growth, infection, recovery, death, migration, etc.</td></tr><tr><td>\(g(X_t,t)dW_t\)</td><td>continuous random fluctuation around that systematic change</td></tr></table>
+
+<h2>Why not simply add random noise?</h2><p>It is tempting to write</p>\[dX_t=f(X_t)dt+\sigma dW_t\]
+<p>just to make the model stochastic. Sometimes that is a useful phenomenological model, but in mechanistic biology the form of the noise should ideally reflect the process generating the randomness.</p>
+<div class="warning"><strong>Noise should not be chosen only because the graph looks realistic.</strong> Its magnitude and structure should be linked to biological assumptions, data, or an underlying event-based model whenever possible.</div>
+
+<h2>Two common ways biological SDEs arise</h2><table class="compare"><tr><th>Approach</th><th>Idea</th></tr><tr><td>phenomenological noise</td><td>choose a diffusion term to represent unresolved environmental or measurement variability</td></tr><tr><td>diffusion approximation</td><td>derive drift and diffusion from underlying stochastic event rates such as births, deaths, infections and recoveries</td></tr></table>
+<p>The second approach often gives the diffusion coefficient a direct mechanistic interpretation.</p>
+
+<h2>Example 1: stochastic population growth</h2><p>The deterministic exponential-growth model is</p>\[\frac{dX}{dt}=rX.\]
+<p>A simple stochastic version with multiplicative noise is</p>\[\boxed{dX_t=rX_tdt+\sigma X_tdW_t}.\]
+<p>The drift \(rX_t\) gives systematic proportional growth. The diffusion \(\sigma X_t\) means the magnitude of random fluctuations increases with population size.</p>
+
+<h2>Why multiplicative noise can make biological sense</h2><p>If the population is twice as large, there may be roughly twice as many opportunities for random births, deaths, interactions or environmental responses. A state-dependent diffusion term can represent that idea.</p><p>This differs from additive noise,</p>\[dX_t=rX_tdt+\sigma dW_t,\]
+<p>where random fluctuations have the same absolute size regardless of the current population.</p>
+
+<h2>Same deterministic growth, different stochastic paths</h2><div class="figure"><svg id="growthPlot" viewBox="0 0 850 500" role="img" aria-label="Deterministic and stochastic biological population-growth paths"></svg><div class="caption">Deterministic exponential growth and three Euler–Maruyama trajectories of \(dX=rXdt+\sigma XdW\), all starting from the same population. The legend is above the plotting region. Individual stochastic paths differ, although the drift mechanism is the same.</div></div>
+
+<h2>Example 2: stochastic logistic growth</h2><p>The deterministic logistic model is</p>\[\frac{dX}{dt}=rX\left(1-\frac{X}{K}\right).\]
+<p>A stochastic extension might be</p>\[\boxed{dX_t=rX_t\left(1-\frac{X_t}{K}\right)dt+\sigma X_tdW_t}.\]
+<p>Here the drift still contains density dependence and carrying capacity \(K\), while the diffusion represents proportional environmental variability.</p>
+<div class="box"><strong>Important.</strong> The drift preserves the biological mechanism of the deterministic model. The diffusion specifies the stochastic mechanism added to it.</div>
+
+<h2>Event-based derivation: the important idea</h2><p>Now consider a population where the state changes through discrete events. Suppose state \(X=i\) has</p>\[\text{upward event rate}=b(i),\qquad\text{downward event rate}=d(i).\]
+<p>Over a short interval \(\Delta t\), the expected change is approximately</p>\[E[\Delta X\mid X=i]\approx[b(i)-d(i)]\Delta t.\]
+<p>The variance of the change is approximately</p>\[\operatorname{Var}(\Delta X\mid X=i)\approx[b(i)+d(i)]\Delta t.\]
+
+<h2>Why difference gives drift but sum gives variance</h2><p>An upward event contributes \(+1\); a downward event contributes \(-1\). Their expected signed effects therefore subtract:</p>\[\boxed{\text{drift}=b(i)-d(i)}.\]
+<p>But when variability is calculated, both event types contribute positive squared changes because</p>\[(+1)^2=(-1)^2=1.\]
+<p>Therefore their variance contributions add:</p>\[\boxed{\text{variance rate}=b(i)+d(i)}.\]
+<div class="box"><strong>This gives a very useful rule.</strong> For a simple birth–death process, the SDE diffusion coefficient is the square root of the sum of the event rates.</div>
+
+<h2>The corresponding diffusion approximation</h2><p>The birth–death CTMC can therefore be approximated by</p>\[\boxed{dX_t=[b(X_t)-d(X_t)]dt+\sqrt{b(X_t)+d(X_t)}\,dW_t}.\]
+<p>The deterministic drift comes from the net event rate. The diffusion comes from the total event variability.</p>
+
+<h2>Example 3: SIS epidemic</h2><p>Let \(I(t)\) be the infectious population in an SIS model with total population \(N\). The event rates are</p>\[b(i)=\beta\frac{(N-i)i}{N}\]
+<p>for infection and</p>\[d(i)=\gamma i\]
+<p>for recovery.</p>
+<p>The deterministic net change is</p>\[b(i)-d(i)=\beta\frac{(N-i)i}{N}-\gamma i.\]
+
+<h2>SIS diffusion approximation</h2><p>Using the birth–death rule gives</p>\[\boxed{dI_t=\left[\beta\frac{(N-I_t)I_t}{N}-\gamma I_t\right]dt+\sqrt{\beta\frac{(N-I_t)I_t}{N}+\gamma I_t}\,dW_t}.\]
+<p>The first bracket is exactly the deterministic SIS drift. The square-root term measures the stochastic variation generated by infection and recovery events.</p>
+
+<h2>Why this diffusion coefficient makes sense</h2><p>If infection and recovery events are both frequent, there are many opportunities for random event-count fluctuations, so the diffusion magnitude is larger.</p><p>If both event rates approach zero, the event-driven stochastic variation also approaches zero.</p>
+<div class="box"><strong>Mechanistic interpretation.</strong> Infection and recovery contribute with opposite signs to the mean change, but both contribute positively to uncertainty.</div>
+
+<h2>CTMC and SDE describe randomness differently</h2><table class="compare"><tr><th>CTMC</th><th>SDE diffusion approximation</th></tr><tr><td>integer-valued states</td><td>continuous-valued states</td></tr><tr><td>individual events are explicit</td><td>many event fluctuations are approximated continuously</td></tr><tr><td>step-like trajectories</td><td>continuous rough trajectories</td></tr><tr><td>natural for small populations and extinction</td><td>often efficient for larger populations</td></tr></table>
+
+<h2>Visual comparison: deterministic, CTMC-like and SDE behaviour</h2><div class="figure"><svg id="sisPlot" viewBox="0 0 850 500" role="img" aria-label="Deterministic SIS trajectory and stochastic SDE approximation"></svg><div class="caption">Deterministic SIS solution and several numerical SDE diffusion-approximation paths using the mechanistic drift and diffusion terms above. The stochastic paths fluctuate continuously around the systematic epidemic tendency.</div></div>
+
+<h2>Why an SDE can produce non-integer values</h2><p>An SDE approximation may produce values such as</p>\[I(t)=12.7.\]
+<p>That does not mean 0.7 of a person exists. It means the discrete event process has been approximated by a continuous stochastic variable.</p><p>This approximation is often more reasonable when counts are sufficiently large.</p>
+
+<h2>Boundary problems</h2><p>A naïve SDE approximation can sometimes produce biologically impossible values such as negative populations.</p><div class="warning"><strong>This is a limitation, not just a plotting problem.</strong> If boundaries such as \(X=0\) are biologically important, the SDE formulation and numerical method must be chosen carefully. A CTMC may be preferable when exact extinction behaviour matters.</div>
+
+<h2>Environmental noise versus demographic noise</h2><table class="defs"><tr><th>Type</th><th>Interpretation</th></tr><tr><td>demographic stochasticity</td><td>randomness from individual births, deaths, infections, recoveries and other discrete events</td></tr><tr><td>environmental stochasticity</td><td>random changes in external conditions affecting many individuals or rates simultaneously</td></tr></table>
+<p>These sources can lead to different diffusion structures and should not automatically be represented by the same noise term.</p>
+
+<h2>Several biological variables</h2><p>For a model with several compartments, write</p>\[\mathbf X_t=(X_{1,t},\ldots,X_{m,t})^T.\]
+<p>A multidimensional SDE has the form</p>\[\boxed{d\mathbf X_t=\mathbf a(\mathbf X_t,t)dt+B(\mathbf X_t,t)d\mathbf W_t}.\]
+<p>The drift vector \(\mathbf a\) describes systematic changes in all compartments. The diffusion matrix \(B\) describes the magnitudes and correlations of stochastic changes.</p>
+
+<h2>Why one Brownian motion is often not enough</h2><p>Different biological events may create different directions of stochastic change. For an SIR epidemic, infection decreases \(S\) and increases \(I\), while recovery decreases \(I\) and increases \(R\).</p><p>Using separate Brownian drivers for distinct event mechanisms can preserve this structure and the induced correlations between compartments.</p>
+
+<h2>SIR event-vector view</h2><p>Let</p>\[\mathbf X=(S,I,R)^T.\]
+<p>An infection event has state-change vector</p>\[\boldsymbol\nu_1=(-1,+1,0)^T,\]
+<p>while recovery has</p>\[\boldsymbol\nu_2=(0,-1,+1)^T.\]
+<p>If their rates are \(a_1(\mathbf X)\) and \(a_2(\mathbf X)\), a diffusion approximation can be written schematically as</p>\[d\mathbf X=\left[\boldsymbol\nu_1a_1+\boldsymbol\nu_2a_2\right]dt+\boldsymbol\nu_1\sqrt{a_1}\,dW_1+\boldsymbol\nu_2\sqrt{a_2}\,dW_2.\]
+<p>This shows how the stochastic terms can be derived directly from the underlying event mechanisms.</p>
+
+<h2>Why this event-vector formulation is useful</h2><p>The same infection event simultaneously changes two compartments. Using its change vector in both the drift and diffusion automatically preserves that connection.</p><div class="box"><strong>One biological event can create correlated stochastic changes across several compartments.</strong></div>
+
+<h2>Euler–Maruyama simulation</h2><p>For a one-dimensional biological SDE</p>\[dX_t=f(X_t,t)dt+g(X_t,t)dW_t,\]
+<p>Euler–Maruyama uses</p>\[\boxed{X_{n+1}=X_n+f(X_n,t_n)\Delta t+g(X_n,t_n)\sqrt{\Delta t}\,Z_n},\]
+<p>where</p>\[Z_n\sim N(0,1).\]
+<p>This produces one numerical stochastic trajectory. Repeating the simulation produces a distribution of possible biological histories.</p>
+
+<h2>What can repeated SDE simulations tell us?</h2><table class="defs"><tr><th>Quantity</th><th>Biological question</th></tr><tr><td>mean trajectory</td><td>What is the average behaviour across possible histories?</td></tr><tr><td>variance</td><td>How uncertain is the state at time \(t\)?</td></tr><tr><td>peak distribution</td><td>How variable is the maximum epidemic or population size?</td></tr><tr><td>threshold probability</td><td>How often is a biologically important level crossed?</td></tr></table>
+
+<h2>SDEs are not automatically “better” than deterministic models</h2><p>An SDE adds information about uncertainty, but it also adds assumptions and parameters. If the biological question concerns only average behaviour and random variability is negligible, a deterministic model may be sufficient.</p><p>If extinction, outbreak risk, threshold crossing or uncertainty matter, a stochastic model can provide information that a single deterministic trajectory cannot.</p>
+
+<h2>Choosing between CTMC and SDE</h2><table class="compare"><tr><th>Prefer CTMC when</th><th>Prefer SDE when</th></tr><tr><td>individual events matter</td><td>continuous approximation is acceptable</td></tr><tr><td>counts are small</td><td>counts are moderately large</td></tr><tr><td>exact extinction is important</td><td>continuous uncertainty is the main interest</td></tr><tr><td>event structure is central</td><td>computational efficiency or analytic approximation is useful</td></tr></table>
+
+<h2>The modelling workflow</h2><div class="flow"><span>define biological events</span><b>→</b><span>derive rates</span><b>→</b><span>obtain drift</span><b>→</b><span>obtain diffusion</span><b>→</b><span>write SDE</span><b>→</b><span>simulate and analyse uncertainty</span></div>
+
+<div class="box"><strong>Key idea.</strong> A biological SDE should not be thought of as a deterministic model with arbitrary noise added. The drift should represent the systematic biological mechanism, while the diffusion should represent a justified source of stochastic variability. When derived from event rates, the drift comes from the net event effect and the diffusion from the variance contributed by those events.</div>
+</article></main>
+<script>(function(){const NS='http://www.w3.org/2000/svg';function E(s,n,a,t){let z=document.createElementNS(NS,n);for(const k in a)z.setAttribute(k,a[k]);if(t!==undefined)z.textContent=t;s.appendChild(z);return z}function rng(seed){let x=seed>>>0;return()=>{x=(1664525*x+1013904223)>>>0;return(x+.5)/4294967296}}function normal(u){let a=Math.max(u(),1e-12),b=u();return Math.sqrt(-2*Math.log(a))*Math.cos(2*Math.PI*b)}function axes(s,xmax,ymin,ymax,top,bottom,xlab,ylab){let L=75,R=770,T=top,B=bottom,X=x=>L+(R-L)*x/xmax,Y=y=>B-(B-T)*(y-ymin)/(ymax-ymin);E(s,'line',{x1:L,y1:B,x2:R,y2:B,stroke:'#53635a'});E(s,'line',{x1:L,y1:T,x2:L,y2:B,stroke:'#53635a'});for(let x=0;x<=xmax;x+=xmax/5)E(s,'text',{x:X(x),y:B+20,'text-anchor':'middle','font-size':10},Number(x.toFixed(1)));E(s,'text',{x:(L+R)/2,y:B+55,'text-anchor':'middle','font-size':14},xlab);let q=E(s,'text',{x:20,y:(T+B)/2,'text-anchor':'middle','font-size':14},ylab);q.setAttribute('transform','rotate(-90 20 '+((T+B)/2)+')');return{L,R,T,B,X,Y}}
+/* growth */let g=document.getElementById('growthPlot'),cols=['#6f6b9a','#39815e','#a07042'];E(g,'line',{x1:125,y1:35,x2:170,y2:35,stroke:'#333','stroke-width':2.5,'stroke-dasharray':'8 6'});E(g,'text',{x:180,y:40,'font-size':11},'deterministic growth');cols.forEach((c,j)=>{E(g,'line',{x1:390,y1:35+j*24,x2:435,y2:35+j*24,stroke:c,'stroke-width':2.5});E(g,'text',{x:445,y:40+j*24,'font-size':11},'stochastic path '+(j+1))});let a=axes(g,5,0,16,120,425,'time','population X(t)'),N=1000,dt=5/N,r=.35,sig=.28,X0=2;let det=[];for(let k=0;k<=N;k++){let t=k*dt;det.push(a.X(t)+','+a.Y(X0*Math.exp(r*t)))}E(g,'polyline',{points:det.join(' '),fill:'none',stroke:'#333','stroke-width':2.5,'stroke-dasharray':'8 6'});cols.forEach((c,j)=>{let u=rng(200+j),x=X0,p=[a.X(0)+','+a.Y(x)];for(let k=0;k<N;k++){x+=r*x*dt+sig*x*Math.sqrt(dt)*normal(u);if(x<0)x=0;p.push(a.X((k+1)*dt)+','+a.Y(x))}E(g,'polyline',{points:p.join(' '),fill:'none',stroke:c,'stroke-width':1.8})});
+/* SIS */let s=document.getElementById('sisPlot');E(s,'line',{x1:130,y1:35,x2:175,y2:35,stroke:'#333','stroke-width':2.5,'stroke-dasharray':'8 6'});E(s,'text',{x:185,y:40,'font-size':11},'deterministic SIS');cols.forEach((c,j)=>{E(s,'line',{x1:390,y1:35+j*24,x2:435,y2:35+j*24,stroke:c,'stroke-width':2.5});E(s,'text',{x:445,y:40+j*24,'font-size':11},'SDE path '+(j+1))});let b=axes(s,20,0,80,120,425,'time (days)','infectious population I(t)'),NN=1500,dd=20/NN,beta=.28,gamma=.10,It0=5;let I=It0,dpts=[b.X(0)+','+b.Y(I)];for(let k=0;k<NN;k++){let drift=beta*(100-I)*I/100-gamma*I;I+=drift*dd;if(I<0)I=0;dpts.push(b.X((k+1)*dd)+','+b.Y(I))}E(s,'polyline',{points:dpts.join(' '),fill:'none',stroke:'#333','stroke-width':2.5,'stroke-dasharray':'8 6'});cols.forEach((c,j)=>{let u=rng(900+j),i=It0,p=[b.X(0)+','+b.Y(i)];for(let k=0;k<NN;k++){let inf=beta*(100-i)*i/100,rec=gamma*i,dr=inf-rec,diff=Math.sqrt(Math.max(0,inf+rec));i+=dr*dd+diff*Math.sqrt(dd)*normal(u);if(i<0)i=0;if(i>100)i=100;p.push(b.X((k+1)*dd)+','+b.Y(i))}E(s,'polyline',{points:p.join(' '),fill:'none',stroke:c,'stroke-width':1.6})});})();</script></body></html>
