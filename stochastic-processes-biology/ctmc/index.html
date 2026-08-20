@@ -1,1 +1,122 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Continuous-time Markov chains | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Continuous-time Markov chains</h1><p>A continuous-time Markov chain (CTMC) evolves in continuous time but usually has a discrete state space. Events occur at random times.</p><h2>Transition rates</h2><p>If the rate from state \(i\) to state \(j\) is \(q_{ij}\), then for a sufficiently small interval \(\Delta t\),</p>\[P(i\to j\text{ in }\Delta t)=q_{ij}\Delta t+o(\Delta t),\qquad i\ne j.\]<h2>Waiting for an event</h2><p>If the total rate of leaving state \(i\) is \(a_i=\sum_{j\ne i}q_{ij}\), the waiting time to the next event is exponential with rate \(a_i\).</p><div class="box"><strong>Key idea.</strong> In a CTMC the model specifies event rates; these determine both random event times and which transition occurs.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Continuous-time Markov chains | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.lesson-content h3{font-size:1.2rem;margin-top:1.6rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.diagram{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.diagram svg{width:100%;min-width:700px;height:auto;display:block}.node{fill:#edf5f0;stroke:#39815e;stroke-width:2}.arrow{stroke:#53635a;stroke-width:2;fill:none}.label{font-size:13px;fill:#2d3c34}.nlabel{font-size:15px;font-weight:700;fill:#26362e}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Continuous-time Markov chains</h1>
+<p>A <strong>continuous-time Markov chain (CTMC)</strong> describes a random system that can change state at any time. Unlike a discrete-time Markov chain, we do not wait for fixed daily or weekly update points. Instead, biological events occur at random continuous times.</p>
+<div class="box"><strong>Core idea.</strong> A CTMC answers two random questions: <strong>when will the next event occur?</strong> and <strong>which event will it be?</strong> Both are determined by the event rates in the current state.</div>
+
+<h2>Why continuous time?</h2>
+<p>In a real epidemic, an infection might occur at 2.37 days and a recovery at 2.91 days. There is no biological reason that events must occur exactly at the end of each day.</p>
+<p>A CTMC therefore treats time as continuous:</p>\[t\ge0.\]
+<p>but the state can still be discrete. If \(I(t)\) counts infectious people, then</p>\[I(t)\in\{0,1,2,\ldots,N\}.\]
+<div class="box"><strong>Continuous time does not mean continuous population size.</strong> Time varies continuously, while individual-count states change by discrete jumps.</div>
+
+<h2>What does one CTMC trajectory look like?</h2>
+<p>The process remains in one state while waiting for an event. When an event occurs, the state jumps. It then waits again for the next event.</p>
+<div class="diagram"><svg id="jumpPlot" viewBox="0 0 820 410" role="img" aria-label="CTMC sample path generated from explicit event times and states"></svg><div class="caption">The step path is generated from explicit event times and integer states; the event markers are calculated from the same data and therefore lie exactly on the jumps.</div></div>
+<p>The horizontal sections are waiting periods. The vertical jumps are biological events.</p>
+
+<h2>Start with a simple SIS epidemic</h2>
+<p>Suppose the population size is \(N\) and the current number of infectious individuals is</p>\[I(t)=i.\]
+<p>Then the number susceptible is</p>\[S(t)=N-i.\]
+<p>Two events can change the state:</p>
+<table class="defs"><tr><th>Event</th><th>State change</th></tr><tr><td>infection</td><td>\(i\to i+1\)</td></tr><tr><td>recovery</td><td>\(i\to i-1\)</td></tr></table>
+
+<h2>Transition rates</h2>
+<p>Instead of directly specifying a probability for the next fixed time step, a CTMC specifies <strong>rates</strong>.</p>
+<p>For the SIS model, take</p>\[b(i)=\beta\frac{(N-i)i}{N}\]
+<p>as the total infection-event rate and</p>\[d(i)=\gamma i\]
+<p>as the total recovery-event rate when the current state is \(i\).</p>
+<div class="example"><strong>Interpretation.</strong> If \(b(i)=2.7\) per day, this does not mean exactly 2.7 infections occur in the next day. It is an event rate describing the current tendency for infection events to occur.</div>
+
+<h2>From a rate to probability over a short interval</h2>
+<p>For a sufficiently small interval \(\Delta t\),</p>\[\boxed{P(\text{infection in }\Delta t)\approx b(i)\Delta t},\]\[\boxed{P(\text{recovery in }\Delta t)\approx d(i)\Delta t}.\]
+<p>The probability of no event is approximately</p>\[P(\text{no event in }\Delta t)\approx1-[b(i)+d(i)]\Delta t.\]
+<p>The probability of two or more events in such a very short interval is of smaller order and becomes negligible relative to \(\Delta t\) as \(\Delta t\to0\).</p>
+<div class="box"><strong>Why multiply by \(\Delta t\)?</strong> A rate is measured per unit time. Multiplying by a short amount of time gives the approximate probability that the event occurs during that interval.</div>
+
+<h2>The CTMC transition diagram</h2>
+<p>From an interior SIS state \(i\), there are two possible jumps:</p>
+<div class="diagram"><svg viewBox="0 0 900 260" role="img" aria-label="Continuous-time SIS transition diagram"><defs><marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53635a"/></marker></defs><rect class="node" x="65" y="95" width="180" height="70" rx="12"/><rect class="node" x="360" y="95" width="180" height="70" rx="12"/><rect class="node" x="655" y="95" width="180" height="70" rx="12"/><text class="nlabel" x="155" y="125" text-anchor="middle">State</text><text class="label" x="155" y="148" text-anchor="middle">i − 1</text><text class="nlabel" x="450" y="125" text-anchor="middle">Current state</text><text class="label" x="450" y="148" text-anchor="middle">i</text><text class="nlabel" x="745" y="125" text-anchor="middle">State</text><text class="label" x="745" y="148" text-anchor="middle">i + 1</text><line class="arrow" x1="360" y1="130" x2="250" y2="130" marker-end="url(#arr)"/><line class="arrow" x1="540" y1="130" x2="650" y2="130" marker-end="url(#arr)"/><text class="label" x="305" y="112" text-anchor="middle">recovery rate d(i)</text><text class="label" x="595" y="112" text-anchor="middle">infection rate b(i)</text></svg></div>
+<p>Notice that the arrows are labelled by <strong>rates</strong>, not one-step probabilities. This is a fundamental difference from the DTMC transition diagram.</p>
+
+<h2>Total rate of leaving the current state</h2>
+<p>When \(I(t)=i\), either an infection or a recovery can be the next event. The total event rate is therefore</p>\[\boxed{a(i)=b(i)+d(i)}.\]
+<p>This total rate controls how long the process waits before <em>some</em> event occurs.</p>
+<div class="example"><strong>Example.</strong> If \(b(i)=2.7\) per day and \(d(i)=1.0\) per day, then \(a(i)=3.7\) per day.</div>
+
+<h2>How long until the next event?</h2>
+<p>If the total rate is \(a(i)\), the waiting time \(T\) to the next event has an exponential distribution:</p>\[\boxed{T\sim\operatorname{Exp}(a(i))}.\]
+<p>Its mean is</p>\[\boxed{E[T]=\frac{1}{a(i)}}.\]
+<p>For \(a(i)=3.7\) per day,</p>\[E[T]=\frac{1}{3.7}\approx0.270\text{ days}.\]
+<p>This is the <strong>mean waiting time</strong>, not a fixed waiting time. The actual next event may occur earlier or later.</p>
+
+<h2>Why the waiting time is random</h2>
+<p>The probability that no event has occurred by time \(t\) is</p>\[P(T>t)=e^{-a(i)t}.\]
+<p>Therefore the probability that at least one event has occurred by time \(t\) is</p>\[P(T\le t)=1-e^{-a(i)t}.\]
+<p>As the total rate increases, the process tends to wait less time for the next event.</p>
+
+<h2>Which event occurs?</h2>
+<p>Once we know that an event occurs, the relative rates determine its type:</p>\[\boxed{P(\text{infection next})=\frac{b(i)}{b(i)+d(i)}},\]\[\boxed{P(\text{recovery next})=\frac{d(i)}{b(i)+d(i)}}.\]
+<p>With \(b(i)=2.7\) and \(d(i)=1.0\),</p>\[P(\text{infection next})=\frac{2.7}{3.7}\approx0.730,\]\[P(\text{recovery next})=\frac{1.0}{3.7}\approx0.270.\]
+<p>So the model separates the next transition into two questions:</p>
+<div class="flow"><span>current state \(i\)</span><b>→</b><span>total rate \(a(i)\)</span><b>→</b><span>random waiting time</span><b>→</b><span>choose event using relative rates</span><b>→</b><span>new state</span></div>
+
+<h2>A complete numerical SIS step</h2>
+<p>Let</p>\[N=100,\qquad i=10,\qquad\beta=0.30,\qquad\gamma=0.10.\]
+<p>Then</p>\[b(10)=0.30\frac{90\times10}{100}=2.7,\qquad d(10)=0.10(10)=1.0.\]
+<p>Hence</p>\[a(10)=3.7.\]
+<p>The waiting time is sampled from</p>\[T\sim\operatorname{Exp}(3.7),\]
+<p>and, when the event occurs, infection is selected with probability approximately 0.730 and recovery with probability approximately 0.270.</p>
+<p>If infection is selected, the new state is 11. The rates are then recalculated using \(i=11\). If recovery is selected, the new state is 9 and the rates are recalculated using \(i=9\).</p>
+<div class="box"><strong>This repeated recalculation is essential.</strong> The event rates generally change when the state changes.</div>
+
+<h2>How a CTMC simulation proceeds</h2>
+<div class="flow"><span>1. current state</span><b>→</b><span>2. calculate event rates</span><b>→</b><span>3. calculate total rate</span><b>→</b><span>4. sample waiting time</span><b>→</b><span>5. choose event</span><b>→</b><span>6. update state</span><b>→</b><span>repeat</span></div>
+<p>This is the basic logic behind the Gillespie stochastic simulation algorithm developed later.</p>
+
+<h2>Generating the waiting time from a random number</h2>
+<p>If \(U\) is uniformly distributed on \((0,1)\), an exponential waiting time can be generated using</p>\[\boxed{T=-\frac{\ln U}{a(i)}}.\]
+<p>For example, if \(a(i)=3.7\) and a simulation produces \(U=0.40\), then</p>\[T=-\frac{\ln(0.40)}{3.7}\approx0.248\text{ days}.\]
+<p>The simulation clock therefore advances by approximately 0.248 days before the next event.</p>
+
+<h2>The Markov property in continuous time</h2>
+<p>A CTMC satisfies the Markov property. Once the present state is known, the probability law of future states does not require additional knowledge of the earlier path.</p>
+<p>For the simple SIS model, knowing \(I(t)=i\) determines \(S(t)=N-i\), the infection rate \(b(i)\), the recovery rate \(d(i)\), the waiting-time distribution and the probabilities of the possible next events.</p>
+
+<h2>Why exponential waiting times fit the Markov property</h2>
+<p>The exponential distribution is memoryless:</p>\[P(T>s+t\mid T>s)=P(T>t).\]
+<p>If the process has already waited \(s\) units without an event, the remaining waiting-time distribution does not depend on how long it has already waited.</p>
+<p>This is exactly compatible with a CTMC whose current state contains all the information needed for future evolution.</p>
+
+<h2>General transition rates</h2>
+<p>For a general CTMC, let \(q_{ij}\) be the transition rate from state \(i\) to a different state \(j\). For sufficiently small \(\Delta t\),</p>\[P(X(t+\Delta t)=j\mid X(t)=i)=q_{ij}\Delta t+o(\Delta t),\qquad i\ne j.\]
+<p>The notation \(o(\Delta t)\) represents terms that become negligible compared with \(\Delta t\) as \(\Delta t\to0\).</p>
+<p>The total rate of leaving state \(i\) is</p>\[a_i=\sum_{j\ne i}q_{ij}.\]
+<p>Conditional on leaving state \(i\), the probability that the next state is \(j\) is</p>\[\boxed{\frac{q_{ij}}{a_i}}.\]
+
+<h2>From transition rates to the generator matrix</h2>
+<p>All transition rates can be organised into a <strong>generator matrix</strong> \(Q\). For \(i\ne j\), the entry \(q_{ij}\) is the rate from state \(i\) to state \(j\).</p>
+<p>The diagonal entries are defined by</p>\[q_{ii}=-\sum_{j\ne i}q_{ij}.\]
+<p>Therefore each row of \(Q\) sums to zero.</p>
+<div class="warning"><strong>Do not confuse \(P\) and \(Q\).</strong> A DTMC transition matrix \(P\) contains probabilities and its rows sum to 1. A CTMC generator \(Q\) contains rates, has negative diagonal entries, and its rows sum to 0.</div>
+
+<h2>Boundary and absorbing states</h2>
+<p>In an SIS epidemic without imported infections, \(i=0\) is absorbing. There are no infectious people to transmit infection and no infectious people to recover, so</p>\[b(0)=d(0)=0.\]
+<p>Once the process reaches 0, it remains there.</p>
+<p>At \(i=N\), no additional infection is possible because there are no susceptible individuals, so \(b(N)=0\), although recoveries may still occur.</p>
+
+<h2>DTMC versus CTMC</h2>
+<table class="compare"><tr><th>DTMC</th><th>CTMC</th></tr><tr><td>changes considered at fixed time steps</td><td>events can occur at any continuous time</td></tr><tr><td>specifies one-step transition probabilities</td><td>specifies transition rates</td></tr><tr><td>next update time is fixed</td><td>next event time is random</td></tr><tr><td>transition matrix \(P\)</td><td>generator matrix \(Q\)</td></tr><tr><td>rows of \(P\) sum to 1</td><td>rows of \(Q\) sum to 0</td></tr></table>
+
+<h2>Why CTMCs are useful in biology</h2>
+<p>Many biological systems are naturally event-driven. Infections, recoveries, births, deaths, mutations and chemical reactions do not usually occur at predetermined clock times. CTMCs allow these events to occur individually at random times while retaining explicit biological event rates.</p>
+<p>They are particularly useful when population numbers are small, extinction matters, event timing matters, or we need probabilities of different possible outcomes rather than only an average trajectory.</p>
+
+<h2>What comes next?</h2>
+<p>The SIS CTMC above is an example of a <strong>birth–death process</strong>: the state can increase by one or decrease by one. The next section develops this important class of CTMCs more systematically.</p>
+<div class="box"><strong>Key idea.</strong> A CTMC remains in its current state for a random waiting time and then jumps to another state. The <strong>total rate</strong> determines how quickly the next event occurs, while the <strong>relative event rates</strong> determine which event occurs. After the jump, the rates are recalculated from the new state.</div>
+</article></main>
+<script>(function(){const svg=document.getElementById('jumpPlot'),NS='http://www.w3.org/2000/svg',L=80,R=735,T=45,B=330,xMax=10,yMax=8;function e(n,a,t){const z=document.createElementNS(NS,n);Object.keys(a).forEach(k=>z.setAttribute(k,a[k]));if(t!==undefined)z.textContent=t;svg.appendChild(z);return z}const sx=x=>L+(R-L)*x/xMax,sy=y=>B-(B-T)*y/yMax;e('line',{x1:L,y1:B,x2:R,y2:B,stroke:'#53635a','stroke-width':1.6});e('line',{x1:L,y1:T,x2:L,y2:B,stroke:'#53635a','stroke-width':1.6});for(let x=0;x<=10;x+=2){e('line',{x1:sx(x),y1:B,x2:sx(x),y2:B+5,stroke:'#53635a'});e('text',{x:sx(x),y:B+22,'text-anchor':'middle','font-size':12,fill:'#2d3c34'},x)}for(let y=0;y<=8;y+=1){e('line',{x1:L-5,y1:sy(y),x2:L,y2:sy(y),stroke:'#53635a'});e('text',{x:L-10,y:sy(y)+4,'text-anchor':'end','font-size':12,fill:'#2d3c34'},y)}e('text',{x:(L+R)/2,y:385,'text-anchor':'middle','font-size':15,'font-weight':700,fill:'#26362e'},'continuous time');const yl=e('text',{x:25,y:190,'text-anchor':'middle','font-size':15,'font-weight':700,fill:'#26362e'},'state I(t)');yl.setAttribute('transform','rotate(-90 25 190)');const data=[[0,2],[1.1,3],[2.4,4],[3.0,3],[4.6,4],[5.2,5],[6.9,4],[8.1,5],[9.4,4],[10,4]];let d='M '+sx(data[0][0])+' '+sy(data[0][1]);for(let i=1;i<data.length;i++)d+=' H '+sx(data[i][0])+' V '+sy(data[i][1]);e('path',{d,fill:'none',stroke:'#39815e','stroke-width':3});for(let i=1;i<data.length-1;i++)e('circle',{cx:sx(data[i][0]),cy:sy(data[i][1]),r:4,fill:'#39815e'});e('text',{x:510,y:70,'font-size':13,fill:'#2d3c34'},'random event times');e('text',{x:510,y:92,'font-size':13,fill:'#2d3c34'},'integer state changes');})();</script>
+</body></html>
