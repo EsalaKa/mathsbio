@@ -1,1 +1,151 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Extinction and outbreak probabilities | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Extinction and outbreak probabilities</h1><p>Stochastic epidemic models can assign probabilities to qualitatively different outcomes, such as early extinction or a substantial outbreak.</p><h2>Early extinction</h2><p>Even when a corresponding deterministic model predicts initial epidemic growth, a small number of infectious individuals can recover before producing enough new infections. The stochastic process can therefore reach the absorbing disease-free state.</p><h2>Branching approximation</h2><p>During the very early phase, when susceptible depletion is negligible, transmission can sometimes be approximated by a branching process. If each infectious individual independently produces offspring according to a distribution with probability-generating function \(G(s)\), the extinction probability \(q\) is the smallest solution in \([0,1]\) of</p>\[q=G(q).\]<h2>Simulation estimate</h2><p>For more complicated models, extinction or outbreak probability can be estimated from repeated simulations by the fraction satisfying a clearly defined outcome criterion.</p><div class="box"><strong>Key idea.</strong> A reproduction threshold describes whether growth is possible on average; stochastic modelling additionally quantifies the chance that an outbreak succeeds or dies out.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Extinction and outbreak probabilities | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.figure{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:700px;height:auto;display:block}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Extinction and outbreak probabilities</h1>
+<p>At the beginning of an epidemic, only a few infectious individuals may be present. Even if transmission is strong enough for infection to grow <em>on average</em>, chance can still determine whether those first transmission chains disappear or establish a substantial outbreak.</p>
+<div class="box"><strong>Core idea.</strong> A deterministic model asks what the epidemic does according to its average rates. A stochastic model can additionally ask: <strong>what is the probability that infection dies out, and what is the probability that it takes off?</strong></div>
+
+<h2>Start with one infectious person</h2>
+<p>Imagine one infectious person enters a fully susceptible population. Before recovering, that person might infect nobody, one person, two people, or several people.</p>
+<p>If no continuing chain of infection is created, the epidemic becomes extinct. If enough infections are generated and those new infectious people generate further infections, a large outbreak may become established.</p>
+<div class="flow"><span>1 infectious person</span><b>→</b><span>random transmissions</span><b>→</b><span>new infectious people</span><b>→</b><span>more random transmissions</span></div>
+
+<h2>Why can an epidemic die out when \(R_0>1\)?</h2>
+<p>Suppose</p>\[R_0=2.\]
+<p>This does <strong>not</strong> mean that every infectious person infects exactly two others. It means that, under the assumptions defining \(R_0\), the average number of secondary infections produced by a typical infectious individual in a fully susceptible population is 2.</p>
+<p>One person might infect 0 people, another 1, another 4, and so on. The average can be 2 while some transmission chains still end immediately.</p>
+<div class="box"><strong>Therefore \(R_0>1\) means sustained growth is possible on average; it does not mean that every introduction causes a major outbreak.</strong></div>
+
+<h2>Two possible early outcomes</h2>
+<div class="figure"><svg id="paths" viewBox="0 0 850 430" role="img" aria-label="Two stochastic epidemic trajectories, one becoming extinct and one growing"></svg><div class="caption">Two Gillespie trajectories generated from the same early epidemic birth–death model and the same rates. One random chain reaches zero and becomes extinct; another escapes the early stochastic phase and grows.</div></div>
+<p>The difference is not caused by changing the model parameters. It arises from different random event sequences.</p>
+
+<h2>What exactly do we mean by extinction?</h2>
+<p>For a closed epidemic model without imported infection, extinction usually means</p>\[\boxed{I(t)=0}.\]
+<p>Once no infectious individuals remain, no further infections can occur. The disease-free state is then absorbing.</p>
+<p>In models with exposed or latent compartments, extinction must be defined more carefully. For an SEIR model, for example, having \(I=0\) is not sufficient if \(E>0\), because exposed individuals can later become infectious. A natural disease-free condition is then</p>\[E=0\quad\text{and}\quad I=0.\]
+
+<h2>What exactly is an outbreak?</h2>
+<p>“Outbreak” must be defined before calculating an outbreak probability. One useful simulation definition is that the infectious population reaches a chosen level \(K\) before extinction:</p>\[\boxed{\text{outbreak}=\{I(t)\text{ reaches }K\text{ before }0\}}.\]
+<p>For example, if \(K=30\), a simulation that reaches 30 infectious individuals is classified as an outbreak, while a trajectory that reaches zero first is classified as extinct.</p>
+<div class="warning"><strong>The threshold \(K\) is a modelling choice, not a universal biological constant.</strong> It should match the scientific question and be reported clearly.</div>
+
+<h2>Extinction and outbreak are complementary only when defined that way</h2>
+<p>If every simulation is stopped when it reaches either extinction or a specified outbreak threshold, then</p>\[\boxed{P(\text{outbreak})=1-P(\text{extinction before threshold})}.\]
+<p>For other definitions—for example “outbreak by day 30”—there may be trajectories that satisfy neither outcome by the observation time. The probabilities then need not add to 1.</p>
+
+<h2>The early epidemic can be approximated by a branching process</h2>
+<p>At the very beginning of an epidemic, the number infected is small relative to the population. Almost everyone is still susceptible, so depletion of susceptibles is negligible.</p>
+<p>Under suitable assumptions, each infectious person can then be viewed approximately as starting an independent transmission branch.</p>
+<div class="figure"><svg viewBox="0 0 850 390" role="img" aria-label="Branching process transmission tree"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#607067"/></marker></defs><g stroke="#607067" stroke-width="2" fill="none" marker-end="url(#ar)"><path d="M425 65 L290 145"/><path d="M425 65 L425 145"/><path d="M425 65 L560 145"/><path d="M290 165 L230 245"/><path d="M290 165 L335 245"/><path d="M560 165 L510 245"/><path d="M560 165 L620 245"/><path d="M620 265 L675 335"/></g><g fill="#edf5f0" stroke="#39815e" stroke-width="2"><circle cx="425" cy="55" r="22"/><circle cx="290" cy="155" r="22"/><circle cx="425" cy="155" r="22"/><circle cx="560" cy="155" r="22"/><circle cx="230" cy="255" r="22"/><circle cx="335" cy="255" r="22"/><circle cx="510" cy="255" r="22"/><circle cx="620" cy="255" r="22"/><circle cx="675" cy="345" r="22"/></g><text x="425" y="25" text-anchor="middle" font-size="14" font-weight="700">initial infection</text><text x="425" y="205" text-anchor="middle" font-size="13">this branch produces no further infection</text><text x="650" y="305" text-anchor="middle" font-size="13">other branches continue</text></svg><div class="caption">A branching-process view of early transmission. Some branches terminate quickly while others continue producing new infections.</div></div>
+
+<h2>Offspring distribution</h2>
+<p>Let the random variable \(X\) be the number of secondary infections produced by one infectious individual during the early phase.</p>
+<p>Write</p>\[P(X=k)=p_k,\qquad k=0,1,2,\ldots\]
+<p>with</p>\[p_0+p_1+p_2+\cdots=1.\]
+<p>The mean number of secondary infections is</p>\[E[X]=\sum_{k=0}^{\infty}kp_k.\]
+<p>In a simple branching approximation, this mean plays the role of the reproduction number.</p>
+
+<h2>Why the whole offspring distribution matters</h2>
+<p>Knowing only the mean does not tell us the extinction probability. Two diseases can have the same average number of secondary infections but different variability in individual transmission.</p>
+<p>For example, one distribution may give most infectious individuals roughly the same number of secondary infections, while another may give many people zero infections and a few people many infections. These can produce different extinction probabilities even when their means are equal.</p>
+<div class="box"><strong>This is one mathematical connection to superspreading.</strong> Heterogeneity in individual transmission changes the offspring distribution, and therefore can change the probability that an early transmission chain disappears.</div>
+
+<h2>The probability-generating function</h2>
+<p>The offspring distribution can be collected into the probability-generating function</p>\[\boxed{G(s)=p_0+p_1s+p_2s^2+p_3s^3+\cdots}.\]
+<p>Equivalently,</p>\[G(s)=E[s^X].\]
+<p>The coefficients \(p_k\) are the probabilities of producing \(k\) secondary infections.</p>
+
+<h2>Where does \(q=G(q)\) come from?</h2>
+<p>Let</p>\[q=P(\text{eventual extinction starting from one infectious individual}).\]
+<p>Suppose the first infectious person produces exactly \(k\) new infectious people. For the entire epidemic to become extinct, <strong>all \(k\) descendant branches must eventually become extinct</strong>.</p>
+<p>If each branch has extinction probability \(q\) and the branching approximation treats them independently, then</p>\[P(\text{all }k\text{ branches die out})=q^k.\]
+<p>But the original person can produce different values of \(k\). Weighting by their probabilities gives</p>\[q=p_0+p_1q+p_2q^2+p_3q^3+\cdots.\]
+<p>Therefore</p>\[\boxed{q=G(q)}.\]
+<div class="box"><strong>This equation is not just a formula to memorise.</strong> It says: the epidemic becomes extinct if every transmission branch created by the first case eventually becomes extinct.</div>
+
+<h2>Why do we take the smallest solution?</h2>
+<p>The equation \(q=G(q)\) always has the solution \(q=1\), because \(G(1)=1\).</p>
+<p>When the mean offspring number is at most 1, extinction occurs with probability 1 under the standard branching-process assumptions:</p>\[E[X]\le1\quad\Longrightarrow\quad q=1.\]
+<p>When the mean is greater than 1, another solution can occur below 1. The extinction probability is the <strong>smallest solution in \([0,1]\)</strong>.</p>
+
+<h2>Seeing the fixed point graphically</h2>
+<div class="figure"><svg id="fixedPoint" viewBox="0 0 850 430" role="img" aria-label="Probability generating function and line y equals s showing extinction fixed points"></svg><div class="caption">For the illustrated supercritical branching process, the curve \(G(s)\) intersects \(y=s\) at a value \(q<1\) and again at 1. The smaller intersection is the extinction probability.</div></div>
+<p>The graphical interpretation is simple: solving \(q=G(q)\) means finding where the curve \(y=G(s)\) meets the straight line \(y=s\).</p>
+
+<h2>A particularly intuitive birth–death epidemic approximation</h2>
+<p>Early in a simple epidemic, suppose each infectious individual causes new infections at rate \(\lambda\) and recovers at rate \(\mu\).</p>
+<p>For one infectious individual, the next relevant event is either</p>\[\text{infection at rate }\lambda\qquad\text{or}\qquad\text{recovery at rate }\mu.\]
+<p>The probability that recovery occurs before another infection is</p>\[\frac{\mu}{\lambda+\mu},\]
+<p>while the probability that infection occurs first is</p>\[\frac{\lambda}{\lambda+\mu}.\]
+
+<h2>Deriving the extinction probability for the birth–death approximation</h2>
+<p>Let \(q\) again be the probability of eventual extinction starting from one infectious individual.</p>
+<p>If recovery occurs first, there are zero infectious individuals and extinction has occurred. If infection occurs first, there are now two infectious individuals. Under the early branching approximation, both descendant lines must eventually die out, which has probability \(q^2\).</p>
+<p>Therefore</p>\[q=\frac{\mu}{\lambda+\mu}+\frac{\lambda}{\lambda+\mu}q^2.\]
+<p>Multiplying by \(\lambda+\mu\),</p>\[\lambda q^2-(\lambda+\mu)q+\mu=0.\]
+<p>This factors as</p>\[(q-1)(\lambda q-\mu)=0.\]
+<p>Hence the two possible roots are</p>\[q=1\qquad\text{and}\qquad q=\frac{\mu}{\lambda}.\]
+<p>Therefore</p>\[\boxed{q=\begin{cases}1,&\lambda\le\mu,\\\mu/\lambda,&\lambda>\mu.\end{cases}}\]
+
+<h2>Connection with \(R_0\)</h2>
+<p>For this simple early birth–death approximation,</p>\[R_0=\frac{\lambda}{\mu}.\]
+<p>So when \(R_0>1\),</p>\[\boxed{q=\frac1{R_0}}\]
+<p>and therefore</p>\[\boxed{P(\text{major outbreak})\approx1-\frac1{R_0}}.\]
+<div class="warning"><strong>This formula is not universal.</strong> It belongs to this particular continuous-time birth–death approximation. Other offspring distributions give different extinction probabilities even when they have the same \(R_0\).</div>
+
+<h2>How outbreak probability changes with \(R_0\)</h2>
+<div class="figure"><svg id="rPlot" viewBox="0 0 850 430" role="img" aria-label="Major outbreak probability against R0 for simple birth-death approximation"></svg><div class="caption">Major-outbreak probability in the simple birth–death approximation: zero for \(R_0\le1\), then increasing as \(1-1/R_0\) for \(R_0>1\). This graph is specific to this approximation, not a universal epidemic formula.</div></div>
+<p>Near the threshold \(R_0=1\), stochastic extinction remains very likely. As \(R_0\) increases, a successful major outbreak becomes more likely, but extinction is still possible from a small introduction.</p>
+
+<h2>Starting with more than one infectious individual</h2>
+<p>If one initial infectious individual has extinction probability \(q\), and the early transmission lines from \(i_0\) initial infectious individuals can be treated independently, then</p>\[\boxed{P(\text{extinction}\mid I(0)=i_0)\approx q^{i_0}}.\]
+<p>Therefore</p>\[\boxed{P(\text{major outbreak}\mid I(0)=i_0)\approx1-q^{i_0}}.\]
+<div class="example"><strong>Example.</strong> If \(q=0.6\), one initial infection has extinction probability 0.6. With three independent initial transmission lines, the approximation gives \(0.6^3=0.216\). Thus the major-outbreak probability is approximately \(1-0.216=0.784\).</div>
+
+<h2>Why branching-process formulas are mainly early-phase approximations</h2>
+<p>As an epidemic grows, susceptible depletion, interventions, behaviour changes, age structure and other population effects can make transmission branches dependent on one another.</p>
+<p>The simple branching approximation is most natural while infection is rare and the susceptible population is effectively unchanged.</p>
+<div class="flow"><span>few infections</span><b>→</b><span>branching approximation useful</span><b>→</b><span>epidemic grows</span><b>→</b><span>full epidemic model becomes important</span></div>
+
+<h2>Exact finite-population hitting probabilities</h2>
+<p>For a finite CTMC, we can define an outbreak as reaching state \(K\) before state 0. Let</p>\[h_i=P(\text{reach }K\text{ before }0\mid I(0)=i).\]
+<p>The boundary values are</p>\[h_0=0,\qquad h_K=1.\]
+<p>For an interior birth–death state \(1\le i\le K-1\), conditioning on the next jump gives</p>\[h_i=\frac{b(i)}{b(i)+d(i)}h_{i+1}+\frac{d(i)}{b(i)+d(i)}h_{i-1}.\]
+<p>Equivalently,</p>\[\boxed{b(i)[h_{i+1}-h_i]+d(i)[h_{i-1}-h_i]=0}.\]
+<p>This equation uses the actual finite-population birth and death rates and does not require replacing the early epidemic by a branching process.</p>
+
+<h2>Why the hitting-probability equation makes sense</h2>
+<p>From state \(i\), the next jump must be upward or downward. If the next jump is upward, the remaining outbreak probability is \(h_{i+1}\). If it is downward, the remaining probability is \(h_{i-1}\).</p>
+<p>Therefore \(h_i\) is simply the weighted average of the outbreak probabilities from the two possible next states.</p>
+<div class="box"><strong>This is the Markov property in action:</strong> once the next state is known, the future outbreak probability depends on that new state rather than on the earlier path.</div>
+
+<h2>Estimating the same probability by Monte Carlo</h2>
+<p>When analytical calculation is difficult, simulate the full stochastic model many times.</p>
+<p>For each trajectory, record</p>\[Y_r=\begin{cases}1,&\text{if outbreak criterion is reached},\\0,&\text{if extinction occurs first.}\end{cases}\]
+<p>Then</p>\[\boxed{\widehat P(\text{outbreak})=\frac1n\sum_{r=1}^{n}Y_r}.\]
+<p>The estimated extinction probability is the corresponding fraction of runs that reach the extinction criterion first.</p>
+
+<h2>Analytical probability and simulation should agree</h2>
+<p>If an analytical formula and a Monte Carlo simulation describe exactly the same stochastic model and exactly the same event definition, a sufficiently large simulation should approach the analytical probability, apart from Monte Carlo sampling error.</p>
+<p>If they disagree substantially, check the model assumptions, initial conditions, event definitions, simulation code and whether an approximation such as branching is being compared with a finite-population model.</p>
+
+<h2>Why this matters for biological decision-making</h2>
+<p>When only a few cases are present, a deterministic trajectory may suggest growth but cannot tell us how likely that growth is to become established.</p>
+<p>A stochastic analysis can instead produce statements such as</p>\[P(\text{extinction before 20 cases})=0.63\]
+<p>or</p>\[P(\text{reaching 100 cases before extinction})=0.27.\]
+<p>These probabilities can be more useful for early-warning and risk decisions than a single average trajectory.</p>
+
+<h2>Thresholds and probabilities answer different questions</h2>
+<table class="compare"><tr><th>Quantity</th><th>Question</th></tr><tr><td>\(R_0\)</td><td>Is transmission strong enough for growth to be possible on average?</td></tr><tr><td>extinction probability</td><td>What is the chance the transmission chain eventually disappears?</td></tr><tr><td>outbreak probability</td><td>What is the chance a specified outbreak criterion is reached?</td></tr><tr><td>Monte Carlo estimate</td><td>How can we estimate these probabilities from repeated simulations?</td></tr></table>
+<div class="box"><strong>The key distinction:</strong> \(R_0>1\) is a threshold statement about average growth. An outbreak probability is a probability statement about whether a particular stochastic introduction succeeds.</div>
+
+<h2>The complete picture</h2>
+<div class="flow"><span>few initial infections</span><b>→</b><span>random early transmission</span><b>→</b><span>extinction or establishment</span><b>→</b><span>branching / CTMC calculation</span><b>or</b><span>Monte Carlo estimate</span></div>
+<div class="box"><strong>Key idea.</strong> Early epidemic growth is not guaranteed even when the average reproduction number exceeds 1. Random transmission and recovery events can terminate a small infection chain. Branching processes give an intuitive analytical approximation, finite CTMCs can give hitting probabilities, and Monte Carlo simulation estimates the same kinds of probabilities for more complicated biological models.</div>
+</article></main>
+<script>(function(){const NS='http://www.w3.org/2000/svg';function E(svg,n,a,t){const z=document.createElementNS(NS,n);Object.keys(a).forEach(k=>z.setAttribute(k,a[k]));if(t!==undefined)z.textContent=t;svg.appendChild(z);return z}function axes(svg,xmax,ymax,xlab,ylab){const L=72,R=775,T=45,B=330,sx=x=>L+(R-L)*x/xmax,sy=y=>B-(B-T)*y/ymax;E(svg,'line',{x1:L,y1:B,x2:R,y2:B,stroke:'#53635a','stroke-width':1.5});E(svg,'line',{x1:L,y1:T,x2:L,y2:B,stroke:'#53635a','stroke-width':1.5});E(svg,'text',{x:(L+R)/2,y:385,'text-anchor':'middle','font-size':15,'font-weight':700},xlab);let q=E(svg,'text',{x:22,y:190,'text-anchor':'middle','font-size':15,'font-weight':700},ylab);q.setAttribute('transform','rotate(-90 22 190)');return{L,R,T,B,sx,sy}}function rng(seed){let s=seed>>>0;return()=>{s=(1664525*s+1013904223)>>>0;return(s+.5)/4294967296}}function bd(seed,tmax=7,stop=25){let r=rng(seed),lam=.22,mu=.12,i=2,t=0,p=[[0,i]];while(t<tmax&&i>0&&i<stop){let b=lam*i,d=mu*i,a=b+d;t+=-Math.log(r())/a;if(t>tmax)break;i+=(r()<b/a?1:-1);p.push([t,i])}return p}let ps=document.getElementById('paths'),a=axes(ps,7,25,'time','infectious individuals');[0,1,2,3,4,5,6,7].forEach(x=>E(ps,'text',{x:a.sx(x),y:a.B+20,'text-anchor':'middle','font-size':11},x));[0,5,10,15,20,25].forEach(y=>E(ps,'text',{x:a.L-8,y:a.sy(y)+4,'text-anchor':'end','font-size':11},y));let candidates=[];for(let s=1;s<300;s++){let p=bd(s),last=p[p.length-1][1];if(last===0&&!candidates[0])candidates[0]=p;if(last>=20&&!candidates[1])candidates[1]=p;if(candidates[0]&&candidates[1])break}['#a85d5d','#39815e'].forEach((col,k)=>{let p=candidates[k],d='M '+a.sx(0)+' '+a.sy(p[0][1]);for(let j=1;j<p.length;j++)d+=' H '+a.sx(p[j][0])+' V '+a.sy(p[j][1]);d+=' H '+a.sx(7);E(ps,'path',{d,fill:'none',stroke:col,'stroke-width':3})});E(ps,'text',{x:610,y:85,'font-size':13,fill:'#39815e','font-weight':700},'established growth');E(ps,'text',{x:560,y:305,'font-size':13,fill:'#a85d5d','font-weight':700},'extinction');
+let fp=document.getElementById('fixedPoint'),f=axes(fp,1,1,'s','probability');[0,.2,.4,.6,.8,1].forEach(x=>{E(fp,'text',{x:f.sx(x),y:f.B+20,'text-anchor':'middle','font-size':11},x.toFixed(1));E(fp,'text',{x:f.L-8,y:f.sy(x)+4,'text-anchor':'end','font-size':11},x.toFixed(1))});let mean=2,pointsG=[],pointsL=[];for(let j=0;j<=200;j++){let s=j/200,g=Math.exp(mean*(s-1));pointsG.push(f.sx(s)+','+f.sy(g));pointsL.push(f.sx(s)+','+f.sy(s))}E(fp,'polyline',{points:pointsL.join(' '),fill:'none',stroke:'#53635a','stroke-width':2});E(fp,'polyline',{points:pointsG.join(' '),fill:'none',stroke:'#39815e','stroke-width':3});let q=.2032;E(fp,'circle',{cx:f.sx(q),cy:f.sy(q),r:5,fill:'#26362e'});E(fp,'circle',{cx:f.sx(1),cy:f.sy(1),r:5,fill:'#26362e'});E(fp,'text',{x:f.sx(.67),y:f.sy(.67)+22,'font-size':13},'y = s');E(fp,'text',{x:f.sx(.54),y:f.sy(Math.exp(mean*(.54-1)))-12,'font-size':13,fill:'#39815e'},'G(s), Poisson mean 2');E(fp,'text',{x:f.sx(q)+10,y:f.sy(q)-10,'font-size':13},'q ≈ 0.203');
+let rp=document.getElementById('rPlot'),r=axes(rp,5,1,'R₀','major-outbreak probability');[1,2,3,4,5].forEach(x=>E(rp,'text',{x:r.sx(x),y:r.B+20,'text-anchor':'middle','font-size':11},x));[0,.2,.4,.6,.8,1].forEach(y=>E(rp,'text',{x:r.L-8,y:r.sy(y)+4,'text-anchor':'end','font-size':11},y.toFixed(1)));let pts=[];for(let j=0;j<=300;j++){let x=5*j/300,y=x<=1?0:1-1/x;pts.push(r.sx(x)+','+r.sy(y))}E(rp,'polyline',{points:pts.join(' '),fill:'none',stroke:'#39815e','stroke-width':3});E(rp,'line',{x1:r.sx(1),y1:r.T,x2:r.sx(1),y2:r.B,stroke:'#a07042','stroke-width':1.5,'stroke-dasharray':'6 5'});E(rp,'text',{x:r.sx(1)+8,y:r.T+16,'font-size':12,fill:'#8a6239'},'threshold R₀ = 1');})();</script>
+</body></html>
