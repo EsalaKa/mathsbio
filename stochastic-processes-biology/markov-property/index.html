@@ -1,1 +1,86 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Markov property | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Markov property</h1><p>A process has the Markov property when, conditional on its present state, its future evolution does not depend on the earlier history.</p>\[P(X_{n+1}=j\mid X_n=i,X_{n-1},\ldots)=P(X_{n+1}=j\mid X_n=i).\]<h2>Meaning</h2><p>The present state must contain all information required by the model to determine probabilities of future transitions.</p><h2>Biological modelling</h2><p>A biological process is not automatically Markovian. If future behaviour depends on infection age, organism age or another unrecorded history variable, the state may need to be expanded to recover the Markov property.</p><div class="box"><strong>Key idea.</strong> Memorylessness is a modelling property of the chosen state description, not a claim that biological organisms literally have no memory.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Markov property | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.lesson-content h3{font-size:1.2rem;margin-top:1.6rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.5rem 0}.flow span{padding:10px 14px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.25rem;color:#39815e}.diagram{margin:1.5rem 0;padding:22px;background:#fff;border:1px solid #dce5e0;border-radius:8px}.state-row{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}.state{padding:12px 16px;border:2px solid #5d8f74;border-radius:8px;background:#f4faf6;text-align:center;min-width:100px}.past{opacity:.55}.now{border-width:3px;background:#e4f2e9}.arrow{font-size:1.5rem;color:#4b6e5b;font-weight:bold}.caption{font-size:.94rem;color:#526158;margin-top:1rem;text-align:center}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Markov property</h1>
+<p>A stochastic process describes a random state changing through time. To predict what may happen next, we might imagine that we need to know the system's entire history. A <strong>Markov process</strong> has an important simplifying property: once its present state is known, the model does not need the earlier history to determine the probabilities of future states.</p>
+<div class="box"><strong>Core idea.</strong> For a Markov process, the <strong>present state contains all the information the model needs about the past for predicting the future</strong>.</div>
+
+<h2>An intuitive example</h2>
+<p>Suppose \(I_n\) is the number of infectious individuals on day \(n\). Imagine that today</p>\[I_n=10.\]
+<p>In a simple Markov epidemic model, the probabilities for tomorrow are calculated from the current state \(I_n=10\). We do not additionally need to know whether yesterday there were 8, 12 or 20 infectious individuals.</p>
+<div class="diagram"><div class="state-row"><div class="state past">yesterday<br>\(I_{n-1}=8\)</div><div class="arrow">→</div><div class="state now">today<br>\(I_n=10\)</div><div class="arrow">→</div><div class="state">tomorrow<br>\(I_{n+1}=?\)</div></div><div class="caption">Once the present state is known, the transition probabilities for tomorrow are determined from that present state.</div></div>
+<p>If another epidemic also has \(I_n=10\) today but arrived there through a different history, the Markov model gives it the same probabilities for the next transition.</p>
+
+<h2>The mathematical statement</h2>
+<p>For a discrete-time Markov process,</p>\[P(X_{n+1}=j\mid X_n=i,X_{n-1},X_{n-2},\ldots)=P(X_{n+1}=j\mid X_n=i).\]
+<p>This looks complicated, but the meaning is simple.</p>
+<table class="defs"><tr><th>Part</th><th>Meaning</th></tr><tr><td>\(X_n=i\)</td><td>the process is currently in state \(i\)</td></tr><tr><td>\(X_{n+1}=j\)</td><td>the process will next be in state \(j\)</td></tr><tr><td>\(X_{n-1},X_{n-2},\ldots\)</td><td>the earlier history</td></tr><tr><td>\(P(\cdot\mid\cdot)\)</td><td>conditional probability: probability given some information</td></tr></table>
+<p>The left side says: calculate the probability of the next state when we know the present <em>and</em> the past. The right side says: calculate it knowing only the present. The Markov property says these are equal.</p>
+
+<h2>A numerical example</h2>
+<p>Suppose a simple model says that when \(I_n=10\), the next day's probabilities are</p>\[P(I_{n+1}=11\mid I_n=10)=0.30,\]\[P(I_{n+1}=9\mid I_n=10)=0.20,\]\[P(I_{n+1}=10\mid I_n=10)=0.50.\]
+<p>Now consider two different histories:</p>
+<table class="compare"><tr><th>Epidemic A</th><th>Epidemic B</th></tr><tr><td>\(6\to7\to8\to10\)</td><td>\(18\to14\to12\to10\)</td></tr><tr><td>arrived at 10 while increasing</td><td>arrived at 10 while decreasing</td></tr></table>
+<p>Both are currently at \(I_n=10\). Under this Markov model, both therefore use exactly the same next-step probabilities: 0.30 for 11, 0.20 for 9 and 0.50 for staying at 10.</p>
+<div class="box"><strong>The direction from which the process arrived does not matter once the current state is known.</strong> This is what the Markov property means in this model.</div>
+
+<h2>It does not mean the future is independent of the present</h2>
+<p>This is an important distinction. A Markov process is <strong>not</strong> saying that the future is unrelated to the past in every sense. The present state was itself produced by the past, and the future usually depends strongly on the present.</p>
+<div class="flow"><span>past</span><b>→</b><span>present state</span><b>→</b><span>future probabilities</span></div>
+<p>The idea is that the effect of the past is summarised by the present state. Once that state is known, separately knowing the earlier states gives no additional information required by the model.</p>
+
+<h2>Why the definition of the state matters</h2>
+<p>Whether a model is Markovian can depend on what we choose to include in its state.</p>
+<p>Suppose we describe an epidemic using only</p>\[X(t)=I(t).\]
+<p>If recovery probability depends on <strong>how long each person has already been infected</strong>, then knowing only the total number \(I(t)\) may not be enough.</p>
+<div class="example"><strong>Example.</strong> Epidemic A and epidemic B might both have 10 infectious people. In A, most became infected today. In B, most have already been infected for a week. If recovery becomes more likely with infection age, the two groups have different future recovery probabilities even though both have \(I(t)=10\).</div>
+<p>Therefore \(I(t)\) alone would not provide a Markov state for that model.</p>
+
+<h2>Expanding the state can recover the Markov property</h2>
+<p>The problem may be solved by including the missing information in the state. Instead of recording only the total infectious population, we could distinguish infection stages, for example</p>\[\mathbf X(t)=\big(S(t),I_1(t),I_2(t),I_3(t),R(t)\big),\]
+<p>where \(I_1,I_2,I_3\) represent successive stages of infection.</p>
+<div class="flow"><span>state too small</span><b>→</b><span>important history missing</span><b>→</b><span>expand the state</span><b>→</b><span>Markov description may be possible</span></div>
+<div class="box"><strong>Important modelling principle.</strong> The Markov property is partly a property of how the system is represented. A process may appear non-Markovian because the chosen state does not contain enough information.</div>
+
+<h2>A simple SIS Markov model</h2>
+<p>Consider a population of size \(N\), with \(I(t)=i\) infectious people and therefore \(S(t)=N-i\) susceptible people. Suppose the current infection and recovery rates are</p>\[b(i)=\beta\frac{(N-i)i}{N},\qquad d(i)=\gamma i.\]
+<p>Both rates are determined entirely by the current value \(i\). Over a sufficiently small interval \(\Delta t\),</p>
+<table class="defs"><tr><th>Possible change</th><th>Approximate probability</th></tr><tr><td>\(i\to i+1\)</td><td>\(b(i)\Delta t\)</td></tr><tr><td>\(i\to i-1\)</td><td>\(d(i)\Delta t\)</td></tr><tr><td>\(i\to i\)</td><td>\(1-[b(i)+d(i)]\Delta t\)</td></tr></table>
+<p>If we know the present state \(i\), we can calculate these probabilities without knowing the sequence of earlier values that led to \(i\). This is the Markov idea in an epidemic model.</p>
+
+<h2>What does “memoryless” mean?</h2>
+<p>The Markov property is often described as <strong>memorylessness</strong>. This phrase can be misleading if taken literally.</p>
+<div class="warning"><strong>Memoryless does not mean that biological organisms have no memory.</strong> It means that, within the mathematical model, the present state contains all information from the past that is needed to specify the probability law of the future.</div>
+<p>For example, immune history, age, infection duration or previous treatment may matter biologically. If they affect future behaviour, they must either be included in the state or the resulting model will generally not have the Markov property with respect to the smaller state description.</p>
+
+<h2>Markov property and exponential waiting times</h2>
+<p>In a continuous-time Markov chain, there is another closely related memoryless idea. If the total event rate in state \(i\) is \(a(i)\), the waiting time \(T\) until the next event is exponentially distributed:</p>\[T\sim\operatorname{Exp}(a(i)).\]
+<p>The exponential distribution satisfies</p>\[P(T>s+t\mid T>s)=P(T>t).\]
+<p>In words: if no event has occurred during the first \(s\) units of time, the remaining waiting-time distribution is the same as if we had just started waiting.</p>
+<p>This exponential waiting-time property is central to continuous-time Markov chains and will be developed more carefully in the sections on CTMCs and exponential waiting times.</p>
+
+<h2>When might a biological model not be Markovian?</h2>
+<table class="compare"><tr><th>Biological feature</th><th>Why the current simple state may be insufficient</th></tr><tr><td>infection age</td><td>infectiousness or recovery may depend on time since infection</td></tr><tr><td>waning immunity</td><td>future susceptibility may depend on time since recovery or vaccination</td></tr><tr><td>organism age</td><td>birth, death or disease rates may depend on age</td></tr><tr><td>previous treatment</td><td>future response may depend on treatment history</td></tr><tr><td>delayed biological response</td><td>future change may depend explicitly on an earlier state</td></tr></table>
+<p>These features do not make stochastic modelling impossible. They mean that we must choose a richer state or use a model that explicitly incorporates history.</p>
+
+<h2>Markov does not mean constant probabilities</h2>
+<p>A common misunderstanding is that a Markov process must use the same transition probabilities forever. It does not.</p>
+<p>The probabilities can change when the <strong>current state changes</strong>. For example, in the SIS rate</p>\[b(i)=\beta\frac{(N-i)i}{N},\]
+<p>the infection rate is different for different values of \(i\). The model can still be Markovian because the rate is determined by the present state.</p>
+<p>Some Markov models can also have transition rules that explicitly depend on time. The essential condition is still that, once the required present information is specified, additional past history is not needed.</p>
+
+<h2>Why is the Markov property useful?</h2>
+<p>The property greatly simplifies stochastic modelling. Instead of tracking every possible history of the biological system, we can describe transitions from the current state.</p>
+<p>This makes it possible to construct:</p>
+<table class="defs"><tr><th>Model</th><th>What describes the transitions?</th></tr><tr><td>discrete-time Markov chain</td><td>transition probabilities and a transition matrix</td></tr><tr><td>continuous-time Markov chain</td><td>transition rates and a generator matrix</td></tr></table>
+<p>From these local transition rules we can study distributions through time, extinction probabilities, outbreak probabilities, expected values and many other quantities.</p>
+
+<h2>Markov property versus deterministic modelling</h2>
+<p>The Markov property is not the difference between deterministic and stochastic models. It is a property of certain <strong>stochastic processes</strong>.</p>
+<p>A deterministic model gives a fixed future trajectory once the initial state and parameters are fixed. A Markov stochastic model instead gives probabilities for possible future states, with those probabilities determined from the current state.</p>
+
+<h2>Where we go next</h2>
+<p>The Markov property gives the principle. The next step is to turn that principle into an actual model by specifying states and transition probabilities at discrete time steps. This leads to the <strong>discrete-time Markov chain (DTMC)</strong>.</p>
+<div class="box"><strong>Key idea.</strong> A process has the Markov property when the present state is sufficient for determining its future probability law. The past can influence the present, but once the present state is known, additional knowledge of the earlier history does not change the model's future transition probabilities.</div>
+</article></main></body></html>
