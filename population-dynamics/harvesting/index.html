@@ -1,22 +1,138 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Harvesting | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\)']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th{background:#edf5f0}.figure{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:700px;height:auto;display:block}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}</style></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Population Dynamics</a><article class="lesson-content"><h1 class="section-title">Harvesting</h1><p>Harvesting models add deliberate removal to population growth. Depending on the biological setting, harvesting can represent fishing, hunting, culling, forestry, collection of organisms or another process that removes individuals from a population.</p><div class="box"><strong>Core idea.</strong> A population can persist under harvesting only when its biological production can compensate for removal. The mathematical form of the harvest matters: removing a fixed number per unit time behaves very differently from removing a fixed proportion of the population.</div>
-<h2>Begin with the unharvested population</h2><p>For logistic growth,</p>\[\frac{dN}{dt}=rN\left(1-\frac{N}{K}\right).\]<p>The natural production rate is therefore</p>\[G(N)=rN\left(1-\frac{N}{K}\right).\]<p>It is zero at \(N=0\) and \(N=K\), and reaches its maximum at \(N=K/2\):</p>\[\boxed{G_{\max}=\frac{rK}{4}}.\]<p>Harvesting subtracts from this natural population change.</p>
-<h2>Constant harvesting</h2><p>Suppose the same number of individuals is removed per unit time, regardless of the current population size. Let \(H\) denote that removal rate. Then</p>\[\boxed{\frac{dN}{dt}=rN\left(1-\frac{N}{K}\right)-H}.\]<table class="defs"><tr><th>Symbol</th><th>Meaning</th></tr><tr><td>\(N(t)\)</td><td>population size</td></tr><tr><td>\(r\)</td><td>intrinsic growth-rate parameter</td></tr><tr><td>\(K\)</td><td>carrying capacity</td></tr><tr><td>\(H\)</td><td>constant number removed per unit time</td></tr></table><div class="box"><strong>Interpretation.</strong> Natural growth adds \(G(N)\). Harvesting removes \(H\). The population increases when \(G(N)>H\) and decreases when \(G(N)<H\).</div>
-<h2>See the balance graphically</h2><div class="figure"><svg id="balancePlot" viewBox="0 0 850 510" role="img" aria-label="Logistic population production and three constant harvest levels"></svg><div class="caption">Natural logistic production is the curved line. A constant harvest is horizontal because the same number is removed regardless of population size. Intersections are equilibria. The maximum possible natural production is \(rK/4\) at \(N=K/2\).</div></div>
-<h2>Equilibria under constant harvesting</h2><p>At equilibrium, natural production exactly balances harvesting:</p>\[rN\left(1-\frac{N}{K}\right)=H.\]<p>Rearranging gives a quadratic equation. Its solutions are</p>\[\boxed{N_{\pm}=\frac{K}{2}\left(1\pm\sqrt{1-\frac{4H}{rK}}\right)}.\]<p>Real positive equilibria exist only when</p>\[\boxed{H\leq\frac{rK}{4}}.\]
-<h2>Three qualitatively different cases</h2><table class="defs"><tr><th>Harvest level</th><th>What the model predicts</th></tr><tr><td>\(0<H<rK/4\)</td><td>two positive equilibria</td></tr><tr><td>\(H=rK/4\)</td><td>the two equilibria meet at \(K/2\)</td></tr><tr><td>\(H>rK/4\)</td><td>no positive equilibrium; removal exceeds natural production at every population size</td></tr></table>
-<h2>Why the lower equilibrium is dangerous</h2><p>When \(0<H<rK/4\), call the lower equilibrium \(N_-\) and the upper equilibrium \(N_+\).</p><p>If the population is between \(N_-\) and \(N_+\), natural production exceeds the harvest and the population increases. Above \(N_+\), density limitation makes natural production smaller than the harvest, so the population decreases toward \(N_+\).</p><p>But below \(N_-\), natural production is again smaller than the fixed harvest, so the population declines further.</p><div class="box"><strong>Thus constant harvesting creates a threshold.</strong> The upper equilibrium \(N_+\) is stable, while the lower equilibrium \(N_-\) is unstable. Falling below the lower threshold produces continued decline in the mathematical model.</div>
-<h2>Why can a fixed harvest become dangerous at low abundance?</h2><p>Suppose 20 individuals are removed every year. When the population contains thousands of individuals, that removal may be small relative to biological production. If the population falls to only a few dozen individuals, removing 20 each year becomes enormous relative to the remaining population.</p><p>Constant harvesting does not automatically weaken when the population becomes scarce.</p>
-<h2>The maximum sustainable yield idea</h2><p>In the simple deterministic logistic model, natural production is greatest at</p>\[N=\frac{K}{2},\]<p>where</p>\[G(N)=\frac{rK}{4}.\]<p>This motivates the theoretical maximum sustainable yield</p>\[\boxed{\text{MSY}=\frac{rK}{4}}.\]<div class="warning"><strong>This is a mathematical benchmark, not automatically a safe management target.</strong> It assumes that \(r\), \(K\), population size and the logistic model are known accurately and remain stable. Real populations experience environmental variability, measurement error, age structure and stochasticity.</div>
-<h2>Why harvesting exactly at the theoretical maximum is fragile</h2><p>At \(H=rK/4\), the equilibrium occurs at \(N=K/2\). The harvest line just touches the production curve at its maximum.</p><p>There is no margin for a downward error in population size or an upward error in the harvest. If abundance falls below \(K/2\), natural production becomes smaller than the fixed harvest.</p><p>This is why practical management generally needs safety margins rather than treating the deterministic maximum as guaranteed sustainable removal.</p>
-<h2>A numerical example</h2><p>Suppose</p>\[r=0.4\text{ per year},\qquad K=1000.\]<p>The maximum natural production is</p>\[\frac{rK}{4}=\frac{0.4(1000)}{4}=100\text{ individuals per year}.\]<p>If \(H=60\), then</p>\[N_{\pm}=500\left(1\pm\sqrt{1-0.6}\right),\]<p>giving approximately</p>\[N_-\approx184,\qquad N_+\approx816.\]<p>A population near 816 can balance the harvest, but a population pushed below about 184 enters the declining region of this deterministic model.</p>
-<h2>Population trajectories under a constant harvest</h2><div class="figure"><svg id="timePlot" viewBox="0 0 850 520" role="img" aria-label="Logistic population trajectories with constant harvesting above and below the unstable threshold"></svg><div class="caption">For a harvest below the theoretical maximum, starting above the lower threshold leads toward the stable upper equilibrium. Starting below the threshold leads downward. The mathematical equation can continue to negative values, but a biological population should instead be regarded as depleted or extinct when it reaches zero.</div></div>
-<h2>A modelling issue at zero</h2><p>The expression \(-H\) continues removing individuals even when \(N\) is extremely small. Mathematically, the differential equation can therefore pass below zero, which is biologically impossible.</p><p>In applications, harvesting must stop when no individuals remain, or the model must be modified near zero. This illustrates why equations must always be interpreted biologically rather than used mechanically.</p>
-<h2>Proportional harvesting</h2><p>A different assumption is that a fixed <em>proportion</em> of the population is removed per unit time. If \(h\) is the per-capita harvesting rate,</p>\[\boxed{\frac{dN}{dt}=rN\left(1-\frac{N}{K}\right)-hN}.\]<p>Factorising gives</p>\[\frac{dN}{dt}=N\left[r\left(1-\frac{N}{K}\right)-h\right].\]<p>Now the amount harvested is \(hN\), so removal automatically becomes smaller when the population becomes smaller.</p>
-<h2>Equilibrium under proportional harvesting</h2><p>For a positive equilibrium,</p>\[r\left(1-\frac{N}{K}\right)-h=0.\]<p>Therefore</p>\[\boxed{N^*=K\left(1-\frac{h}{r}\right)}.\]<p>A positive equilibrium exists when</p>\[\boxed{h<r}.\]<p>If \(h\ge r\), the harvesting pressure is at least as large as the population's low-density per-capita growth rate, and the model does not have a positive equilibrium.</p>
-<h2>Constant and proportional harvesting are not equivalent</h2><table class="defs"><tr><th>Feature</th><th>Constant harvest \(H\)</th><th>Proportional harvest \(hN\)</th></tr><tr><td>removal per unit time</td><td>fixed number</td><td>depends on population size</td></tr><tr><td>when population becomes small</td><td>removal remains \(H\)</td><td>removal decreases</td></tr><tr><td>positive equilibria</td><td>can have two, one or none</td><td>one when \(h<r\)</td></tr><tr><td>low-population threshold</td><td>can occur</td><td>not produced in the same way by the basic model</td></tr></table>
-<h2>Harvesting effort and catch</h2><p>In fisheries and other resource models, harvesting is often represented as</p>\[H(N)=qEN,\]<p>where \(E\) is harvesting effort and \(q\) is catchability. This is a proportional-harvest model with</p>\[h=qE.\]<p>It connects management effort to the biological removal rate.</p>
-<h2>Connection with Allee effects</h2><p>Constant harvesting can itself create threshold-like dynamics even when the unharvested population follows ordinary logistic growth. If the population also has a biological Allee effect, harvesting and low-density biological disadvantage can act together and make depletion more serious.</p>
-<h2>Deterministic sustainability versus real risk</h2><p>In a deterministic model, a harvest may be labelled sustainable because a positive stable equilibrium exists. In reality, environmental variation and random births and deaths can push abundance away from that equilibrium.</p><p>For management questions, it can therefore be more useful to ask for the probability of falling below a critical population size over a specified time period rather than relying only on a deterministic equilibrium.</p><div class="box"><strong>Key idea.</strong> Harvesting is a balance between biological production and removal. Constant harvesting can create an unstable lower threshold and has a theoretical maximum \(rK/4\) under logistic growth. Proportional harvesting weakens automatically as abundance falls. Which formulation is appropriate depends on how harvesting actually operates, and real management requires uncertainty and biological constraints to be considered as well.</div>
-</article></main><script>(function(){const NS='http://www.w3.org/2000/svg';function E(s,n,a,t){let z=document.createElementNS(NS,n);for(const k in a)z.setAttribute(k,a[k]);if(t!==undefined)z.textContent=t;s.appendChild(z);return z}function axes(s,xmax,ymin,ymax,xlab,ylab,T=80,B=420){let L=85,R=770,X=x=>L+(R-L)*x/xmax,Y=y=>B-(B-T)*(y-ymin)/(ymax-ymin);E(s,'line',{x1:L,y1:Y(0),x2:R,y2:Y(0),stroke:'#53635a'});E(s,'line',{x1:L,y1:T,x2:L,y2:B,stroke:'#53635a'});E(s,'text',{x:(L+R)/2,y:B+50,'text-anchor':'middle','font-size':14},xlab);let q=E(s,'text',{x:20,y:(T+B)/2,'text-anchor':'middle','font-size':14},ylab);q.setAttribute('transform','rotate(-90 20 '+((T+B)/2)+')');return{L,R,T,B,X,Y}}
-let s=document.getElementById('balancePlot'),a=axes(s,1.05,0,.28,'population N relative to K','rate relative to rK'),pts=[];for(let k=0;k<=400;k++){let n=1.05*k/400;pts.push(a.X(n)+','+a.Y(n*(1-n)))}E(s,'polyline',{points:pts.join(' '),fill:'none',stroke:'#39815e','stroke-width':3});E(s,'text',{x:a.X(.68),y:a.Y(.235)-10,'font-size':11},'natural production');[[.15,'H below maximum','#6f6b9a'],[.25,'H = rK/4','#a07042'],[.275,'H above maximum','#8b4d4d']].forEach((q,j)=>{E(s,'line',{x1:a.L,y1:a.Y(q[0]),x2:a.R,y2:a.Y(q[0]),stroke:q[2],'stroke-width':2,'stroke-dasharray':j?'6 5':'none'});E(s,'text',{x:a.R-4,y:a.Y(q[0])-7,'text-anchor':'end','font-size':10},q[1])});E(s,'circle',{cx:a.X(.5),cy:a.Y(.25),r:4,fill:'#a07042'});E(s,'text',{x:a.X(.5)+8,y:a.Y(.25)-10,'font-size':11},'maximum at K/2');
-let t=document.getElementById('timePlot'),b=axes(t,30,0,1.05,'time t','population N relative to K',80,430),rr=.4,H=.06,disc=Math.sqrt(1-4*H/rr),low=.5*(1-disc),high=.5*(1+disc);E(t,'line',{x1:b.L,y1:b.Y(low),x2:b.R,y2:b.Y(low),stroke:'#a07042','stroke-dasharray':'6 5'});E(t,'text',{x:b.R-5,y:b.Y(low)-7,'text-anchor':'end','font-size':10},'unstable lower equilibrium');E(t,'line',{x1:b.L,y1:b.Y(high),x2:b.R,y2:b.Y(high),stroke:'#6f6b9a','stroke-dasharray':'6 5'});E(t,'text',{x:b.R-5,y:b.Y(high)-7,'text-anchor':'end','font-size':10},'stable upper equilibrium');function tr(n0,c){let n=n0,dt=.01,q=[];for(let k=0;k<=30/dt;k++){let x=k*dt;if(k%10===0)q.push(b.X(x)+','+b.Y(Math.max(0,n)));if(n<=0){n=0}else n+=(rr*n*(1-n)-H)*dt}E(t,'polyline',{points:q.join(' '),fill:'none',stroke:c,'stroke-width':2.6})}tr(.6,'#39815e');tr(.1,'#a07042');E(t,'text',{x:b.X(6),y:b.Y(.54),'font-size':11},'start above threshold');E(t,'text',{x:b.X(4),y:b.Y(.055),'font-size':11},'start below threshold');})();</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Harvesting | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th{background:#edf5f0}.figure{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:700px;height:auto;display:block}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header>
+<main class="section container"><a class="back-link" href="../">← Population Dynamics</a><article class="lesson-content">
+<h1 class="section-title">Harvesting</h1>
+<p>Harvesting models add deliberate removal to population growth. Depending on the setting, this can represent fishing, hunting, culling, forestry or another process that removes individuals from a population.</p>
+<div class="box"><strong>Core idea.</strong> A population can persist under harvesting only when biological production can compensate for removal. Removing a fixed number per unit time behaves differently from removing a fixed proportion of the population.</div>
+
+<h2>Begin with the unharvested population</h2>
+<p>For logistic growth,</p>
+\[
+\frac{dN}{dt}=rN\left(1-\frac{N}{K}\right).
+\]
+<p>The natural production rate is</p>
+\[
+G(N)=rN\left(1-\frac{N}{K}\right).
+\]
+<p>It is zero at \(N=0\) and \(N=K\), and reaches its maximum at \(N=K/2\):</p>
+\[
+\boxed{G_{\max}=\frac{rK}{4}}.
+\]
+
+<h2>Constant harvesting</h2>
+<p>If the same number \(H\) is removed per unit time regardless of population size,</p>
+\[
+\boxed{\frac{dN}{dt}=rN\left(1-\frac{N}{K}\right)-H}.
+\]
+<table class="defs"><tr><th>Symbol</th><th>Meaning</th></tr><tr><td>\(N(t)\)</td><td>population size</td></tr><tr><td>\(r\)</td><td>intrinsic growth-rate parameter</td></tr><tr><td>\(K\)</td><td>carrying capacity</td></tr><tr><td>\(H\)</td><td>constant number removed per unit time</td></tr></table>
+<div class="box"><strong>Interpretation.</strong> The population increases when \(G(N)>H\) and decreases when \(G(N)<H\).</div>
+
+<h2>Natural production and harvest</h2>
+<div class="figure"><svg id="balancePlot" viewBox="0 0 850 510" role="img" aria-label="Logistic population production and constant harvest levels"></svg><div class="caption">Natural logistic production is the curved line. A constant harvest is horizontal because the same number is removed regardless of population size. Intersections are equilibria.</div></div>
+
+<h2>Equilibria under constant harvesting</h2>
+<p>At equilibrium,</p>
+\[
+rN\left(1-\frac{N}{K}\right)=H.
+\]
+<p>The two possible equilibrium populations are</p>
+\[
+\boxed{N_{\pm}=\frac{K}{2}\left(1\pm\sqrt{1-\frac{4H}{rK}}\right)}.
+\]
+<p>Real positive equilibria exist only when</p>
+\[
+\boxed{H\leq\frac{rK}{4}}.
+\]
+<table class="defs"><tr><th>Harvest level</th><th>Model behaviour</th></tr><tr><td>\(0<H<rK/4\)</td><td>two positive equilibria</td></tr><tr><td>\(H=rK/4\)</td><td>one repeated equilibrium at \(K/2\)</td></tr><tr><td>\(H>rK/4\)</td><td>no positive equilibrium</td></tr></table>
+
+<h2>The lower equilibrium is a threshold</h2>
+<p>When \(0<H<rK/4\), the upper equilibrium \(N_+\) is stable and the lower equilibrium \(N_-\) is unstable. Below \(N_-\), natural production is too small to balance the fixed harvest, so the population continues to decline in this deterministic model.</p>
+<div class="box"><strong>Why this happens.</strong> A fixed harvest does not automatically become smaller when the population becomes scarce.</div>
+
+<h2>Maximum sustainable yield in the simple model</h2>
+<p>Logistic production reaches its maximum when</p>
+\[
+N=\frac{K}{2},
+\]
+<p>and the corresponding production is</p>
+\[
+\boxed{\mathrm{MSY}=\frac{rK}{4}}.
+\]
+<div class="warning"><strong>This is a theoretical benchmark, not automatically a safe real-world harvest.</strong> It assumes the logistic model and its parameters are accurate and constant, with no environmental or demographic uncertainty.</div>
+
+<h2>Why harvesting at the theoretical maximum is fragile</h2>
+<p>At \(H=rK/4\), the harvest line touches the production curve at its maximum. If abundance falls below \(K/2\), natural production becomes smaller than the fixed harvest. There is therefore no safety margin.</p>
+
+<h2>A numerical example</h2>
+<p>Suppose</p>
+\[
+r=0.4\text{ per year},\qquad K=1000.
+\]
+<p>Then</p>
+\[
+\frac{rK}{4}=100\text{ individuals per year}.
+\]
+<p>If \(H=60\), the equilibria are approximately</p>
+\[
+N_-\approx184,\qquad N_+\approx816.
+\]
+
+<h2>Population trajectories</h2>
+<div class="figure"><svg id="timePlot" viewBox="0 0 850 520" role="img" aria-label="Population trajectories above and below the harvesting threshold"></svg><div class="caption">For a constant harvest below the theoretical maximum, starting above the lower threshold leads toward the stable upper equilibrium. Starting below the threshold leads toward depletion.</div></div>
+
+<h2>A modelling issue at zero</h2>
+<p>The mathematical term \(-H\) continues removing individuals even when the population is extremely small. An unconstrained ODE can therefore pass below zero, which is biologically impossible. In an applied model the harvesting rule or boundary treatment must prevent this.</p>
+
+<h2>Proportional harvesting</h2>
+<p>If a fixed proportion \(h\) of the population is removed per unit time,</p>
+\[
+\boxed{\frac{dN}{dt}=rN\left(1-\frac{N}{K}\right)-hN}.
+\]
+<p>Now the amount removed is \(hN\), so harvesting automatically decreases when the population becomes smaller.</p>
+
+<h2>Equilibrium under proportional harvesting</h2>
+<p>For a positive equilibrium,</p>
+\[
+r\left(1-\frac{N}{K}\right)-h=0,
+\]
+<p>which gives</p>
+\[
+\boxed{N^*=K\left(1-\frac{h}{r}\right)}.
+\]
+<p>A positive equilibrium requires \(h<r\).</p>
+
+<h2>Constant and proportional harvesting</h2>
+<table class="defs"><tr><th>Feature</th><th>Constant harvest \(H\)</th><th>Proportional harvest \(hN\)</th></tr><tr><td>amount removed</td><td>fixed number</td><td>depends on population size</td></tr><tr><td>when abundance falls</td><td>removal stays fixed</td><td>removal decreases</td></tr><tr><td>positive equilibria</td><td>two, one or none</td><td>one when \(h<r\)</td></tr><tr><td>low-population threshold</td><td>can occur</td><td>not generated in the same way</td></tr></table>
+
+<h2>Effort and catchability</h2>
+<p>In fisheries, harvest is often modelled as</p>
+\[
+H(N)=qEN,
+\]
+<p>where \(E\) is effort and \(q\) is catchability. This corresponds to proportional harvesting with \(h=qE\).</p>
+
+<h2>Deterministic sustainability and real risk</h2>
+<p>A positive equilibrium in a deterministic model does not guarantee persistence in a real population. Environmental variation, uncertain parameters and random births and deaths can push abundance away from equilibrium. Management questions may therefore require extinction or threshold-crossing probabilities as well as deterministic equilibria.</p>
+<div class="box"><strong>Key idea.</strong> Harvesting is a balance between biological production and removal. Constant harvesting can create an unstable lower threshold and has theoretical maximum \(rK/4\) under logistic growth, while proportional harvesting weakens automatically as abundance falls.</div>
+</article></main>
+<script>
+(function(){const NS='http://www.w3.org/2000/svg';function E(s,n,a,t){let z=document.createElementNS(NS,n);for(const k in a)z.setAttribute(k,a[k]);if(t!==undefined)z.textContent=t;s.appendChild(z);return z}function axes(s,xmax,ymin,ymax,xlab,ylab,T=80,B=420){let L=85,R=770,X=x=>L+(R-L)*x/xmax,Y=y=>B-(B-T)*(y-ymin)/(ymax-ymin);E(s,'line',{x1:L,y1:Y(0),x2:R,y2:Y(0),stroke:'#53635a'});E(s,'line',{x1:L,y1:T,x2:L,y2:B,stroke:'#53635a'});E(s,'text',{x:(L+R)/2,y:B+50,'text-anchor':'middle','font-size':14},xlab);let q=E(s,'text',{x:20,y:(T+B)/2,'text-anchor':'middle','font-size':14},ylab);q.setAttribute('transform','rotate(-90 20 '+((T+B)/2)+')');return{L,R,T,B,X,Y}}
+let s=document.getElementById('balancePlot'),a=axes(s,1.05,0,.28,'population N relative to K','rate relative to rK'),pts=[];for(let k=0;k<=400;k++){let n=1.05*k/400;pts.push(a.X(n)+','+a.Y(n*(1-n)))}E(s,'polyline',{points:pts.join(' '),fill:'none',stroke:'#39815e','stroke-width':3});[[.15,'H below maximum','#6f6b9a'],[.25,'H = rK/4','#a07042'],[.275,'H above maximum','#8b4d4d']].forEach(q=>{E(s,'line',{x1:a.L,y1:a.Y(q[0]),x2:a.R,y2:a.Y(q[0]),stroke:q[2],'stroke-width':2,'stroke-dasharray':'6 5'});E(s,'text',{x:a.R-4,y:a.Y(q[0])-7,'text-anchor':'end','font-size':10},q[1])});E(s,'circle',{cx:a.X(.5),cy:a.Y(.25),r:4,fill:'#a07042'});E(s,'text',{x:a.X(.5)+8,y:a.Y(.25)-10,'font-size':11},'maximum at K/2');
+let t=document.getElementById('timePlot'),b=axes(t,30,0,1.05,'time t','population N relative to K',80,430),rr=.4,H=.06,disc=Math.sqrt(1-4*H/rr),low=.5*(1-disc),high=.5*(1+disc);E(t,'line',{x1:b.L,y1:b.Y(low),x2:b.R,y2:b.Y(low),stroke:'#a07042','stroke-dasharray':'6 5'});E(t,'text',{x:b.R-5,y:b.Y(low)-7,'text-anchor':'end','font-size':10},'unstable lower equilibrium');E(t,'line',{x1:b.L,y1:b.Y(high),x2:b.R,y2:b.Y(high),stroke:'#6f6b9a','stroke-dasharray':'6 5'});E(t,'text',{x:b.R-5,y:b.Y(high)-7,'text-anchor':'end','font-size':10},'stable upper equilibrium');function tr(n0,c){let n=n0,dt=.01,q=[];for(let k=0;k<=30/dt;k++){let x=k*dt;if(k%10===0)q.push(b.X(x)+','+b.Y(Math.max(0,n)));if(n<=0)n=0;else n+=(rr*n*(1-n)-H)*dt}E(t,'polyline',{points:q.join(' '),fill:'none',stroke:c,'stroke-width':2.6})}tr(.6,'#39815e');tr(.1,'#a07042');})();
+</script>
+</body></html>
