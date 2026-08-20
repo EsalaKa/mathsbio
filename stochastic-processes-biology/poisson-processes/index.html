@@ -1,1 +1,123 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Poisson processes | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Poisson processes</h1><p>A homogeneous Poisson process counts events that occur independently at a constant rate \(\lambda&gt;0\).</p><h2>Event counts</h2><p>If \(N(t)\) is the number of events by time \(t\), then</p>\[P(N(t)=k)=e^{-\lambda t}\frac{(\lambda t)^k}{k!}.\]<p>Therefore</p>\[E[N(t)]=\lambda t,\qquad \operatorname{Var}(N(t))=\lambda t.\]<h2>Small intervals</h2><p>For small \(\Delta t\), the probability of one event is approximately \(\lambda\Delta t\), while the probability of two or more events is of smaller order.</p><div class="box"><strong>Key idea.</strong> The Poisson process provides a basic mathematical model for randomly timed events occurring at a constant average rate.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Poisson processes | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.figure{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:700px;height:auto;display:block}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Poisson processes</h1>
+<p>A <strong>Poisson process</strong> is a basic model for counting events that occur randomly through continuous time. It is useful when events occur independently and at a constant average rate.</p>
+<div class="box"><strong>Core idea.</strong> A Poisson process does not primarily describe the size of a biological population. It counts <strong>how many random events have occurred by time \(t\)</strong>.</div>
+
+<h2>Start with an intuitive example</h2>
+<p>Suppose cells of a particular type arrive at a detector randomly at an average rate of</p>\[\lambda=2\text{ events per hour}.\]
+<p>We do not know the exact arrival times. In one hour there might be 0 arrivals, 2 arrivals, 5 arrivals, or another number.</p>
+<p>Let</p>\[N(t)=\text{number of arrivals observed from time 0 up to time }t.\]
+<p>Then \(N(t)\) is a stochastic process. It starts at</p>\[N(0)=0\]
+<p>and increases by one whenever an event occurs.</p>
+
+<h2>What does one Poisson-process path look like?</h2>
+<p>Between events, the count remains unchanged. At each event time, the count increases by one.</p>
+<div class="figure"><svg id="countPlot" viewBox="0 0 820 410" role="img" aria-label="Poisson counting process generated from explicit event times"></svg><div class="caption">This example path is generated from explicit event times. Each vertical jump corresponds to one event, so \(N(t)\) increases by exactly one.</div></div>
+<p>The horizontal axis is continuous time, but the count is integer-valued. Therefore a Poisson process is a <strong>continuous-time, discrete-state</strong> stochastic process.</p>
+
+<h2>The rate \(\lambda\)</h2>
+<p>The parameter \(\lambda&gt;0\) is the event rate. Its units are</p>\[\frac{\text{events}}{\text{time}}.\]
+<p>If \(\lambda=2\) per hour, the process produces an average of 2 events per hour over many repetitions or long periods under the model assumptions.</p>
+<div class="warning"><strong>A rate is not a fixed count.</strong> \(\lambda=2\) per hour does not mean exactly two events must occur every hour. Individual intervals contain random numbers of events.</div>
+
+<h2>From rate to expected number of events</h2>
+<p>Over a time interval of length \(t\), the expected number of events is</p>\[\boxed{E[N(t)]=\lambda t}.\]
+<p>For \(\lambda=2\) per hour:</p>
+<table class="defs"><tr><th>Time \(t\)</th><th>Expected count \(\lambda t\)</th></tr><tr><td>0.5 hour</td><td>1</td></tr><tr><td>1 hour</td><td>2</td></tr><tr><td>3 hours</td><td>6</td></tr></table>
+<p>These are expected values, not guaranteed observed counts.</p>
+
+<h2>The Poisson distribution gives the event-count probabilities</h2>
+<p>For a homogeneous Poisson process, the number of events during an interval of length \(t\) follows a Poisson distribution with parameter \(\lambda t\):</p>\[\boxed{N(t)\sim\operatorname{Poisson}(\lambda t)}.\]
+<p>Therefore</p>\[\boxed{P(N(t)=k)=e^{-\lambda t}\frac{(\lambda t)^k}{k!}},\qquad k=0,1,2,\ldots\]
+<table class="defs"><tr><th>Symbol</th><th>Meaning</th></tr><tr><td>\(k\)</td><td>particular number of events</td></tr><tr><td>\(\lambda\)</td><td>event rate per unit time</td></tr><tr><td>\(t\)</td><td>length of time observed</td></tr><tr><td>\(\lambda t\)</td><td>expected number of events in that interval</td></tr></table>
+
+<h2>A complete numerical probability example</h2>
+<p>Suppose \(\lambda=2\) events per hour. What is the probability of exactly 3 events in one hour?</p>
+<p>Here</p>\[\lambda t=2(1)=2.\]
+<p>Therefore</p>\[P(N(1)=3)=e^{-2}\frac{2^3}{3!}.\]
+<p>Since \(3!=6\),</p>\[P(N(1)=3)\approx0.180.\]
+<p>So there is about an 18.0% probability of observing exactly three events during that hour under this model.</p>
+
+<h2>The whole count distribution</h2>
+<div class="figure"><svg id="pmfPlot" viewBox="0 0 820 430" role="img" aria-label="Poisson probability mass function for lambda t equals 2"></svg><div class="caption">Probabilities calculated directly from \(P(N(t)=k)=e^{-\lambda t}(\lambda t)^k/k!\) with \(\lambda t=2\). The probabilities are concentrated near, but not restricted to, the mean 2.</div></div>
+<p>The most likely counts are around the expected value, but smaller and larger counts remain possible.</p>
+
+<h2>Mean and variance</h2>
+<p>For a Poisson process,</p>\[\boxed{E[N(t)]=\lambda t},\qquad\boxed{\operatorname{Var}(N(t))=\lambda t}.\]
+<p>Thus the mean and variance of the event count are equal.</p>
+<p>The standard deviation is</p>\[\operatorname{SD}(N(t))=\sqrt{\lambda t}.\]
+<div class="example"><strong>Example.</strong> If \(\lambda t=100\), the expected count is 100, the variance is 100 and the standard deviation is 10.</div>
+
+<h2>What happens in a very short interval?</h2>
+<p>Consider a short interval of length \(\Delta t\). For a Poisson process,</p>\[P(\text{one event in }\Delta t)=\lambda\Delta t+o(\Delta t),\]
+<p>so for sufficiently small \(\Delta t\),</p>\[\boxed{P(\text{one event})\approx\lambda\Delta t}.\]
+<p>Also,</p>\[P(\text{no event})\approx1-\lambda\Delta t,\]
+<p>while the probability of two or more events is much smaller:</p>\[P(\text{two or more events})=o(\Delta t).\]
+<div class="box"><strong>This is the origin of the familiar rule</strong> \(\text{probability}\approx\text{rate}\times\text{small time interval}\).</div>
+
+<h2>Why two events become negligible in a tiny interval</h2>
+<p>For a Poisson count over \(\Delta t\),</p>\[P(N(\Delta t)=2)=e^{-\lambda\Delta t}\frac{(\lambda\Delta t)^2}{2}.\]
+<p>The leading dependence is proportional to \((\Delta t)^2\), whereas the probability of one event is proportional to \(\Delta t\). As \(\Delta t\) becomes very small, \((\Delta t)^2\) shrinks much faster.</p>
+<p>This is why CTMC models can treat one event as the dominant possible change during an infinitesimal interval.</p>
+
+<h2>Events in non-overlapping intervals are independent</h2>
+<p>A homogeneous Poisson process assumes <strong>independent increments</strong>. Counts in non-overlapping time intervals are independent.</p>
+<div class="example"><strong>Example.</strong> Under the model, knowing how many events occurred between 9:00 and 10:00 does not change the probability distribution of the number occurring between 10:00 and 11:00.</div>
+<p>This is a modelling assumption. It may or may not be biologically reasonable for a particular application.</p>
+
+<h2>The distribution depends only on interval length</h2>
+<p>A homogeneous Poisson process also has <strong>stationary increments</strong>. If two intervals have the same length, their event counts have the same distribution, regardless of where the intervals occur in time.</p>
+<p>For example, with constant \(\lambda\), the number of events between hours 1 and 2 has the same distribution as the number between hours 8 and 9.</p>
+<div class="warning"><strong>This requires a constant rate.</strong> If the event rate changes through the day, season, epidemic phase or intervention period, a homogeneous Poisson process is not an appropriate description without modification.</div>
+
+<h2>The main assumptions</h2>
+<p>A homogeneous Poisson process is appropriate when the following simplified assumptions are reasonable:</p>
+<table class="compare"><tr><th>Assumption</th><th>Meaning</th></tr><tr><td>constant rate</td><td>events occur with the same rate \(\lambda\) through time</td></tr><tr><td>independent increments</td><td>counts in non-overlapping intervals are independent</td></tr><tr><td>single events</td><td>simultaneous multiple events have negligible probability in a sufficiently short interval</td></tr><tr><td>counting starts at zero</td><td>\(N(0)=0\)</td></tr></table>
+
+<h2>Waiting time to the first event</h2>
+<p>Let \(T_1\) be the time until the first event. The event \(T_1>t\) means that no events have occurred by time \(t\). Therefore</p>\[P(T_1>t)=P(N(t)=0).\]
+<p>Using the Poisson formula with \(k=0\),</p>\[P(N(t)=0)=e^{-\lambda t}.\]
+<p>Hence</p>\[\boxed{P(T_1>t)=e^{-\lambda t}},\]
+<p>which means</p>\[\boxed{T_1\sim\operatorname{Exp}(\lambda)}.\]
+<div class="box"><strong>Important connection.</strong> Poisson event counts and exponential waiting times are two views of the same constant-rate random-event mechanism.</div>
+
+<h2>Time between consecutive events</h2>
+<p>Not only the first waiting time, but every inter-event time is independently exponentially distributed:</p>\[T_1,T_2,T_3,\ldots\sim\operatorname{Exp}(\lambda).\]
+<p>The mean waiting time between events is</p>\[E[T]=\frac1\lambda.\]
+<p>If \(\lambda=2\) events per hour, the mean waiting time is</p>\[\frac12\text{ hour}=30\text{ minutes}.\]
+<p>This does not mean events occur regularly every 30 minutes. Individual waiting times remain random.</p>
+
+<h2>Count view and waiting-time view</h2>
+<table class="compare"><tr><th>Count view</th><th>Waiting-time view</th></tr><tr><td>How many events occur by time \(t\)?</td><td>How long until the next event?</td></tr><tr><td>\(N(t)\sim\operatorname{Poisson}(\lambda t)\)</td><td>\(T\sim\operatorname{Exp}(\lambda)\)</td></tr><tr><td>mean count \(=\lambda t\)</td><td>mean waiting time \(=1/\lambda\)</td></tr></table>
+
+<h2>Connection to CTMCs</h2>
+<p>Suppose a CTMC is currently in state \(i\) and its total event rate is</p>\[a(i)=b(i)+d(i).\]
+<p>While the state remains fixed, events are generated at this total rate. Therefore the waiting time to the next event is exponential with rate \(a(i)\).</p>
+<p>After the event, however, the state may change, so \(a(i)\) may change too. A general birth–death CTMC is therefore <strong>not one homogeneous Poisson process with a single constant rate</strong>.</p>
+<div class="box"><strong>Distinction.</strong> A homogeneous Poisson process has one constant rate \(\lambda\). A state-dependent CTMC can have a different total rate after every state change.</div>
+
+<h2>Connection to epidemic modelling</h2>
+<p>A Poisson process can be useful for random event arrivals when a constant-rate approximation is reasonable. But epidemic infection events usually depend on the changing numbers of susceptible and infectious individuals.</p>
+<p>For example, in an SIS CTMC,</p>\[b(i)=\beta\frac{(N-i)i}{N}\]
+<p>changes when \(i\) changes. Therefore the full epidemic is not generally a homogeneous Poisson process.</p>
+<p>Nevertheless, the Poisson-process idea is fundamental because it explains how continuous-time event rates generate random event counts and exponential waiting times.</p>
+
+<h2>When a homogeneous Poisson model may fail</h2>
+<p>The simple model can be inappropriate when events cluster, inhibit one another, occur in bursts, have a changing rate, or depend strongly on the current biological state.</p>
+<table class="defs"><tr><th>Feature</th><th>Possible issue</th></tr><tr><td>seasonality</td><td>rate changes with time</td></tr><tr><td>epidemic growth</td><td>infection rate changes with population state</td></tr><tr><td>superspreading / clustering</td><td>event counts may be more variable than a simple Poisson model predicts</td></tr><tr><td>refractory period</td><td>one event changes the chance of another soon afterwards</td></tr></table>
+<p>More general stochastic processes can be used when these effects matter.</p>
+
+<h2>The full picture</h2>
+<div class="flow"><span>constant event rate \(\lambda\)</span><b>→</b><span>random event times</span><b>→</b><span>Poisson event counts</span><b>↔</b><span>exponential waiting times</span></div>
+<div class="box"><strong>Key idea.</strong> A homogeneous Poisson process counts independent random events occurring at a constant rate \(\lambda\). Over time \(t\), the count has a Poisson distribution with mean \(\lambda t\). The waiting times between events are exponential with mean \(1/\lambda\). This relationship is a foundation of continuous-time stochastic modelling.</div>
+
+<h2>What comes next?</h2>
+<p>The next section focuses directly on the other side of this relationship: <strong>exponential waiting times</strong>, their memoryless property, and why they arise naturally in continuous-time Markov chains.</p>
+</article></main>
+<script>(function(){const NS='http://www.w3.org/2000/svg';function E(svg,n,a,t){const z=document.createElementNS(NS,n);Object.keys(a).forEach(k=>z.setAttribute(k,a[k]));if(t!==undefined)z.textContent=t;svg.appendChild(z);return z}function axes(svg,xmax,ymax,xlab,ylab){const L=80,R=735,T=45,B=330,sx=x=>L+(R-L)*x/xmax,sy=y=>B-(B-T)*y/ymax;E(svg,'line',{x1:L,y1:B,x2:R,y2:B,stroke:'#53635a','stroke-width':1.6});E(svg,'line',{x1:L,y1:T,x2:L,y2:B,stroke:'#53635a','stroke-width':1.6});E(svg,'text',{x:(L+R)/2,y:385,'text-anchor':'middle','font-size':15,'font-weight':700,fill:'#26362e'},xlab);const q=E(svg,'text',{x:25,y:190,'text-anchor':'middle','font-size':15,'font-weight':700,fill:'#26362e'},ylab);q.setAttribute('transform','rotate(-90 25 190)');return{L,R,T,B,sx,sy}}
+const s=document.getElementById('countPlot'),a=axes(s,5,8,'time (hours)','event count N(t)');for(let x=0;x<=5;x++){E(s,'line',{x1:a.sx(x),y1:a.B,x2:a.sx(x),y2:a.B+5,stroke:'#53635a'});E(s,'text',{x:a.sx(x),y:a.B+22,'text-anchor':'middle','font-size':12,fill:'#2d3c34'},x)}for(let y=0;y<=8;y++){E(s,'line',{x1:a.L-5,y1:a.sy(y),x2:a.L,y2:a.sy(y),stroke:'#53635a'});E(s,'text',{x:a.L-10,y:a.sy(y)+4,'text-anchor':'end','font-size':12,fill:'#2d3c34'},y)}const times=[0.35,0.92,1.18,1.94,2.75,3.02,4.15,4.62];let d='M '+a.sx(0)+' '+a.sy(0),count=0,prev=0;times.forEach(t=>{d+=' H '+a.sx(t)+' V '+a.sy(++count);E(s,'circle',{cx:a.sx(t),cy:a.sy(count),r:4,fill:'#39815e'})});d+=' H '+a.sx(5);E(s,'path',{d,fill:'none',stroke:'#39815e','stroke-width':3});
+const p=document.getElementById('pmfPlot'),b=axes(p,9,0.3,'number of events k','probability');for(let k=0;k<=9;k++){E(p,'line',{x1:b.sx(k),y1:b.B,x2:b.sx(k),y2:b.B+5,stroke:'#53635a'});E(p,'text',{x:b.sx(k),y:b.B+22,'text-anchor':'middle','font-size':12,fill:'#2d3c34'},k)}[0,.05,.1,.15,.2,.25,.3].forEach(y=>{E(p,'line',{x1:b.L-5,y1:b.sy(y),x2:b.L,y2:b.sy(y),stroke:'#53635a'});E(p,'text',{x:b.L-10,y:b.sy(y)+4,'text-anchor':'end','font-size':12,fill:'#2d3c34'},y.toFixed(2))});function fact(n){let r=1;for(let i=2;i<=n;i++)r*=i;return r}for(let k=0;k<=9;k++){const pr=Math.exp(-2)*Math.pow(2,k)/fact(k),w=34,x=b.sx(k)-w/2,y=b.sy(pr);E(p,'rect',{x,y,width:w,height:b.B-y,fill:'#69a080'});E(p,'text',{x:b.sx(k),y:y-7,'text-anchor':'middle','font-size':11,fill:'#2d3c34'},pr.toFixed(3))}})();</script>
+</body></html>
