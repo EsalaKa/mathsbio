@@ -1,1 +1,122 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Birth–death processes | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content"><h1 class="section-title">Birth–death processes</h1><p>A birth–death process is a CTMC on integer-valued states in which the population changes by one individual at each event.</p>\[i\to i+1\quad\text{at rate }b(i),\qquad i\to i-1\quad\text{at rate }d(i).\]<h2>Short-time probabilities</h2>\[P(i\to i+1)\approx b(i)\Delta t,\]\[P(i\to i-1)\approx d(i)\Delta t,\]\[P(i\to i)\approx1-[b(i)+d(i)]\Delta t.\]<h2>Biological uses</h2><p>Birth–death processes can represent population growth and decline, infection and recovery counts, cell populations and other event-based biological systems.</p><div class="box"><strong>Key idea.</strong> State-dependent birth and death rates translate biological event mechanisms into a continuous-time stochastic population model.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Birth–death processes | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.diagram{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.diagram svg{width:100%;min-width:700px;height:auto;display:block}.node{fill:#edf5f0;stroke:#39815e;stroke-width:2}.arrow{stroke:#53635a;stroke-width:2;fill:none}.label{font-size:13px;fill:#2d3c34}.nlabel{font-size:15px;font-weight:700;fill:#26362e}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}</style></head>
+<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<h1 class="section-title">Birth–death processes</h1>
+<p>A <strong>birth–death process</strong> is one of the simplest and most useful continuous-time Markov chains for biological populations. The state is an integer count, and each event changes that count by exactly one.</p>
+<div class="box"><strong>Core idea.</strong> From state \(i\), a birth-type event moves the process to \(i+1\), while a death-type event moves it to \(i-1\). The words <em>birth</em> and <em>death</em> describe increases and decreases in the modelled count; they do not always mean literal biological birth and death.</div>
+
+<h2>What is the state?</h2>
+<p>Let</p>\[X(t)=\text{number of individuals of interest at time }t.\]
+<p>The possible states are typically</p>\[0,1,2,3,\ldots\]
+<p>or, for a population with an upper limit \(N\),</p>\[0,1,2,\ldots,N.\]
+<p>If the current state is \(X(t)=i\), the process can make two basic types of jump:</p>\[i\longrightarrow i+1\qquad\text{or}\qquad i\longrightarrow i-1.\]
+
+<h2>Why is this useful in biology?</h2>
+<p>Many biological quantities change one event at a time. A cell divides, an organism dies, an infection occurs, or an infectious individual recovers. Each event can increase or decrease the count by one.</p>
+<table class="defs"><tr><th>Modelled quantity</th><th>Birth-type event \(+1\)</th><th>Death-type event \(-1\)</th></tr><tr><td>animal population</td><td>birth</td><td>death</td></tr><tr><td>cell population</td><td>cell division</td><td>cell death</td></tr><tr><td>infectious population in SIS</td><td>new infection</td><td>recovery</td></tr><tr><td>molecule count</td><td>production</td><td>degradation</td></tr></table>
+<div class="box"><strong>So “birth” means an event that increases the chosen state by one, and “death” means an event that decreases it by one.</strong></div>
+
+<h2>The transition structure</h2>
+<p>Let \(b(i)\) be the birth rate and \(d(i)\) the death rate when the current state is \(i\). Then</p>\[i\longrightarrow i+1\quad\text{at rate }b(i),\]\[i\longrightarrow i-1\quad\text{at rate }d(i).\]
+<div class="diagram"><svg viewBox="0 0 920 260" role="img" aria-label="Birth-death transition diagram"><defs><marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53635a"/></marker></defs><rect class="node" x="50" y="95" width="170" height="65" rx="12"/><rect class="node" x="375" y="95" width="170" height="65" rx="12"/><rect class="node" x="700" y="95" width="170" height="65" rx="12"/><text class="nlabel" x="135" y="133" text-anchor="middle">i − 1</text><text class="nlabel" x="460" y="133" text-anchor="middle">i</text><text class="nlabel" x="785" y="133" text-anchor="middle">i + 1</text><path class="arrow" d="M375 115 C315 60 275 60 220 115" marker-end="url(#arr)"/><path class="arrow" d="M545 140 C605 195 645 195 700 140" marker-end="url(#arr)"/><text class="label" x="297" y="64" text-anchor="middle">death rate d(i)</text><text class="label" x="623" y="205" text-anchor="middle">birth rate b(i)</text></svg></div>
+<p>This nearest-neighbour structure is what makes a birth–death process special: from an interior state \(i\), the next jump can only be to a neighbouring state.</p>
+
+<h2>Rates are not probabilities</h2>
+<p>The quantities \(b(i)\) and \(d(i)\) are <strong>rates per unit time</strong>. They are not themselves probabilities.</p>
+<p>Over a sufficiently short interval \(\Delta t\), they give the approximations</p>\[P(i\to i+1)\approx b(i)\Delta t,\]\[P(i\to i-1)\approx d(i)\Delta t,\]\[P(i\to i)\approx1-[b(i)+d(i)]\Delta t.\]
+<div class="example"><strong>Example.</strong> If \(b(i)=2\) per day and \(\Delta t=0.01\) day, then the probability of a birth-type event during that very short interval is approximately \(2(0.01)=0.02\).</div>
+
+<h2>Why is there a probability of staying at \(i\)?</h2>
+<p>Continuous time does not mean that an event is occurring at every instant. The process normally spends some random time waiting in its current state.</p>
+<p>During a short interval, either a birth occurs, a death occurs, or no event occurs. Therefore the no-event probability is approximately what remains after subtracting the two event probabilities from 1.</p>\[1-b(i)\Delta t-d(i)\Delta t=1-[b(i)+d(i)]\Delta t.\]
+
+<h2>Total event rate</h2>
+<p>Either a birth or a death can end the current waiting period. The total rate of leaving state \(i\) is therefore</p>\[\boxed{a(i)=b(i)+d(i)}.\]
+<p>The waiting time \(T\) until the next event satisfies</p>\[\boxed{T\sim\operatorname{Exp}(a(i))}.\]
+<p>Its expected value is</p>\[E[T]=\frac{1}{b(i)+d(i)}.\]
+<p>A larger total rate means that events tend to occur more frequently and the average waiting time is shorter.</p>
+
+<h2>Which event happens next?</h2>
+<p>Once an event occurs, the relative sizes of the two rates determine its type:</p>\[\boxed{P(\text{birth next})=\frac{b(i)}{b(i)+d(i)}},\]\[\boxed{P(\text{death next})=\frac{d(i)}{b(i)+d(i)}}.\]
+<p>These probabilities add to 1.</p>
+<div class="flow"><span>state \(i\)</span><b>→</b><span>calculate \(b(i),d(i)\)</span><b>→</b><span>wait a random time</span><b>→</b><span>birth or death</span><b>→</b><span>new state</span></div>
+
+<h2>A numerical example</h2>
+<p>Suppose that at state \(i=10\),</p>\[b(10)=2.7\text{ per day},\qquad d(10)=1.0\text{ per day}.\]
+<p>The total rate is</p>\[a(10)=2.7+1.0=3.7\text{ per day}.\]
+<p>Hence the mean waiting time is</p>\[E[T]=\frac1{3.7}\approx0.270\text{ days}.\]
+<p>When the next event occurs,</p>\[P(\text{birth next})=\frac{2.7}{3.7}\approx0.730,\]\[P(\text{death next})=\frac{1.0}{3.7}\approx0.270.\]
+<p>So the next state is 11 with probability about 0.730 or 9 with probability about 0.270.</p>
+
+<h2>Birth and death rates can depend on population size</h2>
+<p>The rates need not be constant. In biological models they often depend on the current state:</p>\[b(i),\qquad d(i).\]
+<p>This allows the model to represent density dependence, competition, limited susceptible populations and many other biological mechanisms.</p>
+<div class="box"><strong>State-dependent rates are important.</strong> After every event, the state changes and the birth and death rates are recalculated for the new state.</div>
+
+<h2>Simple linear birth–death model</h2>
+<p>Suppose each individual independently gives birth at rate \(\lambda\) and dies at rate \(\mu\). With \(i\) individuals, the total rates are</p>\[b(i)=\lambda i,\qquad d(i)=\mu i.\]
+<p>The factor \(i\) appears because any of the \(i\) individuals can generate the event.</p>
+<div class="example"><strong>Example.</strong> If each of 20 cells divides at rate \(0.1\) per hour, then the total division rate is \(0.1\times20=2\) divisions per hour.</div>
+
+<h2>What do \(\lambda\) and \(b(i)\) mean?</h2>
+<table class="compare"><tr><th>Quantity</th><th>Meaning</th></tr><tr><td>\(\lambda\)</td><td>birth rate per individual</td></tr><tr><td>\(\lambda i=b(i)\)</td><td>total birth-event rate for the whole population when its size is \(i\)</td></tr><tr><td>\(\mu\)</td><td>death rate per individual</td></tr><tr><td>\(\mu i=d(i)\)</td><td>total death-event rate for the whole population when its size is \(i\)</td></tr></table>
+<p>This distinction between an individual rate and a total event rate is fundamental in stochastic population modelling.</p>
+
+<h2>Expected direction of change</h2>
+<p>At state \(i\), births push the process upward and deaths push it downward. The local expected rate of change is therefore</p>\[\boxed{b(i)-d(i)}.\]
+<p>For the linear model,</p>\[b(i)-d(i)=(\lambda-\mu)i.\]
+<table class="compare"><tr><th>Rates</th><th>Average tendency</th></tr><tr><td>\(\lambda>\mu\)</td><td>population tends to grow</td></tr><tr><td>\(\lambda=\mu\)</td><td>no net deterministic drift, although random fluctuations remain</td></tr><tr><td>\(\lambda<\mu\)</td><td>population tends to decline</td></tr></table>
+<div class="warning"><strong>Average tendency is not a guaranteed trajectory.</strong> Even when \(\lambda>\mu\), a small stochastic population can still decline or become extinct because individual events are random.</div>
+
+<h2>The SIS epidemic as a birth–death process</h2>
+<p>A particularly important example is the stochastic SIS epidemic. Let the state be the number of infectious individuals \(I(t)=i\).</p>
+<p>A new infection increases \(i\) by one, so it acts as a birth-type event:</p>\[i\to i+1.\]
+<p>A recovery decreases \(i\) by one, so it acts as a death-type event:</p>\[i\to i-1.\]
+<p>Using frequency-dependent transmission, the rates can be written</p>\[\boxed{b(i)=\beta\frac{(N-i)i}{N}},\qquad\boxed{d(i)=\gamma i}.\]
+<p>Here \(N-i\) is the susceptible population.</p>
+<div class="box"><strong>Important.</strong> Nobody is literally born when an infection occurs and nobody necessarily dies when recovery occurs. “Birth–death process” refers to the mathematical increase or decrease of the chosen count \(I(t)\).</div>
+
+<h2>Why the SIS birth rate is nonlinear</h2>
+<p>In the SIS model,</p>\[b(i)=\beta\frac{(N-i)i}{N}.\]
+<p>The rate depends on both infectious individuals \(i\) and susceptible individuals \(N-i\). When there are few infectious individuals, there are few sources of infection. When almost everyone is infectious, there are few susceptible individuals left to infect.</p>
+<p>Therefore the infection rate is small near both ends and larger at intermediate states.</p>
+<div class="diagram"><svg id="ratePlot" viewBox="0 0 820 430" role="img" aria-label="SIS birth and death rates as functions of infectious population"></svg><div class="caption">Rates are calculated directly from \(b(i)=\beta(N-i)i/N\) and \(d(i)=\gamma i\) with \(N=100\), \(\beta=0.3\) and \(\gamma=0.1\).</div></div>
+
+<h2>Where the rates are equal</h2>
+<p>For the parameters in the graph, the non-zero point where birth and death rates are equal satisfies</p>\[\beta\frac{(N-i)i}{N}=\gamma i.\]
+<p>For \(i>0\), cancelling \(i\) gives</p>\[\beta\frac{N-i}{N}=\gamma.\]
+<p>Hence</p>\[i=N\left(1-\frac{\gamma}{\beta}\right).\]
+<p>With \(N=100\), \(\beta=0.3\) and \(\gamma=0.1\),</p>\[i\approx66.7.\]
+<p>Below this level the infection birth rate exceeds the recovery rate; above it the recovery rate exceeds the infection rate. This describes the <strong>local average tendency</strong>, not a barrier that individual stochastic trajectories cannot cross.</p>
+
+<h2>Boundary states</h2>
+<p>At \(i=0\), a transition to \(-1\) is impossible. In an epidemic without imported infection,</p>\[b(0)=d(0)=0,\]
+<p>so state 0 is absorbing.</p>
+<p>If the maximum state is \(N\), then at \(i=N\) an upward transition is impossible. For the SIS model this occurs naturally because</p>\[b(N)=\beta\frac{(N-N)N}{N}=0.\]
+
+<h2>Extinction</h2>
+<p>If state 0 is absorbing, a major question is whether the process eventually reaches it.</p>
+<p>For an epidemic, reaching \(I(t)=0\) means extinction of infection. For a biological population, it means extinction of the modelled population.</p>
+<p>Stochastic models are especially valuable here because extinction can occur even when the corresponding deterministic model predicts positive growth.</p>
+
+<h2>Birth–death process versus deterministic population model</h2>
+<p>A deterministic model might use</p>\[\frac{dx}{dt}=b(x)-d(x)\]
+<p>to describe the average direction of change. A birth–death process keeps the upward and downward events separate and random.</p>
+<table class="compare"><tr><th>Deterministic model</th><th>Birth–death process</th></tr><tr><td>uses net change \(b-d\)</td><td>keeps birth and death events separate</td></tr><tr><td>one trajectory from fixed initial conditions</td><td>many possible trajectories</td></tr><tr><td>population may be treated continuously</td><td>state is usually an integer count</td></tr><tr><td>cannot directly give extinction probability</td><td>can quantify extinction and other event probabilities</td></tr></table>
+
+<h2>How one trajectory is generated</h2>
+<p>At current state \(i\):</p>
+<div class="flow"><span>calculate \(b(i),d(i)\)</span><b>→</b><span>set \(a(i)=b(i)+d(i)\)</span><b>→</b><span>sample waiting time</span><b>→</b><span>choose birth or death</span><b>→</b><span>update \(i\)</span><b>→</b><span>repeat</span></div>
+<p>This is the same event-based logic used by the Gillespie algorithm.</p>
+
+<h2>Why birth–death processes matter</h2>
+<p>Birth–death processes provide a bridge between biological mechanisms and stochastic mathematics. Simple event rules become transition rates; the rates determine random waiting times and state changes; and the resulting process can be used to study population variability, extinction, persistence and outbreak probabilities.</p>
+<p>They also provide one of the clearest settings for learning generator matrices, Kolmogorov equations and stochastic simulation.</p>
+
+<h2>What comes next?</h2>
+<p>Birth–death processes describe how a population changes through individual random events. Another fundamental process focuses specifically on <strong>counting how many events occur through time</strong>. This leads to the Poisson process.</p>
+<div class="box"><strong>Key idea.</strong> A birth–death process is a CTMC in which each event changes the state by one. The current birth and death rates determine both the waiting time to the next event and whether the next jump is upward or downward. In epidemic modelling, infection can act as a birth-type event and recovery as a death-type event.</div>
+</article></main>
+<script>(function(){const svg=document.getElementById('ratePlot'),NS='http://www.w3.org/2000/svg',L=80,R=735,T=45,B=335,N=100,beta=.3,gamma=.1,yMax=20;function e(n,a,t){const z=document.createElementNS(NS,n);Object.keys(a).forEach(k=>z.setAttribute(k,a[k]));if(t!==undefined)z.textContent=t;svg.appendChild(z);return z}const sx=x=>L+(R-L)*x/N,sy=y=>B-(B-T)*y/yMax;e('line',{x1:L,y1:B,x2:R,y2:B,stroke:'#53635a','stroke-width':1.6});e('line',{x1:L,y1:T,x2:L,y2:B,stroke:'#53635a','stroke-width':1.6});for(let x=0;x<=100;x+=20){e('line',{x1:sx(x),y1:B,x2:sx(x),y2:B+5,stroke:'#53635a'});e('text',{x:sx(x),y:B+22,'text-anchor':'middle','font-size':12,fill:'#2d3c34'},x)}for(let y=0;y<=20;y+=5){e('line',{x1:L-5,y1:sy(y),x2:L,y2:sy(y),stroke:'#53635a'});e('text',{x:L-10,y:sy(y)+4,'text-anchor':'end','font-size':12,fill:'#2d3c34'},y)}e('text',{x:(L+R)/2,y:390,'text-anchor':'middle','font-size':15,'font-weight':700,fill:'#26362e'},'infectious population i');const yl=e('text',{x:25,y:190,'text-anchor':'middle','font-size':15,'font-weight':700,fill:'#26362e'},'event rate per day');yl.setAttribute('transform','rotate(-90 25 190)');let bp=[],dp=[];for(let i=0;i<=100;i++){bp.push(sx(i)+','+sy(beta*(N-i)*i/N));dp.push(sx(i)+','+sy(gamma*i))}e('polyline',{points:bp.join(' '),fill:'none',stroke:'#39815e','stroke-width':3});e('polyline',{points:dp.join(' '),fill:'none',stroke:'#a07042','stroke-width':3});const eq=N*(1-gamma/beta),ey=gamma*eq;e('circle',{cx:sx(eq),cy:sy(ey),r:5,fill:'#26362e'});e('line',{x1:sx(eq),y1:sy(ey),x2:sx(eq),y2:B,stroke:'#9eaaa3','stroke-dasharray':'5 5'});e('text',{x:sx(eq)+8,y:sy(ey)-9,'font-size':12,fill:'#26362e'},'b(i) = d(i)');e('line',{x1:500,y1:70,x2:540,y2:70,stroke:'#39815e','stroke-width':3});e('text',{x:550,y:75,'font-size':13,fill:'#2d3c34'},'birth / infection rate b(i)');e('line',{x1:500,y1:96,x2:540,y2:96,stroke:'#a07042','stroke-width':3});e('text',{x:550,y:101,'font-size':13,fill:'#2d3c34'},'death / recovery rate d(i)');})();</script>
+</body></html>
