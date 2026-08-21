@@ -38,6 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 });
 
+                runButton.textContent = "Loading required packages…";
+                await pyodide.loadPackagesFromImports(editor.value);
                 runButton.textContent = "Running…";
                 await pyodide.runPythonAsync(editor.value);
                 output.textContent = textOutput.trim() || "Code completed successfully.";

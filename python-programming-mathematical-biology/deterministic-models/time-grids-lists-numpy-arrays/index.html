@@ -1,1 +1,232 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Time grids, lists and NumPy arrays in Python for mathematical biology."><title>Time grids, lists and NumPy arrays | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Deterministic Models</a><p class="section-number">05</p><h1 class="section-title">Time grids, lists and NumPy arrays</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Learn to create time grids and store mathematical-biology data using Python lists and NumPy arrays.">
+<title>Time grids, lists and NumPy arrays | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.timeline{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;margin:28px 0;padding-top:13px;border-top:4px solid #7eae91}.time-point{position:relative;min-width:42px;text-align:center;color:#174c34;font-size:.88rem}.time-point::before{content:"";position:absolute;top:-21px;left:50%;width:12px;height:12px;transform:translateX(-50%);background:#39815e;border:3px solid #edf6f0;border-radius:50%}.comparison-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.comparison-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.comparison-card h3{margin-top:0;color:#174c34}.function-table{width:100%;border-collapse:collapse;background:#fff}.function-table th,.function-table td{padding:12px 14px;border:1px solid #d6e3db;text-align:left;vertical-align:top}.function-table th{background:#eaf4ee;color:#174c34}.index-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:20px 0}.index-cell{text-align:center;background:#fff;border:1px solid #dce7e0;border-radius:8px;overflow:hidden}.index-cell strong,.index-cell span{display:block;padding:8px}.index-cell strong{background:#eaf4ee;color:#174c34}.index-cell span{font-family:Consolas,"Courier New",monospace}@media(max-width:800px){.comparison-grid{grid-template-columns:1fr}.timeline{overflow-x:auto;justify-content:flex-start;gap:28px;padding-bottom:10px}.index-strip{grid-template-columns:repeat(5,minmax(58px,1fr));overflow-x:auto}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Deterministic Models</a>
+<p class="section-number">05</p>
+<h1 class="section-title">Time grids, lists and NumPy arrays</h1>
+<p class="lesson-intro">A numerical epidemic model needs a sequence of time points and a place to store the compartment values at those times. This lesson prepares those structures without yet solving the SIR equations.</p>
+
+<section class="lesson-section">
+<h2>Biological scenario</h2>
+<div class="scenario-box">
+<p>We want to prepare an SIR simulation covering 5 days, with values recorded every 0.5 day. The initial state is &#92;(S(0)=4985&#92;), &#92;(I(0)=12&#92;) and &#92;(R(0)=3&#92;).</p>
+<p>How can Python represent the observation times and reserve matching storage for the three compartment histories?</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>From continuous time to a time grid</h2>
+<p>The mathematical model describes continuous time, but a numerical program stores results at selected time points:</p>
+<div class="timeline" aria-label="Time grid from zero to five days in half-day intervals">
+<div class="time-point">0</div><div class="time-point">0.5</div><div class="time-point">1.0</div><div class="time-point">1.5</div><div class="time-point">2.0</div><div class="time-point">…</div><div class="time-point">5.0</div>
+</div>
+<div class="math-box">
+<p>If &#92;(t_0=0&#92;) and &#92;(&#92;Delta t=0.5&#92;), then</p>
+<p class="formula-line">&#92;[t_n=t_0+n&#92;Delta t.&#92;]</p>
+<p>There are 10 intervals but 11 stored time points because both the starting and ending times are included.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Python lists</h2>
+<p>A list stores an ordered collection of values. Square brackets create a list:</p>
+<pre><code>observation_days = [0, 1, 2, 3]
+infected_counts = [12, 14, 17, 21]</code></pre>
+<div class="index-strip">
+<div class="index-cell"><strong>Index 0</strong><span>12</span></div>
+<div class="index-cell"><strong>Index 1</strong><span>14</span></div>
+<div class="index-cell"><strong>Index 2</strong><span>17</span></div>
+<div class="index-cell"><strong>Index 3</strong><span>21</span></div>
+<div class="index-cell"><strong>Next</strong><span>append</span></div>
+</div>
+<div class="technical-box">
+<ul>
+<li>Python indexing begins at 0, so <span class="inline-code">infected_counts[0]</span> is 12.</li>
+<li><span class="inline-code">len(infected_counts)</span> returns the number of stored values.</li>
+<li><span class="inline-code">infected_counts.append(26)</span> adds 26 to the end.</li>
+<li>The time list and infected-count list must have equal lengths if their entries correspond.</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why use NumPy arrays?</h2>
+<div class="comparison-grid">
+<div class="comparison-card">
+<h3>Python list</h3>
+<pre><code>infected = [12, 14, 17, 21]</code></pre>
+<p>Flexible general-purpose container. Useful for collecting values gradually.</p>
+</div>
+<div class="comparison-card">
+<h3>NumPy array</h3>
+<pre><code>infected = np.array([12, 14, 17, 21])</code></pre>
+<p>Numerical container designed for efficient scientific calculations on many values.</p>
+</div>
+</div>
+<p>For example, an array can divide every entry in one operation:</p>
+<pre><code>infected_proportion = infected / N</code></pre>
+<p>A Python list does not perform this numerical operation in the same way.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Important NumPy tools</h2>
+<table class="function-table">
+<thead><tr><th>Code</th><th>Purpose</th><th>Important condition</th></tr></thead>
+<tbody>
+<tr><td><code>import numpy as np</code></td><td>Loads NumPy and gives it the short name <span class="inline-code">np</span>.</td><td>NumPy must be available in the Python environment.</td></tr>
+<tr><td><code>np.array(values)</code></td><td>Converts supplied values into a NumPy array.</td><td>Numerical model arrays should normally contain compatible number types.</td></tr>
+<tr><td><code>np.linspace(start, end, points)</code></td><td>Creates equally spaced values including both endpoints.</td><td><span class="inline-code">points</span> is the number of stored values, not the number of intervals.</td></tr>
+<tr><td><code>np.full(length, np.nan)</code></td><td>Creates storage filled with missing-value markers.</td><td><span class="inline-code">np.nan</span> means “not yet assigned a numerical value.”</td></tr>
+<tr><td><code>array.shape</code></td><td>Reports the dimensions of an array.</td><td>A one-dimensional array with 11 values has shape <span class="inline-code">(11,)</span>.</td></tr>
+<tr><td><code>array.dtype</code></td><td>Reports the stored numerical data type.</td><td>Arrays containing <span class="inline-code">np.nan</span> use a floating-point type.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Construct a reliable time grid</h2>
+<div class="step-card">
+<h3>Step 1: Calculate intervals and points</h3>
+<pre><code>number_of_steps = int(round((end_time - start_time) / dt))
+number_of_points = number_of_steps + 1</code></pre>
+<p class="code-explain">Ten half-day intervals cover 5 days. Adding one includes the initial time point.</p>
+</div>
+<div class="step-card">
+<h3>Step 2: Create the time array</h3>
+<pre><code>time = np.linspace(start_time, end_time, number_of_points)</code></pre>
+<p class="code-explain"><span class="inline-code">linspace</span> is short for linearly spaced values.</p>
+</div>
+<div class="step-card">
+<h3>Step 3: Create matching compartment arrays</h3>
+<pre><code>S = np.full(number_of_points, np.nan)
+I = np.full(number_of_points, np.nan)
+R = np.full(number_of_points, np.nan)</code></pre>
+<p class="code-explain">Each compartment array has exactly one storage position for every time point.</p>
+</div>
+<div class="step-card">
+<h3>Step 4: Store the initial conditions at index 0</h3>
+<pre><code>S[0] = 4985
+I[0] = 12
+R[0] = 3</code></pre>
+<p class="code-explain">Index 0 corresponds to &#92;(t=0&#92;). Later, a numerical method will calculate and store the remaining values.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Run the complete preparation program</h2>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Time grid and SIR storage</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+
+# Time-grid settings
+start_time = 0
+end_time = 5
+dt = 0.5
+
+# Calculate the required sizes
+number_of_steps = int(round((end_time - start_time) / dt))
+number_of_points = number_of_steps + 1
+
+# Create the time grid
+time = np.linspace(start_time, end_time, number_of_points)
+
+# Create empty SIR histories
+S = np.full(number_of_points, np.nan)
+I = np.full(number_of_points, np.nan)
+R = np.full(number_of_points, np.nan)
+
+# Store the initial conditions at index 0
+S[0] = 4985
+I[0] = 12
+R[0] = 3
+
+# Check that all arrays match
+assert len(time) == len(S) == len(I) == len(R)
+assert abs((time[1] - time[0]) - dt) &lt; 1e-12
+
+# Display technical information
+print("Time-grid information")
+print("--------------------------------")
+print(f"Number of intervals: {number_of_steps}")
+print(f"Number of points:    {number_of_points}")
+print(f"Time-array shape:    {time.shape}")
+print(f"S-array data type:   {S.dtype}")
+
+# Display the prepared storage
+print("\nIndex   Time      S       I       R")
+print("--------------------------------------")
+for index in range(5):
+    print(
+        f"{index:5d}  {time[index]:4.1f}  "
+        f"{S[index]:6.1f}  {I[index]:6.1f}  {R[index]:6.1f}"
+    )</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Expected outcome</h2>
+<table class="result-table">
+<thead><tr><th>Index</th><th>Time</th><th>S</th><th>I</th><th>R</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>0.0</td><td>4985.0</td><td>12.0</td><td>3.0</td></tr>
+<tr><td>1</td><td>0.5</td><td>nan</td><td>nan</td><td>nan</td></tr>
+<tr><td>2</td><td>1.0</td><td>nan</td><td>nan</td><td>nan</td></tr>
+<tr><td>3</td><td>1.5</td><td>nan</td><td>nan</td><td>nan</td></tr>
+<tr><td>4</td><td>2.0</td><td>nan</td><td>nan</td><td>nan</td></tr>
+</tbody>
+</table>
+<div class="interpretation-box">
+<p>The arrays are prepared but the epidemic has not yet been solved. Only index 0 contains the initial conditions. The <span class="inline-code">nan</span> entries deliberately mark future values that a numerical method still needs to calculate.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Lists and arrays in a modelling workflow</h2>
+<div class="technical-box">
+<ul>
+<li>Use a list when values are being collected flexibly or may contain different kinds of information.</li>
+<li>Use a NumPy array for organised numerical calculations with a fixed shape.</li>
+<li>Corresponding time and compartment arrays must have equal lengths.</li>
+<li>Index &#92;(n&#92;) connects <span class="inline-code">time[n]</span>, <span class="inline-code">S[n]</span>, <span class="inline-code">I[n]</span> and <span class="inline-code">R[n]</span>.</li>
+<li>The time-step size and the spacing of the time array must agree.</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try it yourself</h2>
+<div class="experiment-box">
+<p>Change <span class="inline-code">end_time = 5</span> to <span class="inline-code">end_time = 10</span> while keeping <span class="inline-code">dt = 0.5</span>.</p>
+<ol>
+<li>Predict the new number of intervals.</li>
+<li>Predict the new number of stored points.</li>
+<li>Run the program.</li>
+<li>Check the array shape and explain why it contains one more value than the number of intervals.</li>
+</ol>
+</div>
+</section>
+</main>
+</body>
+</html>
