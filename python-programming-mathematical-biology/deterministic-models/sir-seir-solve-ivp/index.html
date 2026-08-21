@@ -1,1 +1,371 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Solving SIR and SEIR with solve_ivp in Python for mathematical biology."><title>Solving SIR and SEIR with solve_ivp | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Deterministic Models</a><p class="section-number">09</p><h1 class="section-title">Solving SIR and SEIR with solve_ivp</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Solve deterministic SIR and SEIR models using SciPy solve_ivp and interpret the numerical output.">
+<title>Solving SIR and SEIR with solve_ivp | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.solver-map{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:22px 0}.solver-card{padding:16px 12px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:9px}.solver-card span{display:block;margin-bottom:6px;font-size:.76rem;font-weight:700;color:#39815e}.argument-table{width:100%;border-collapse:collapse;background:#fff}.argument-table th,.argument-table td{padding:12px 14px;border:1px solid #d6e3db;text-align:left;vertical-align:top}.argument-table th{background:#eaf4ee;color:#174c34}.shape-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}.shape-card{padding:19px;background:#eaf4ee;border-radius:10px;text-align:center}.shape-card strong{display:block;color:#174c34}.method-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}.comparison-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}.comparison-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.comparison-card h3{margin-top:0;color:#174c34}@media(max-width:800px){.solver-map,.shape-grid,.comparison-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Deterministic Models</a>
+<p class="section-number">09</p>
+<h1 class="section-title">Solving SIR and SEIR with <span class="inline-code">solve_ivp</span></h1>
+<p class="lesson-intro">Writing Euler’s method from scratch reveals how numerical approximation works. For practical modelling, SciPy provides tested differential-equation solvers. Here we use <span class="inline-code">solve_ivp</span> while keeping the biological equations visible.</p>
+
+<section class="lesson-section">
+<h2>Biological scenario</h2>
+<div class="scenario-box">
+<p>We want to solve deterministic SIR and SEIR epidemics in populations of 1,000 people using the same transmission and recovery parameters. The SEIR model additionally uses a five-day mean exposed period.</p>
+<p>We will compare the infectious peaks and inspect how introducing the exposed stage changes epidemic timing.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>What <span class="inline-code">solve_ivp</span> does</h2>
+<p>The name means “solve an initial-value problem.” An initial-value problem contains:</p>
+<div class="solver-map">
+<div class="solver-card"><span>1 EQUATIONS</span>The derivative function</div>
+<div class="solver-card"><span>2 TIME INTERVAL</span>Starting and ending times</div>
+<div class="solver-card"><span>3 INITIAL STATE</span>Compartment values at the start</div>
+<div class="solver-card"><span>4 PARAMETERS</span>Biological rate values</div>
+<div class="solver-card"><span>5 OUTPUT TIMES</span>Times at which results are requested</div>
+</div>
+<p><span class="inline-code">solve_ivp</span> repeatedly evaluates the derivative function, chooses internal step sizes and returns an approximate solution.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Import the solver</h2>
+<pre><code>from scipy.integrate import solve_ivp</code></pre>
+<ul>
+<li><span class="inline-code">scipy</span> is a scientific-computing library.</li>
+<li><span class="inline-code">integrate</span> is its integration and differential-equation module.</li>
+<li><span class="inline-code">solve_ivp</span> is the function being imported.</li>
+</ul>
+</section>
+
+<section class="lesson-section">
+<h2>The derivative function has a required form</h2>
+<p>The solver calls a function using the pattern <span class="inline-code">function(t, y, ...)</span>.</p>
+<div class="step-card">
+<pre><code>def sir_rhs(t, y, beta, gamma):
+    S, I, R = y
+    N = S + I + R
+
+    infection_flow = beta * S * I / N
+    recovery_flow = gamma * I
+
+    return [
+        -infection_flow,
+        infection_flow - recovery_flow,
+        recovery_flow
+    ]</code></pre>
+</div>
+<table class="argument-table">
+<thead><tr><th>Part</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>t</code></td><td>The current time supplied by the solver. The basic SIR equations do not use it explicitly, but the required function signature includes it.</td></tr>
+<tr><td><code>y</code></td><td>The current state array. For SIR, it contains &#92;([S,I,R]&#92;).</td></tr>
+<tr><td><code>S, I, R = y</code></td><td>Unpacks the state array into meaningful compartment names.</td></tr>
+<tr><td><code>beta, gamma</code></td><td>Additional biological parameters passed through <span class="inline-code">args</span>.</td></tr>
+<tr><td><code>return [...]</code></td><td>Returns one derivative for every entry in <span class="inline-code">y</span>, in the same order.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Call <span class="inline-code">solve_ivp</span></h2>
+<div class="step-card">
+<pre><code>sir_solution = solve_ivp(
+    sir_rhs,
+    t_span=(0, 200),
+    y0=[990, 10, 0],
+    t_eval=reporting_times,
+    args=(beta, gamma),
+    method="RK45",
+    rtol=1e-8,
+    atol=1e-10
+)</code></pre>
+</div>
+<table class="argument-table">
+<thead><tr><th>Argument</th><th>Definition and use</th></tr></thead>
+<tbody>
+<tr><td><code>sir_rhs</code></td><td>The derivative function. It is passed without parentheses because the solver must call it repeatedly.</td></tr>
+<tr><td><code>t_span=(0, 200)</code></td><td>The integration interval: start at day 0 and finish at day 200.</td></tr>
+<tr><td><code>y0=[990, 10, 0]</code></td><td>The initial state in the same order expected by the derivative function.</td></tr>
+<tr><td><code>t_eval=reporting_times</code></td><td>The times at which solution values should be returned.</td></tr>
+<tr><td><code>args=(beta, gamma)</code></td><td>A tuple of extra arguments passed to the derivative function.</td></tr>
+<tr><td><code>method="RK45"</code></td><td>An adaptive Runge–Kutta method. It is also the default method.</td></tr>
+<tr><td><code>rtol</code></td><td>Relative error tolerance, scaled in relation to solution size.</td></tr>
+<tr><td><code>atol</code></td><td>Absolute error tolerance, important when solution values are close to zero.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Output times are not necessarily solver steps</h2>
+<div class="method-box">
+<p><span class="inline-code">t_eval</span> specifies where results are reported. It does not force the adaptive solver to use those intervals as its internal steps. The solver may take smaller or larger internal steps while controlling estimated error.</p>
+<p>This differs from the manual Euler program, where <span class="inline-code">dt</span> was both the update step and the spacing of stored values.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the returned solution</h2>
+<div class="shape-grid">
+<div class="shape-card"><strong><code>solution.t</code></strong>one-dimensional array of returned times</div>
+<div class="shape-card"><strong><code>solution.y</code></strong>two-dimensional array of compartment results</div>
+<div class="shape-card"><strong><code>solution.success</code></strong>Boolean indicating whether integration finished successfully</div>
+</div>
+<p>For SIR, <span class="inline-code">solution.y</span> has three rows:</p>
+<pre><code>S, I, R = sir_solution.y</code></pre>
+<p>Each row has one value for every entry of <span class="inline-code">solution.t</span>. For SEIR, the solution has four rows.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Run both models</h2>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>SIR and SEIR with solve_ivp</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+
+def sir_rhs(t, y, beta, gamma):
+    """Return SIR derivatives in the order S, I, R."""
+    
+    S, I, R = y
+    N = S + I + R
+    
+    infection_flow = beta * S * I / N
+    recovery_flow = gamma * I
+    
+    return [
+        -infection_flow,
+        infection_flow - recovery_flow,
+        recovery_flow
+    ]
+
+
+def seir_rhs(t, y, beta, sigma, gamma):
+    """Return SEIR derivatives in the order S, E, I, R."""
+    
+    S, E, I, R = y
+    N = S + E + I + R
+    
+    infection_flow = beta * S * I / N
+    progression_flow = sigma * E
+    recovery_flow = gamma * I
+    
+    return [
+        -infection_flow,
+        infection_flow - progression_flow,
+        progression_flow - recovery_flow,
+        recovery_flow
+    ]
+
+
+# Shared parameters
+beta = 0.3
+gamma = 0.1
+sigma = 0.2
+
+# Time interval and requested output times
+start_time = 0
+end_time = 200
+reporting_times = np.linspace(start_time, end_time, 2001)
+
+# Solve SIR
+sir_solution = solve_ivp(
+    sir_rhs,
+    t_span=(start_time, end_time),
+    y0=[990, 10, 0],
+    t_eval=reporting_times,
+    args=(beta, gamma),
+    method="RK45",
+    rtol=1e-8,
+    atol=1e-10
+)
+
+# Solve SEIR
+seir_solution = solve_ivp(
+    seir_rhs,
+    t_span=(start_time, end_time),
+    y0=[990, 5, 5, 0],
+    t_eval=reporting_times,
+    args=(beta, sigma, gamma),
+    method="RK45",
+    rtol=1e-8,
+    atol=1e-10
+)
+
+# Stop if either solver failed
+if not sir_solution.success:
+    raise RuntimeError(sir_solution.message)
+if not seir_solution.success:
+    raise RuntimeError(seir_solution.message)
+
+# Unpack results
+S_sir, I_sir, R_sir = sir_solution.y
+S_seir, E_seir, I_seir, R_seir = seir_solution.y
+
+# Calculate peaks
+sir_peak_index = np.argmax(I_sir)
+seir_peak_index = np.argmax(I_seir)
+
+sir_peak = I_sir[sir_peak_index]
+seir_peak = I_seir[seir_peak_index]
+
+sir_peak_time = sir_solution.t[sir_peak_index]
+seir_peak_time = seir_solution.t[seir_peak_index]
+
+# Population-conservation errors
+sir_total = S_sir + I_sir + R_sir
+seir_total = S_seir + E_seir + I_seir + R_seir
+
+sir_error = np.max(np.abs(sir_total - sir_total[0]))
+seir_error = np.max(np.abs(seir_total - seir_total[0]))
+
+# Display solver information
+print("Solver information")
+print("--------------------------------------------")
+print(f"SIR success:       {sir_solution.success}")
+print(f"SIR evaluations:   {sir_solution.nfev}")
+print(f"SEIR success:      {seir_solution.success}")
+print(f"SEIR evaluations:  {seir_solution.nfev}")
+
+# Display model outcomes
+print("\nModel   Peak I   Peak day   Final R   Max total error")
+print("-------------------------------------------------------")
+print(
+    f"SIR    {sir_peak:7.2f}   {sir_peak_time:8.1f}  "
+    f"{R_sir[-1]:8.2f}   {sir_error:.2e}"
+)
+print(
+    f"SEIR   {seir_peak:7.2f}   {seir_peak_time:8.1f}  "
+    f"{R_seir[-1]:8.2f}   {seir_error:.2e}"
+)
+
+# Plot both solutions
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
+
+axes[0].plot(sir_solution.t, S_sir, label="Susceptible")
+axes[0].plot(sir_solution.t, I_sir, label="Infectious")
+axes[0].plot(sir_solution.t, R_sir, label="Recovered")
+axes[0].set_title("SIR")
+axes[0].set_xlabel("Time (days)")
+axes[0].set_ylabel("Number of people")
+axes[0].grid(alpha=0.25)
+axes[0].legend()
+
+axes[1].plot(seir_solution.t, S_seir, label="Susceptible")
+axes[1].plot(seir_solution.t, E_seir, label="Exposed")
+axes[1].plot(seir_solution.t, I_seir, label="Infectious")
+axes[1].plot(seir_solution.t, R_seir, label="Recovered")
+axes[1].set_title("SEIR")
+axes[1].set_xlabel("Time (days)")
+axes[1].grid(alpha=0.25)
+axes[1].legend()
+
+fig.suptitle("Adaptive numerical solutions from solve_ivp")
+fig.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Additional returned information</h2>
+<table class="argument-table">
+<thead><tr><th>Attribute</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>solution.success</code></td><td><span class="inline-code">True</span> when the solver reaches the end successfully.</td></tr>
+<tr><td><code>solution.message</code></td><td>A textual explanation of termination or failure.</td></tr>
+<tr><td><code>solution.nfev</code></td><td>Number of derivative-function evaluations performed.</td></tr>
+<tr><td><code>solution.t</code></td><td>Returned time values.</td></tr>
+<tr><td><code>solution.y</code></td><td>Returned state values, organised as variables by times.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Euler and <span class="inline-code">solve_ivp</span></h2>
+<div class="comparison-grid">
+<div class="comparison-card">
+<h3>Manual Euler method</h3>
+<ul>
+<li>One fixed update formula</li>
+<li>Step size selected directly</li>
+<li>Easy to inspect and learn</li>
+<li>Accuracy requires careful step-size testing</li>
+</ul>
+</div>
+<div class="comparison-card">
+<h3><span class="inline-code">solve_ivp</span></h3>
+<ul>
+<li>Established numerical methods</li>
+<li>Adaptive internal step sizes</li>
+<li>Error tolerances supplied directly</li>
+<li>Solver success and diagnostic information returned</li>
+</ul>
+</div>
+</div>
+<div class="interpretation-box">
+<p>Using a library solver does not replace mathematical understanding. The modeller must still define the correct equations, initial conditions, parameters, time interval and biological interpretation.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<div class="interpretation-box">
+<p>The SIR model moves newly infected people directly into the infectious compartment. The SEIR model delays infectiousness through the exposed compartment. This usually shifts and reshapes the infectious curve.</p>
+<p>The displayed comparison is illustrative rather than a controlled scientific comparison because the two models have different compartment structures and initial-state definitions.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Important conditions and common errors</h2>
+<div class="technical-box">
+<ul>
+<li>The order of <span class="inline-code">y0</span>, unpacked variables and returned derivatives must match.</li>
+<li>The derivative function must return the same number of values as the initial-state vector.</li>
+<li>All requested <span class="inline-code">t_eval</span> values must lie inside <span class="inline-code">t_span</span> and be ordered in the integration direction.</li>
+<li>Always inspect <span class="inline-code">solution.success</span> before interpreting results.</li>
+<li>Tighter tolerances usually require more computation; they do not correct an incorrect model.</li>
+<li>Population conservation and non-negativity should still be checked.</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try changing the tolerances</h2>
+<div class="experiment-box">
+<p>First run the models with <span class="inline-code">rtol=1e-8</span> and <span class="inline-code">atol=1e-10</span>. Then use <span class="inline-code">rtol=1e-4</span> and <span class="inline-code">atol=1e-6</span>.</p>
+<ol>
+<li>Compare <span class="inline-code">nfev</span> for each run.</li>
+<li>Compare the reported peak values and times.</li>
+<li>Compare the population-conservation errors.</li>
+<li>Explain the trade-off between requested accuracy and computation.</li>
+</ol>
+</div>
+</section>
+</main>
+</body>
+</html>
