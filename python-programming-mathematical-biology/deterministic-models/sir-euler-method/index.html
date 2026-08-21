@@ -1,1 +1,309 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Programming the SIR model with Euler’s method in Python for mathematical biology."><title>Programming the SIR model with Euler’s method | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Deterministic Models</a><p class="section-number">07</p><h1 class="section-title">Programming the SIR model with Euler’s method</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Program and interpret the complete deterministic SIR model using the forward Euler method.">
+<title>Programming the SIR model with Euler’s method | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.integration-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:22px 0}.integration-card{padding:18px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.integration-card span{display:block;margin-bottom:7px;font-size:.78rem;font-weight:700;color:#39815e}.update-equations{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}.update-equation{padding:18px;background:#fff;border:1px solid #dce7e0;border-radius:10px;text-align:center}.simultaneous-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}.tool-table{width:100%;border-collapse:collapse;background:#fff}.tool-table th,.tool-table td{padding:12px 14px;border:1px solid #d6e3db;text-align:left;vertical-align:top}.tool-table th{background:#eaf4ee;color:#174c34}.outcome-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:20px 0}.outcome-card{padding:20px;text-align:center;background:#eaf4ee;border-radius:10px}.outcome-card strong{display:block;font-size:1.35rem;color:#174c34}@media(max-width:800px){.integration-grid,.update-equations,.outcome-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Deterministic Models</a>
+<p class="section-number">07</p>
+<h1 class="section-title">Programming the SIR model with Euler’s method</h1>
+<p class="lesson-intro">We now combine the SIR equations, initial conditions, time arrays and forward Euler method to simulate a complete epidemic. The program repeatedly recalculates all three rates because the biological flows change with the epidemic state.</p>
+
+<section class="lesson-section">
+<h2>Biological scenario</h2>
+<div class="scenario-box">
+<p>A closed population contains 1,000 people. Initially, 990 are susceptible, 10 are infectious and none have recovered. We use &#92;(&#92;beta=0.3&#92;) per day and &#92;(&#92;gamma=0.1&#92;) per day.</p>
+<p>We want to estimate the epidemic trajectory for 160 days and determine the infectious peak, its timing and the final compartment sizes.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Ideas brought together</h2>
+<div class="integration-grid">
+<div class="integration-card"><span>LESSON 3</span>SIR differential equations and the rate function</div>
+<div class="integration-card"><span>LESSON 4</span>Valid initial conditions and population conservation</div>
+<div class="integration-card"><span>LESSON 5</span>Time grids and NumPy storage arrays</div>
+<div class="integration-card"><span>LESSON 6</span>Repeated forward Euler updates</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>The SIR equations</h2>
+<div class="math-box">
+<p class="formula-line">&#92;[&#92;frac{dS}{dt}=-&#92;beta&#92;frac{SI}{N},&#92;]</p>
+<p class="formula-line">&#92;[&#92;frac{dI}{dt}=&#92;beta&#92;frac{SI}{N}-&#92;gamma I,&#92;]</p>
+<p class="formula-line">&#92;[&#92;frac{dR}{dt}=&#92;gamma I.&#92;]</p>
+</div>
+<p>At each time point, the current values of &#92;(S&#92;), &#92;(I&#92;) and &#92;(R&#92;) determine the infection and recovery flows. Therefore, the rates must be recalculated inside the loop.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The three Euler updates</h2>
+<div class="update-equations">
+<div class="update-equation">&#92;[S_{n+1}=S_n+&#92;left(&#92;frac{dS}{dt}&#92;right)_n&#92;Delta t&#92;]</div>
+<div class="update-equation">&#92;[I_{n+1}=I_n+&#92;left(&#92;frac{dI}{dt}&#92;right)_n&#92;Delta t&#92;]</div>
+<div class="update-equation">&#92;[R_{n+1}=R_n+&#92;left(&#92;frac{dR}{dt}&#92;right)_n&#92;Delta t&#92;]</div>
+</div>
+<div class="simultaneous-box">
+<h3>Essential rule: use one common current state</h3>
+<p>Calculate all three derivatives from &#92;(S_n,I_n,R_n&#92;) before storing any next value. Do not calculate &#92;(I_{n+1}&#92;) using the newly updated &#92;(S_{n+1}&#92;). That would no longer be the standard forward Euler method.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Step 1: Write a reusable rate function</h2>
+<div class="step-card">
+<pre><code>def sir_rates(S, I, R, beta, gamma):
+    N = S + I + R
+    infection_flow = beta * S * I / N
+    recovery_flow = gamma * I
+
+    dS_dt = -infection_flow
+    dI_dt = infection_flow - recovery_flow
+    dR_dt = recovery_flow
+
+    return dS_dt, dI_dt, dR_dt</code></pre>
+<p class="code-explain">The function receives one epidemic state and returns its three instantaneous rates. It does not update the compartments.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Step 2: Prepare time and storage</h2>
+<div class="step-card">
+<pre><code>number_of_steps = int(round(end_time / dt))
+time = np.linspace(0, end_time, number_of_steps + 1)
+
+S = np.zeros(number_of_steps + 1)
+I = np.zeros(number_of_steps + 1)
+R = np.zeros(number_of_steps + 1)
+
+S[0], I[0], R[0] = S0, I0, R0</code></pre>
+<p class="code-explain"><span class="inline-code">np.zeros()</span> creates fixed-size numerical arrays. The initial conditions are placed at index 0. The later zeros are storage positions and will be replaced by the loop.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Step 3: Apply Euler repeatedly</h2>
+<div class="step-card">
+<pre><code>for n in range(number_of_steps):
+    dS_dt, dI_dt, dR_dt = sir_rates(
+        S[n], I[n], R[n], beta, gamma
+    )
+
+    S[n + 1] = S[n] + dS_dt * dt
+    I[n + 1] = I[n] + dI_dt * dt
+    R[n + 1] = R[n] + dR_dt * dt</code></pre>
+<p class="code-explain">The function call uses only values at index <span class="inline-code">n</span>. After all derivatives are returned, the three next values are stored at index <span class="inline-code">n + 1</span>.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Step 4: Extract epidemic outcomes</h2>
+<div class="step-card">
+<pre><code>peak_index = np.argmax(I)
+peak_infectious = I[peak_index]
+peak_time = time[peak_index]</code></pre>
+<ul>
+<li><span class="inline-code">np.argmax(I)</span> returns the index at which &#92;(I&#92;) is largest.</li>
+<li>The same index retrieves the peak value from <span class="inline-code">I</span>.</li>
+<li>It also retrieves the corresponding peak time from <span class="inline-code">time</span>.</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Run the complete SIR simulation</h2>
+<p>Run the program to see the numerical summary, selected-day table and compartment graph. You can change &#92;(&#92;beta&#92;), &#92;(&#92;gamma&#92;) or <span class="inline-code">dt</span>.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Complete SIR Euler simulation</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import matplotlib.pyplot as plt
+
+
+def sir_rates(S, I, R, beta, gamma):
+    """Return the deterministic SIR rates at one state."""
+    
+    N = S + I + R
+    infection_flow = beta * S * I / N
+    recovery_flow = gamma * I
+    
+    dS_dt = -infection_flow
+    dI_dt = infection_flow - recovery_flow
+    dR_dt = recovery_flow
+    
+    return dS_dt, dI_dt, dR_dt
+
+
+# Initial conditions
+S0 = 990
+I0 = 10
+R0 = 0
+N = S0 + I0 + R0
+
+# Model parameters
+beta = 0.3
+gamma = 0.1
+
+# Numerical settings
+end_time = 160
+dt = 0.1
+
+# Validate settings
+if min(S0, I0, R0, beta, gamma) &lt; 0:
+    raise ValueError("Compartments and parameters cannot be negative.")
+if N &lt;= 0:
+    raise ValueError("The population must be positive.")
+if dt &lt;= 0:
+    raise ValueError("dt must be positive.")
+
+# Prepare time and storage
+number_of_steps = int(round(end_time / dt))
+time = np.linspace(0, end_time, number_of_steps + 1)
+
+S = np.zeros(number_of_steps + 1)
+I = np.zeros(number_of_steps + 1)
+R = np.zeros(number_of_steps + 1)
+
+S[0], I[0], R[0] = S0, I0, R0
+
+# Forward Euler simulation
+for n in range(number_of_steps):
+    dS_dt, dI_dt, dR_dt = sir_rates(
+        S[n], I[n], R[n], beta, gamma
+    )
+    
+    S[n + 1] = S[n] + dS_dt * dt
+    I[n + 1] = I[n] + dI_dt * dt
+    R[n + 1] = R[n] + dR_dt * dt
+    
+    if min(S[n + 1], I[n + 1], R[n + 1]) &lt; -1e-10:
+        raise ValueError("A negative compartment occurred. Reduce dt.")
+
+# Calculate outcomes
+peak_index = np.argmax(I)
+peak_infectious = I[peak_index]
+peak_time = time[peak_index]
+final_size = R[-1]
+
+population = S + I + R
+conservation_error = np.max(np.abs(population - N))
+
+# Display summary
+print("SIR epidemic summary")
+print("-------------------------------------")
+print(f"Peak infectious:       {peak_infectious:.2f}")
+print(f"Time of peak:          {peak_time:.1f} days")
+print(f"Final recovered:       {final_size:.2f}")
+print(f"Maximum total error:   {conservation_error:.2e}")
+
+# Display selected days
+print("\nDay       S         I         R")
+print("-------------------------------------")
+for day in [0, 20, 40, 60, 80, 120, 160]:
+    index = int(round(day / dt))
+    print(
+        f"{day:3d}  {S[index]:8.2f}  "
+        f"{I[index]:8.2f}  {R[index]:8.2f}"
+    )
+
+# Plot the epidemic
+plt.figure(figsize=(8, 4.8))
+plt.plot(time, S, label="Susceptible")
+plt.plot(time, I, label="Infectious")
+plt.plot(time, R, label="Recovered")
+plt.axvline(
+    peak_time,
+    color="grey",
+    linestyle=":",
+    label=f"Peak at day {peak_time:.1f}"
+)
+plt.xlabel("Time (days)")
+plt.ylabel("Number of people")
+plt.title("Deterministic SIR model: forward Euler method")
+plt.grid(alpha=0.25)
+plt.legend()
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>How the outcome is calculated</h2>
+<table class="tool-table">
+<thead><tr><th>Code</th><th>Technical purpose</th><th>Biological purpose</th></tr></thead>
+<tbody>
+<tr><td><code>R[-1]</code></td><td>Uses index −1 to select the final array entry.</td><td>Gives the recovered population at the end of the simulation.</td></tr>
+<tr><td><code>np.argmax(I)</code></td><td>Returns the position of the maximum value.</td><td>Locates the epidemic peak.</td></tr>
+<tr><td><code>np.abs(population - N)</code></td><td>Calculates the size of each deviation from &#92;(N&#92;).</td><td>Measures population-conservation error.</td></tr>
+<tr><td><code>np.max(...)</code></td><td>Selects the largest deviation.</td><td>Reports the worst conservation error across all times.</td></tr>
+<tr><td><code>plt.plot(time, I)</code></td><td>Plots paired horizontal and vertical array values.</td><td>Shows how the infectious population changes through time.</td></tr>
+<tr><td><code>plt.legend()</code></td><td>Displays the labels supplied to plotted lines.</td><td>Identifies the three compartments and peak marker.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Expected epidemic pattern</h2>
+<div class="outcome-grid">
+<div class="outcome-card"><strong>Susceptible</strong>decreases continuously</div>
+<div class="outcome-card"><strong>Infectious</strong>rises, reaches one peak, then falls</div>
+<div class="outcome-card"><strong>Recovered</strong>increases continuously</div>
+</div>
+<div class="interpretation-box">
+<p>Initially, infection occurs faster than recovery, so the infectious population grows. As susceptible people are depleted, the infection flow weakens. The infectious peak occurs when the infection and recovery flows are approximately equal. After that point, recovery exceeds new infection and &#92;(I&#92;) declines.</p>
+<p>The deterministic result is one smooth population-level trajectory. It represents average model behaviour and does not describe random individual infection and recovery events.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Important numerical and model conditions</h2>
+<div class="technical-box">
+<ul>
+<li>The initial compartments and parameters must be non-negative.</li>
+<li>The total population must be positive.</li>
+<li>&#92;(&#92;Delta t&gt;0&#92;) and should be sufficiently small.</li>
+<li>All rates in one Euler step must be calculated from the same current state.</li>
+<li>A negative compartment signals an invalid numerical result, often caused by a time step that is too large.</li>
+<li>Population conservation should be monitored across the entire trajectory.</li>
+<li>The final simulation time must be long enough to capture the outcome of interest.</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try changing transmission</h2>
+<div class="experiment-box">
+<p>Run the model with <span class="inline-code">beta = 0.15</span> and then with <span class="inline-code">beta = 0.4</span>, keeping all other values unchanged.</p>
+<ol>
+<li>Predict which model will have the larger infectious peak.</li>
+<li>Compare the peak times.</li>
+<li>Compare the final recovered populations.</li>
+<li>Explain the differences using the infection flow &#92;(&#92;beta SI/N&#92;).</li>
+</ol>
+</div>
+</section>
+</main>
+</body>
+</html>
