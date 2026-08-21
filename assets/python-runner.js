@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const runButton = lab.querySelector('[data-action="run"]');
         const resetButton = lab.querySelector('[data-action="reset"]');
         const copyButton = lab.querySelector('[data-action="copy"]');
+        const imageArea = lab.querySelector(".python-output-images");
         const originalCode = editor.value;
 
         runButton.addEventListener("click", async () => {
@@ -21,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
             runButton.textContent = "Loading Python…";
             output.classList.remove("error");
             output.textContent = "Preparing the Python environment…";
+            if (imageArea) imageArea.innerHTML = "";
 
             try {
                 const pyodide = await getMathsBioPython();
@@ -43,6 +45,37 @@ document.addEventListener("DOMContentLoaded", () => {
                 runButton.textContent = "Running…";
                 await pyodide.runPythonAsync(editor.value);
                 output.textContent = textOutput.trim() || "Code completed successfully.";
+
+                if (imageArea && editor.value.includes("matplotlib")) {
+                    const imageJson = await pyodide.runPythonAsync(`
+import io
+import base64
+import json
+import matplotlib.pyplot as _mathsbio_plt
+
+_mathsbio_images = []
+for _mathsbio_number in _mathsbio_plt.get_fignums():
+    _mathsbio_figure = _mathsbio_plt.figure(_mathsbio_number)
+    _mathsbio_buffer = io.BytesIO()
+    _mathsbio_figure.savefig(
+        _mathsbio_buffer,
+        format="png",
+        dpi=120,
+        bbox_inches="tight"
+    )
+    _mathsbio_images.append(
+        base64.b64encode(_mathsbio_buffer.getvalue()).decode("ascii")
+    )
+json.dumps(_mathsbio_images)
+`);
+                    JSON.parse(imageJson).forEach((encodedImage, index) => {
+                        const img = document.createElement("img");
+                        img.src = "data:image/png;base64," + encodedImage;
+                        img.alt = "Python-generated result graph " + (index + 1);
+                        imageArea.appendChild(img);
+                    });
+                    await pyodide.runPythonAsync("import matplotlib.pyplot as plt; plt.close('all')");
+                }
             } catch (error) {
                 output.classList.add("error");
                 output.textContent = error.message;
@@ -56,6 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
             editor.value = originalCode;
             output.classList.remove("error");
             output.textContent = "Run the code to see the result.";
+            if (imageArea) imageArea.innerHTML = "";
         });
 
         copyButton.addEventListener("click", async () => {

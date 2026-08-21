@@ -1,1 +1,233 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Forward Euler method from scratch in Python for mathematical biology."><title>Forward Euler method from scratch | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Deterministic Models</a><p class="section-number">06</p><h1 class="section-title">Forward Euler method from scratch</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Derive and program the forward Euler method from scratch using a biological recovery model.">
+<title>Forward Euler method from scratch | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.euler-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:24px 0}.euler-step{padding:18px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.euler-step span{display:block;margin-bottom:7px;font-size:.78rem;font-weight:700;color:#39815e}.formula-focus{margin:24px 0;padding:22px;background:#eaf4ee;border:2px solid #8fbea1;border-radius:12px;text-align:center}.iteration-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.iteration-cell{padding:14px;text-align:center;background:#fff;border:1px solid #dce7e0;border-radius:8px}.iteration-cell strong{display:block;color:#174c34}.loop-map{width:100%;border-collapse:collapse;background:#fff}.loop-map th,.loop-map td{padding:12px 14px;border:1px solid #d6e3db;text-align:left}.loop-map th{background:#eaf4ee;color:#174c34}@media(max-width:800px){.euler-steps,.iteration-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Deterministic Models</a>
+<p class="section-number">06</p>
+<h1 class="section-title">Forward Euler method from scratch</h1>
+<p class="lesson-intro">A differential equation gives a rate of change, not all future values directly. The forward Euler method uses the current rate to estimate the next value, then repeats the calculation to construct an approximate trajectory.</p>
+
+<section class="lesson-section">
+<h2>Biological scenario</h2>
+<div class="scenario-box">
+<p>Suppose 100 people are infectious and no new infections occur. Infectious people recover at rate &#92;(&#92;gamma=0.2&#92;) per day.</p>
+<p>We want to estimate the remaining infectious population over 10 days using only the differential equation and simple Python calculations.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>The recovery differential equation</h2>
+<p>The recovery-only model is</p>
+<div class="math-box">
+<p class="formula-line">&#92;[&#92;frac{dI}{dt}=-&#92;gamma I.&#92;]</p>
+</div>
+<p>The minus sign means that the infectious population decreases. At &#92;(I=100&#92;),</p>
+<p class="formula-line">&#92;[&#92;frac{dI}{dt}=-0.2&#92;times100=-20&#92;quad&#92;text{people per day}.&#92;]</p>
+<p>This is the instantaneous rate at the current state. As &#92;(I&#92;) decreases, the recovery rate also becomes smaller.</p>
+</section>
+
+<section class="lesson-section">
+<h2>From a derivative to an approximate change</h2>
+<p>Over a short interval &#92;(&#92;Delta t&#92;), Euler’s method approximates</p>
+<p class="formula-line">&#92;[&#92;text{change}&#92;approx&#92;text{current rate}&#92;times&#92;Delta t.&#92;]</p>
+<div class="formula-focus">
+<p class="formula-line">&#92;[I_{n+1}=I_n+&#92;left(-&#92;gamma I_n&#92;right)&#92;Delta t.&#92;]</p>
+</div>
+<p>The subscript &#92;(n&#92;) identifies the current stored time point. The subscript &#92;(n+1&#92;) identifies the next one.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The four Euler operations</h2>
+<div class="euler-steps">
+<div class="euler-step"><span>1 CURRENT VALUE</span>Read &#92;(I_n&#92;).</div>
+<div class="euler-step"><span>2 CURRENT RATE</span>Calculate &#92;(-&#92;gamma I_n&#92;).</div>
+<div class="euler-step"><span>3 APPROXIMATE CHANGE</span>Multiply the rate by &#92;(&#92;Delta t&#92;).</div>
+<div class="euler-step"><span>4 NEXT VALUE</span>Add the change to &#92;(I_n&#92;).</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Calculate the first two steps by hand</h2>
+<p>Use &#92;(I_0=100&#92;) and &#92;(&#92;Delta t=1&#92;) day.</p>
+<div class="iteration-row">
+<div class="iteration-cell"><strong>Current</strong>&#92;(I_0=100&#92;)</div>
+<div class="iteration-cell"><strong>Rate</strong>&#92;(-0.2&#92;times100=-20&#92;)</div>
+<div class="iteration-cell"><strong>Change</strong>&#92;(-20&#92;times1=-20&#92;)</div>
+<div class="iteration-cell"><strong>Next</strong>&#92;(I_1=100-20=80&#92;)</div>
+</div>
+<div class="iteration-row">
+<div class="iteration-cell"><strong>Current</strong>&#92;(I_1=80&#92;)</div>
+<div class="iteration-cell"><strong>Rate</strong>&#92;(-0.2&#92;times80=-16&#92;)</div>
+<div class="iteration-cell"><strong>Change</strong>&#92;(-16&#92;times1=-16&#92;)</div>
+<div class="iteration-cell"><strong>Next</strong>&#92;(I_2=80-16=64&#92;)</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Translate one step into Python</h2>
+<pre><code>rate = -gamma * I[n]
+change = rate * dt
+I[n + 1] = I[n] + change</code></pre>
+<table class="loop-map">
+<thead><tr><th>Python expression</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>I[n]</code></td><td>The current infectious value</td></tr>
+<tr><td><code>-gamma * I[n]</code></td><td>The rate evaluated at the current value</td></tr>
+<tr><td><code>rate * dt</code></td><td>The approximate change during one step</td></tr>
+<tr><td><code>I[n + 1]</code></td><td>The storage position for the next value</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Repeat the step with a loop</h2>
+<div class="step-card">
+<pre><code>for n in range(number_of_steps):
+    rate = -gamma * I[n]
+    I[n + 1] = I[n] + rate * dt</code></pre>
+<ul>
+<li><span class="inline-code">for</span> begins a repetition.</li>
+<li><span class="inline-code">range(number_of_steps)</span> produces the indices &#92;(0,1,2,&#92;ldots&#92;) needed for the updates.</li>
+<li>The indented statements run once for each index.</li>
+<li>The next value must be calculated from the current value, <span class="inline-code">I[n]</span>.</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Run the complete Euler program</h2>
+<p>The program also calculates the exact solution &#92;(I(t)=I_0e^{-&#92;gamma t}&#92;) so that the numerical approximation can be checked.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Euler recovery model</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import matplotlib.pyplot as plt
+
+# Biological and numerical settings
+I0 = 100
+gamma = 0.2
+start_time = 0
+end_time = 10
+dt = 1
+
+# Check the numerical settings
+if dt &lt;= 0:
+    raise ValueError("dt must be positive.")
+if gamma * dt &gt; 1:
+    raise ValueError("Choose dt so that gamma * dt is at most 1.")
+
+# Prepare the time grid and storage
+number_of_steps = int(round((end_time - start_time) / dt))
+time = np.linspace(start_time, end_time, number_of_steps + 1)
+I_euler = np.zeros(number_of_steps + 1)
+I_euler[0] = I0
+
+# Forward Euler method
+for n in range(number_of_steps):
+    rate = -gamma * I_euler[n]
+    change = rate * dt
+    I_euler[n + 1] = I_euler[n] + change
+
+# Exact solution for comparison
+I_exact = I0 * np.exp(-gamma * time)
+absolute_error = np.abs(I_exact - I_euler)
+
+# Display a results table
+print("Day   Euler     Exact     Absolute error")
+print("-----------------------------------------")
+for n in range(len(time)):
+    print(
+        f"{time[n]:3.0f}  {I_euler[n]:8.3f}  "
+        f"{I_exact[n]:8.3f}  {absolute_error[n]:14.3f}"
+    )
+
+print("-----------------------------------------")
+print(f"Maximum error: {absolute_error.max():.3f}")
+
+# Plot the outcome
+plt.figure(figsize=(7, 4.5))
+plt.plot(time, I_euler, "o-", label="Forward Euler")
+plt.plot(time, I_exact, "--", label="Exact solution")
+plt.xlabel("Time (days)")
+plt.ylabel("Infectious population")
+plt.title("Recovery-only model")
+plt.grid(alpha=0.25)
+plt.legend()
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Expected early values</h2>
+<table class="result-table">
+<thead><tr><th>Day</th><th>Euler value</th><th>Exact value</th><th>Absolute error</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>100.000</td><td>100.000</td><td>0.000</td></tr>
+<tr><td>1</td><td>80.000</td><td>81.873</td><td>1.873</td></tr>
+<tr><td>2</td><td>64.000</td><td>67.032</td><td>3.032</td></tr>
+<tr><td>3</td><td>51.200</td><td>54.881</td><td>3.681</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Biological and numerical interpretation</h2>
+<div class="interpretation-box">
+<p>The infectious population declines because the model contains recovery but no new infection. Each day, Euler’s method removes 20% of the current infectious value. The amount removed becomes smaller as the infectious population declines.</p>
+<p>The Euler values differ from the exact curve because Euler assumes the current rate remains fixed across each whole step. A smaller time step updates the rate more frequently and normally improves the approximation.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Important conditions and common mistakes</h2>
+<div class="technical-box">
+<ul>
+<li>&#92;(&#92;Delta t&gt;0&#92;) is required.</li>
+<li>The time grid and storage array must have compatible lengths.</li>
+<li>The loop stops at the final update; otherwise <span class="inline-code">I[n + 1]</span> would exceed the array.</li>
+<li>Use the current value on the right-hand side before storing the next value.</li>
+<li>For this decay equation, &#92;(0&#92;leq&#92;gamma&#92;Delta t&#92;leq1&#92;) prevents a single Euler step from producing a negative population.</li>
+<li>A time step can satisfy non-negativity and still be too large for good accuracy.</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try a smaller time step</h2>
+<div class="experiment-box">
+<p>Change <span class="inline-code">dt = 1</span> to <span class="inline-code">dt = 0.25</span>.</p>
+<ol>
+<li>Predict what happens to the number of Euler steps.</li>
+<li>Run the program.</li>
+<li>Compare the maximum error with the original result.</li>
+<li>Inspect how closely the Euler graph follows the exact curve.</li>
+</ol>
+</div>
+</section>
+</main>
+</body>
+</html>
