@@ -43,8 +43,8 @@ window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};
 </div>
 <div class="technical-box">
 <ul>
-<li>Infection moves a person from (S) to (I).</li>
-<li>Recovery moves a person from (I) to (R).</li>
+<li>Infection moves a person from &#92;(S&#92;) to &#92;(I&#92;).</li>
+<li>Recovery moves a person from &#92;(I&#92;) to &#92;(R&#92;).</li>
 <li>No person enters or leaves the population.</li>
 <li>The arrows show biological movement, not movement through physical space.</li>
 </ul>
@@ -55,21 +55,21 @@ window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};
 <h2>Mathematical-biology context</h2>
 <p>The infection flow depends on susceptible and infectious people being present. The recovery flow depends on the infectious population.</p>
 <div class="equation-grid">
-<div class="equation-card"><strong>Infection flow</strong>[mathcal{F}_{mathrm{inf}}=etarac{SI}{N}]</div>
-<div class="equation-card"><strong>Recovery flow</strong>[mathcal{F}_{mathrm{rec}}=gamma I]</div>
+<div class="equation-card"><strong>Infection flow</strong>&#92;[&#92;mathcal{F}_{&#92;mathrm{inf}}=&#92;beta&#92;frac{SI}{N}&#92;]</div>
+<div class="equation-card"><strong>Recovery flow</strong>&#92;[&#92;mathcal{F}_{&#92;mathrm{rec}}=&#92;gamma I&#92;]</div>
 </div>
 <p>These flows determine the rates of change:</p>
 <div class="change-grid">
-<div class="change-card">[rac{dS}{dt}=-mathcal{F}_{mathrm{inf}}]</div>
-<div class="change-card">[rac{dI}{dt}=mathcal{F}_{mathrm{inf}}-mathcal{F}_{mathrm{rec}}]</div>
-<div class="change-card">[rac{dR}{dt}=mathcal{F}_{mathrm{rec}}]</div>
+<div class="change-card">&#92;[&#92;frac{dS}{dt}=-&#92;mathcal{F}_{&#92;mathrm{inf}}&#92;]</div>
+<div class="change-card">&#92;[&#92;frac{dI}{dt}=&#92;mathcal{F}_{&#92;mathrm{inf}}-&#92;mathcal{F}_{&#92;mathrm{rec}}&#92;]</div>
+<div class="change-card">&#92;[&#92;frac{dR}{dt}=&#92;mathcal{F}_{&#92;mathrm{rec}}&#92;]</div>
 </div>
-<p>The same infection flow is subtracted from (S) and added to (I). The same recovery flow is subtracted from (I) and added to (R). Therefore, people are transferred rather than created or destroyed.</p>
+<p>The same infection flow is subtracted from &#92;(S&#92;) and added to &#92;(I&#92;). The same recovery flow is subtracted from &#92;(I&#92;) and added to &#92;(R&#92;). Therefore, people are transferred rather than created or destroyed.</p>
 </section>
 
 <section class="lesson-section">
 <h2>Programming objective</h2>
-<p>We will calculate the infection and recovery flows, use them to obtain the changes in (S), (I) and (R), and update the population through one time step of length (Delta t).</p>
+<p>We will calculate the infection and recovery flows, use them to obtain the changes in &#92;(S&#92;), &#92;(I&#92;) and &#92;(R&#92;), and update the population through one time step of length &#92;(&#92;Delta t&#92;).</p>
 </section>
 
 <section class="lesson-section">
@@ -191,8 +191,8 @@ print(f"Total        {N:8.3f}              {N_new:9.3f}")</textarea>
 <section class="lesson-section">
 <h2>Biological interpretation</h2>
 <div class="interpretation-box">
-<p>At the initial state, the infection flow is 2.97 people per day and the recovery flow is 1 person per day. Over 0.1 day, the model therefore transfers approximately 0.297 people from (S) to (I) and 0.100 people from (I) to (R).</p>
-<p>The infectious compartment increases by approximately (0.297-0.100=0.197). The total remains 1,000 because each loss from one compartment is an equal gain to another.</p>
+<p>At the initial state, the infection flow is 2.97 people per day and the recovery flow is 1 person per day. Over 0.1 day, the model therefore transfers approximately 0.297 people from &#92;(S&#92;) to &#92;(I&#92;) and 0.100 people from &#92;(I&#92;) to &#92;(R&#92;).</p>
+<p>The infectious compartment increases by approximately &#92;(0.297-0.100=0.197&#92;). The total remains 1,000 because each loss from one compartment is an equal gain to another.</p>
 <p>Decimal compartment values are expected in a deterministic model. They represent continuous approximations to population-level behaviour, not literal fractions of an individual event.</p>
 </div>
 </section>
@@ -201,9 +201,9 @@ print(f"Total        {N:8.3f}              {N_new:9.3f}")</textarea>
 <h2>Important model and programming conditions</h2>
 <div class="technical-box">
 <ul>
-<li>(S), (I) and (R) must remain non-negative.</li>
-<li>(N=S+I+R) must be conserved in this closed-population model.</li>
-<li>(etageq0), (gammageq0) and (Delta t&gt;0).</li>
+<li>&#92;(S&#92;), &#92;(I&#92;) and &#92;(R&#92;) must remain non-negative.</li>
+<li>&#92;(N=S+I+R&#92;) must be conserved in this closed-population model.</li>
+<li>(etageq0), &#92;(&#92;gamma&#92;geq 0&#92;) and &#92;(&#92;Delta t&gt;0&#92;).</li>
 <li>The time step should be sufficiently small for the Euler update to be accurate.</li>
 <li><span class="inline-code">abs(N_new - N) &lt; 1e-10</span> allows for very small floating-point rounding differences.</li>
 </ul>
@@ -216,9 +216,9 @@ print(f"Total        {N:8.3f}              {N_new:9.3f}")</textarea>
 <p>Change <span class="inline-code">gamma = 0.1</span> to <span class="inline-code">gamma = 0.4</span>.</p>
 <ol>
 <li>Predict how the recovery flow will change.</li>
-<li>Predict whether (I) will initially increase or decrease.</li>
+<li>Predict whether &#92;(I&#92;) will initially increase or decrease.</li>
 <li>Run the program and inspect the before-and-after table.</li>
-<li>Explain why changing recovery affects both (I) and (R), but not the infection flow at the current state.</li>
+<li>Explain why changing recovery affects both &#92;(I&#92;) and &#92;(R&#92;), but not the infection flow at the current state.</li>
 </ol>
 </div>
 </section>
