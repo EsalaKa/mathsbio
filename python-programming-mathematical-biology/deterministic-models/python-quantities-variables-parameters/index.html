@@ -1,1 +1,183 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Python quantities, variables and parameters in Python for mathematical biology."><title>Python quantities, variables and parameters | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Deterministic Models</a><p class="section-number">01</p><h1 class="section-title">Python quantities, variables and parameters</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Learn Python quantities, variables and parameters through an introductory SIR epidemic scenario.">
+<title>Python quantities, variables and parameters | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>
+window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Deterministic Models</a>
+<p class="section-number">01</p>
+<h1 class="section-title">Python quantities, variables and parameters</h1>
+<p class="lesson-intro">In this lesson, we use a small SIR epidemic scenario to learn how Python stores biological quantities and model parameters. You can change the code, run it in the page and see the outcome immediately.</p>
+
+<section class="lesson-section">
+<h2>Biological scenario</h2>
+<div class="scenario-box">
+<p>An infection has entered a closed population of 1,000 people. At the beginning, 990 people are susceptible, 10 are infectious and nobody has recovered.</p>
+<p>We want to store these quantities in Python and calculate the initial infection and recovery rates.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Mathematical-biology context</h2>
+<p>The SIR model divides the population into three compartments:</p>
+<ul>
+<li>\(S\): number of susceptible people;</li>
+<li>\(I\): number of infectious people;</li>
+<li>\(R\): number of recovered people.</li>
+</ul>
+<div class="math-box">
+<p class="formula-line">\[S(0)=990,\qquad I(0)=10,\qquad R(0)=0.\]</p>
+<p>The total population is</p>
+<p class="formula-line">\[N=S+I+R=1000.\]</p>
+<p>We use \(\beta=0.3\) as the transmission parameter and \(\gamma=0.1\) as the recovery-rate parameter. Their precise biological interpretation will be developed in later lessons.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Programming objective</h2>
+<p>We will store the compartment sizes and parameters, calculate useful quantities and check that the initial values are biologically valid.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Build the code step by step</h2>
+
+<div class="step-card">
+<h3>Step 1: Store the compartment sizes</h3>
+<pre><code>S = 990
+I = 10
+R = 0</code></pre>
+<p class="code-explain"><span class="inline-code">S</span>, <span class="inline-code">I</span> and <span class="inline-code">R</span> are variable names. The assignment operator <span class="inline-code">=</span> stores a value under a name. Here the values are integers because they count people.</p>
+</div>
+
+<div class="step-card">
+<h3>Step 2: Store the parameters</h3>
+<pre><code>beta = 0.3
+gamma = 0.1</code></pre>
+<p class="code-explain"><span class="inline-code">beta</span> and <span class="inline-code">gamma</span> are model parameters. Their decimal values are stored as floating-point numbers.</p>
+</div>
+
+<div class="step-card">
+<h3>Step 3: Calculate derived quantities</h3>
+<pre><code>N = S + I + R
+infection_rate = beta * S * I / N
+recovery_rate = gamma * I</code></pre>
+<p class="code-explain"><span class="inline-code">*</span> means multiplication and <span class="inline-code">/</span> means division. Python evaluates the right-hand side first and assigns the result to the name on the left.</p>
+</div>
+
+<div class="step-card">
+<h3>Step 4: Check the model conditions</h3>
+<pre><code>assert S >= 0 and I >= 0 and R >= 0
+assert S + I + R == N</code></pre>
+<p class="code-explain"><span class="inline-code">assert</span> checks whether a condition is true. The compartments cannot contain negative numbers, and their sum must equal the total population.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Run the complete program</h2>
+<p>Edit any value and select <strong>Run code</strong>. The output will appear below the program. Python may take a few seconds to load the first time.</p>
+
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>SIR initial values</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code"># Initial compartment sizes
+S = 990
+I = 10
+R = 0
+
+# Model parameters
+beta = 0.3
+gamma = 0.1
+
+# Derived quantities
+N = S + I + R
+infected_percent = 100 * I / N
+infection_rate = beta * S * I / N
+recovery_rate = gamma * I
+
+# Biological checks
+assert S >= 0 and I >= 0 and R >= 0
+assert S + I + R == N
+
+# Display the outcomes
+print("Initial SIR summary")
+print("-------------------")
+print(f"Total population:      {N}")
+print(f"Susceptible:           {S}")
+print(f"Infectious:            {I}")
+print(f"Recovered:             {R}")
+print(f"Infectious percentage: {infected_percent:.1f}%")
+print(f"Initial infection rate:{infection_rate:6.2f} people/day")
+print(f"Initial recovery rate: {recovery_rate:6.2f} people/day")</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Expected outcome</h2>
+<table class="result-table">
+<thead><tr><th>Quantity</th><th>Value</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>Total population</td><td>1,000</td><td>Everyone in the three compartments</td></tr>
+<tr><td>Infectious percentage</td><td>1.0%</td><td>Initial proportion that is infectious</td></tr>
+<tr><td>Initial infection rate</td><td>2.97 people/day</td><td>Instantaneous model rate of new infections</td></tr>
+<tr><td>Initial recovery rate</td><td>1.00 person/day</td><td>Instantaneous model rate of recovery</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<div class="interpretation-box">
+<p>Initially, 1% of the population is infectious. The model gives an infection rate of 2.97 people per day and a recovery rate of 1 person per day. Because the infection rate is greater than the recovery rate at this initial state, the infectious population is expected to increase initially.</p>
+<p>These are continuous model rates. They do not mean that exactly 2.97 people become infected during a particular day.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Important technical points</h2>
+<div class="technical-box">
+<ul>
+<li>A <strong>variable</strong> is a name referring to a stored value.</li>
+<li>A <strong>parameter</strong> is a quantity that controls model behaviour.</li>
+<li>Python is case-sensitive: <span class="inline-code">I</span> and <span class="inline-code">i</span> are different names.</li>
+<li>The name on the left of <span class="inline-code">=</span> receives the value calculated on the right.</li>
+<li>All compartment values must be non-negative.</li>
+<li>The total population must satisfy \(N=S+I+R\).</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try it yourself</h2>
+<div class="experiment-box">
+<p>Change the initial infectious population from 10 to 25. Change the susceptible population from 990 to 975 so that the total remains 1,000.</p>
+<ol>
+<li>Predict whether the initial infection rate will increase or decrease.</li>
+<li>Run the program.</li>
+<li>Compare the infection and recovery rates.</li>
+<li>Explain the result in biological terms.</li>
+</ol>
+</div>
+</section>
+</main>
+</body>
+</html>
