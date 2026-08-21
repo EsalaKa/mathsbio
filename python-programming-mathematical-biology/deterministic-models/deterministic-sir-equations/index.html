@@ -3,17 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Translate the deterministic SIR differential equations into a simple interactive Python function.">
+<meta name="description" content="Learn how biological flows become deterministic SIR equations and Python expressions.">
 <title>Writing the deterministic SIR equations | MathsBio</title>
 <link rel="stylesheet" href="../../../style.css">
-<script>
-window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};
-</script>
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
 <script defer src="../../../assets/python-runner.js"></script>
 <style>
-.sir-equations{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}.sir-equation{padding:20px 15px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px;text-align:center}.sir-equation h3{margin:0 0 8px;color:#174c34}.translation-table{width:100%;border-collapse:collapse;background:#fff}.translation-table th,.translation-table td{padding:13px;border:1px solid #d6e3db;text-align:left;vertical-align:top}.translation-table th{background:#eaf4ee;color:#174c34}.translation-table code{white-space:nowrap}.direction-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}.direction-card{padding:18px;border-radius:9px;text-align:center;background:#f1f8f4}.direction-card .sign{display:block;font-size:1.7rem;font-weight:700;color:#176b45}@media(max-width:800px){.sir-equations,.direction-grid{grid-template-columns:1fr}.translation-table{font-size:.9rem}}
+.balance-rule{margin:24px 0;padding:22px;text-align:center;background:#eaf4ee;border:2px solid #8fbea1;border-radius:12px;font-size:1.15rem;font-weight:700;color:#174c34}.equation-journey{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:stretch;margin:22px 0}.journey-card{padding:18px 14px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.journey-card span{display:block;margin-bottom:7px;font-size:.78rem;font-weight:700;color:#39815e}.sir-equation-block{margin:24px 0;padding:22px;background:#fff;border:1px solid #dce7e0;border-left:5px solid #39815e;border-radius:10px}.sir-equation-block h3{margin:0 0 12px;color:#174c34}.meaning-table{width:100%;border-collapse:collapse;background:#fff}.meaning-table th,.meaning-table td{padding:12px 14px;border:1px solid #d6e3db;text-align:left}.meaning-table th{background:#eaf4ee;color:#174c34}.manual-calc{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.calc-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.equation-result{margin-top:20px;padding:20px;background:#f1f8f4;border-radius:10px}.sign-note{display:inline-block;min-width:28px;text-align:center;font-weight:700;color:#176b45}@media(max-width:800px){.equation-journey,.manual-calc{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -22,115 +20,143 @@ window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};
 <a class="back-link" href="../">← Deterministic Models</a>
 <p class="section-number">03</p>
 <h1 class="section-title">Writing the deterministic SIR equations</h1>
-<p class="lesson-intro">The SIR flow diagram describes who moves between compartments. The differential equations describe the instantaneous rate of change of each compartment. Here we translate those equations directly into a reusable Python function.</p>
+<p class="lesson-intro">This lesson develops confidence in working with model equations. We begin with biological statements, identify flows into and out of each compartment, form the differential equations, substitute numerical values and finally translate the same calculations into Python.</p>
 
 <section class="lesson-section">
 <h2>Biological scenario</h2>
 <div class="scenario-box">
-<p>An epidemic is observed when 900 people are susceptible, 80 are infectious and 20 have recovered. The population is closed, with transmission parameter &#92;(&#92;beta=0.3&#92;) and recovery-rate parameter &#92;(&#92;gamma=0.1&#92;).</p>
-<p>At this particular state, is each compartment increasing or decreasing, and how rapidly?</p>
+<p>An epidemic has reached the state</p>
+<p class="formula-line">&#92;[S=900,&#92;qquad I=80,&#92;qquad R=20.&#92;]</p>
+<p>The total population is &#92;(N=1000&#92;). We use &#92;(&#92;beta=0.3&#92;) and &#92;(&#92;gamma=0.1&#92;). We want to determine the instantaneous direction and rate of change of every compartment.</p>
 </div>
 </section>
 
 <section class="lesson-section">
-<h2>The deterministic SIR equations</h2>
-<div class="sir-equations">
-<div class="sir-equation"><h3>Susceptible</h3>&#92;[&#92;frac{dS}{dt}=-&#92;beta&#92;frac{SI}{N}&#92;]</div>
-<div class="sir-equation"><h3>Infectious</h3>&#92;[&#92;frac{dI}{dt}=&#92;beta&#92;frac{SI}{N}-&#92;gamma I&#92;]</div>
-<div class="sir-equation"><h3>Recovered</h3>&#92;[&#92;frac{dR}{dt}=&#92;gamma I&#92;]</div>
+<h2>The general balance principle</h2>
+<p>A compartment changes because quantities enter or leave it. This gives a principle used throughout mathematical biology:</p>
+<div class="balance-rule">rate of change = total flow in − total flow out</div>
+<p>We apply this principle separately to &#92;(S&#92;), &#92;(I&#92;) and &#92;(R&#92;).</p>
+</section>
+
+<section class="lesson-section">
+<h2>1. Construct the susceptible equation</h2>
+<div class="equation-journey">
+<div class="journey-card"><span>BIOLOGY</span>Susceptible people leave &#92;(S&#92;) through infection.</div>
+<div class="journey-card"><span>FLOW</span>&#92;(&#92;displaystyle &#92;beta&#92;frac{SI}{N}&#92;)</div>
+<div class="journey-card"><span>EQUATION</span>&#92;(&#92;displaystyle &#92;frac{dS}{dt}=-&#92;beta&#92;frac{SI}{N}&#92;)</div>
+<div class="journey-card"><span>PYTHON</span><code>dS_dt = -infection_flow</code></div>
 </div>
-<div class="math-box">
-<p>The derivatives &#92;(&#92;frac{dS}{dt}&#92;), &#92;(&#92;frac{dI}{dt}&#92;) and &#92;(&#92;frac{dR}{dt}&#92;) are instantaneous rates of change. They describe the direction and speed of change at the current state; they do not yet calculate the complete epidemic through time.</p>
-<p>Adding the three equations gives</p>
-<p class="formula-line">&#92;[&#92;frac{dS}{dt}+&#92;frac{dI}{dt}+&#92;frac{dR}{dt}=0.&#92;]</p>
-<p>Therefore, &#92;(N=S+I+R&#92;) remains constant.</p>
+<div class="technical-box">
+<p>The minus sign is essential. Infection is an outgoing flow from &#92;(S&#92;), so it makes the susceptible population decrease.</p>
 </div>
 </section>
 
 <section class="lesson-section">
-<h2>Programming objective</h2>
-<p>We will write a Python function named <span class="inline-code">sir_rates</span>. It will receive the current compartment sizes and parameters, then return the three SIR rates of change.</p>
+<h2>2. Construct the recovered equation</h2>
+<div class="equation-journey">
+<div class="journey-card"><span>BIOLOGY</span>Recovered people enter &#92;(R&#92;) through recovery.</div>
+<div class="journey-card"><span>FLOW</span>&#92;(&#92;gamma I&#92;)</div>
+<div class="journey-card"><span>EQUATION</span>&#92;(&#92;displaystyle &#92;frac{dR}{dt}=&#92;gamma I&#92;)</div>
+<div class="journey-card"><span>PYTHON</span><code>dR_dt = recovery_flow</code></div>
+</div>
+<div class="technical-box">
+<p>The recovery flow is incoming to &#92;(R&#92;), so it has a positive sign.</p>
+</div>
 </section>
 
 <section class="lesson-section">
-<h2>Translate the mathematics into Python</h2>
-<table class="translation-table">
-<thead><tr><th>Mathematics</th><th>Python</th><th>Meaning</th></tr></thead>
+<h2>3. Construct the infectious equation</h2>
+<p>The infectious compartment has both an incoming flow and an outgoing flow.</p>
+<div class="sir-equation-block">
+<h3>Words first</h3>
+<p>rate of change of infectious people = infection flow in − recovery flow out</p>
+<p class="formula-line">&#92;[&#92;frac{dI}{dt}=&#92;beta&#92;frac{SI}{N}-&#92;gamma I.&#92;]</p>
+</div>
+<p>Read this equation as:</p>
+<div class="interpretation-box">
+<p>“The rate of change of the infectious population with respect to time equals the infection flow into the infectious compartment minus the recovery flow out of it.”</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Meaning of the infectious equation</h2>
+<table class="meaning-table">
+<thead><tr><th>Expression</th><th>Meaning</th></tr></thead>
 <tbody>
-<tr><td>&#92;(&#92;beta SI/N&#92;)</td><td><code>beta * S * I / N</code></td><td>Infection flow</td></tr>
-<tr><td>&#92;(&#92;gamma I&#92;)</td><td><code>gamma * I</code></td><td>Recovery flow</td></tr>
-<tr><td>&#92;(-&#92;beta SI/N&#92;)</td><td><code>-infection_flow</code></td><td>Rate of change of susceptible people</td></tr>
-<tr><td>&#92;(&#92;beta SI/N-&#92;gamma I&#92;)</td><td><code>infection_flow - recovery_flow</code></td><td>Rate of change of infectious people</td></tr>
-<tr><td>&#92;(&#92;gamma I&#92;)</td><td><code>recovery_flow</code></td><td>Rate of change of recovered people</td></tr>
+<tr><td>&#92;(&#92;displaystyle &#92;frac{dI}{dt}&#92;)</td><td>Instantaneous rate of change of the infectious population</td></tr>
+<tr><td>&#92;(&#92;beta&#92;)</td><td>Transmission parameter</td></tr>
+<tr><td>&#92;(SI/N&#92;)</td><td>Susceptible–infectious interaction adjusted for population size</td></tr>
+<tr><td>&#92;(&#92;displaystyle &#92;beta&#92;frac{SI}{N}&#92;)</td><td>Infection flow into &#92;(I&#92;)</td></tr>
+<tr><td>&#92;(&#92;gamma&#92;)</td><td>Recovery-rate parameter</td></tr>
+<tr><td>&#92;(&#92;gamma I&#92;)</td><td>Recovery flow out of &#92;(I&#92;)</td></tr>
+<tr><td>minus sign</td><td>Recovery removes people from the infectious compartment</td></tr>
 </tbody>
 </table>
 </section>
 
 <section class="lesson-section">
-<h2>Build the function step by step</h2>
-
-<div class="step-card">
-<h3>Step 1: Define the function</h3>
-<pre><code>def sir_rates(S, I, R, beta, gamma):</code></pre>
-<p class="code-explain"><span class="inline-code">def</span> begins a function definition. The function name is <span class="inline-code">sir_rates</span>. The names inside the parentheses are parameters of the Python function: values must be supplied when the function is called.</p>
+<h2>The complete SIR system</h2>
+<div class="sir-equation-block">
+<p class="formula-line">&#92;[&#92;frac{dS}{dt}=-&#92;beta&#92;frac{SI}{N},&#92;]</p>
+<p class="formula-line">&#92;[&#92;frac{dI}{dt}=&#92;beta&#92;frac{SI}{N}-&#92;gamma I,&#92;]</p>
+<p class="formula-line">&#92;[&#92;frac{dR}{dt}=&#92;gamma I.&#92;]</p>
 </div>
+<p>These equations are connected. The same infection flow leaves &#92;(S&#92;) and enters &#92;(I&#92;). The same recovery flow leaves &#92;(I&#92;) and enters &#92;(R&#92;).</p>
+</section>
 
-<div class="step-card">
-<h3>Step 2: Calculate quantities inside the function</h3>
-<pre><code>    N = S + I + R
-    infection_flow = beta * S * I / N
-    recovery_flow = gamma * I</code></pre>
-<p class="code-explain">The four spaces create an indented function body. These calculations belong to the function and use the values passed into it.</p>
+<section class="lesson-section">
+<h2>Substitute the numerical values by hand</h2>
+<p>Substitution means replacing symbols with their given numerical values.</p>
+<div class="manual-calc">
+<div class="calc-card">
+<h3>Infection flow</h3>
+<p class="formula-line">&#92;[&#92;beta&#92;frac{SI}{N}=0.3&#92;times&#92;frac{900&#92;times80}{1000}=21.6.&#92;]</p>
 </div>
-
-<div class="step-card">
-<h3>Step 3: Form the three derivatives</h3>
-<pre><code>    dS_dt = -infection_flow
-    dI_dt = infection_flow - recovery_flow
-    dR_dt = recovery_flow</code></pre>
-<p class="code-explain">Each Python statement corresponds to one deterministic SIR equation.</p>
+<div class="calc-card">
+<h3>Recovery flow</h3>
+<p class="formula-line">&#92;[&#92;gamma I=0.1&#92;times80=8.&#92;]</p>
 </div>
-
-<div class="step-card">
-<h3>Step 4: Return the results</h3>
-<pre><code>    return dS_dt, dI_dt, dR_dt</code></pre>
-<p class="code-explain"><span class="inline-code">return</span> sends three calculated values back to the part of the program that called the function.</p>
 </div>
-
-<div class="step-card">
-<h3>Step 5: Call the function</h3>
-<pre><code>dS_dt, dI_dt, dR_dt = sir_rates(S, I, R, beta, gamma)</code></pre>
-<p class="code-explain">The supplied arguments are matched by position. The three returned values are assigned to three variable names in the same order.</p>
+<div class="equation-result">
+<p class="formula-line">&#92;[&#92;frac{dS}{dt}=-21.6,&#92;qquad &#92;frac{dI}{dt}=21.6-8=13.6,&#92;qquad &#92;frac{dR}{dt}=8.&#92;]</p>
 </div>
 </section>
 
 <section class="lesson-section">
-<h2>Run the complete program</h2>
-<p>Change the epidemic state or parameters, then run the program. The function calculates the instantaneous rates at the values you supply.</p>
+<h2>Translate the calculation into Python</h2>
 
+<div class="step-card">
+<h3>Step 1: Write the mathematical quantities</h3>
+<pre><code>S = 900
+I = 80
+R = 20
+N = S + I + R
+
+beta = 0.3
+gamma = 0.1</code></pre>
+</div>
+
+<div class="step-card">
+<h3>Step 2: Write the flow formulas</h3>
+<pre><code>infection_flow = beta * S * I / N
+recovery_flow = gamma * I</code></pre>
+<p class="code-explain">Python uses <span class="inline-code">*</span> for multiplication and <span class="inline-code">/</span> for division.</p>
+</div>
+
+<div class="step-card">
+<h3>Step 3: Write the equations</h3>
+<pre><code>dS_dt = -infection_flow
+dI_dt = infection_flow - recovery_flow
+dR_dt = recovery_flow</code></pre>
+<p class="code-explain">The variable names <span class="inline-code">dS_dt</span>, <span class="inline-code">dI_dt</span> and <span class="inline-code">dR_dt</span> are readable Python versions of the derivative notation.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Run the equations</h2>
 <div class="python-lab">
-<div class="python-lab-header"><span>Interactive Python</span><span>SIR derivative function</span></div>
-<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">def sir_rates(S, I, R, beta, gamma):
-    """Return the three deterministic SIR rates of change."""
-    
-    N = S + I + R
-    
-    if N <= 0:
-        raise ValueError("The total population must be positive.")
-    if min(S, I, R, beta, gamma) < 0:
-        raise ValueError("Compartments and parameters cannot be negative.")
-    
-    infection_flow = beta * S * I / N
-    recovery_flow = gamma * I
-    
-    dS_dt = -infection_flow
-    dI_dt = infection_flow - recovery_flow
-    dR_dt = recovery_flow
-    
-    return dS_dt, dI_dt, dR_dt
-
-
-# Current epidemic state
+<div class="python-lab-header"><span>Interactive Python</span><span>Direct SIR equations</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code"># Current epidemic state
 S = 900
 I = 80
 R = 20
@@ -139,83 +165,92 @@ R = 20
 beta = 0.3
 gamma = 0.1
 
-# Call the function
-dS_dt, dI_dt, dR_dt = sir_rates(S, I, R, beta, gamma)
+# Total population
+N = S + I + R
 
-# Check conservation
-rate_total = dS_dt + dI_dt + dR_dt
-assert abs(rate_total) < 1e-12
+# Biological flows
+infection_flow = beta * S * I / N
+recovery_flow = gamma * I
 
-# Display the outcomes
-print("SIR rates at the current state")
-print("--------------------------------------")
-print(f"dS/dt = {dS_dt:7.2f} people/day")
-print(f"dI/dt = {dI_dt:7.2f} people/day")
-print(f"dR/dt = {dR_dt:7.2f} people/day")
-print("--------------------------------------")
-print(f"Sum    = {rate_total:7.2f} people/day")</textarea>
+# Deterministic SIR equations
+dS_dt = -infection_flow
+dI_dt = infection_flow - recovery_flow
+dR_dt = recovery_flow
+
+# Conservation check
+total_rate = dS_dt + dI_dt + dR_dt
+assert abs(total_rate) < 1e-12
+
+# Display the calculation
+print("Flow calculations")
+print("-----------------------------")
+print(f"Infection flow = {infection_flow:.2f}")
+print(f"Recovery flow  = {recovery_flow:.2f}")
+
+print("\nSIR rates of change")
+print("-----------------------------")
+print(f"dS/dt = {dS_dt:6.2f} people/day")
+print(f"dI/dt = {dI_dt:6.2f} people/day")
+print(f"dR/dt = {dR_dt:6.2f} people/day")
+print(f"Sum   = {total_rate:6.2f} people/day")</textarea>
 <div class="code-controls">
 <button class="code-button primary" type="button" data-action="run">▶ Run code</button>
 <button class="code-button" type="button" data-action="reset">↻ Reset code</button>
 <button class="code-button" type="button" data-action="copy">Copy code</button>
 </div>
-<div class="output-wrap">
-<p class="output-label">Output</p>
-<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
-</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre></div>
 </div>
 </section>
 
 <section class="lesson-section">
-<h2>Expected outcome</h2>
+<h2>Interpret the signs</h2>
 <table class="result-table">
-<thead><tr><th>Rate</th><th>Value</th><th>Direction</th><th>Biological meaning</th></tr></thead>
+<thead><tr><th>Derivative</th><th>Value</th><th>Interpretation at this state</th></tr></thead>
 <tbody>
-<tr><td>&#92;(dS/dt&#92;)</td><td>−21.60 people/day</td><td>Decreasing</td><td>Susceptible people leave through infection</td></tr>
-<tr><td>&#92;(dI/dt&#92;)</td><td>+13.60 people/day</td><td>Increasing</td><td>Infections occur faster than recoveries</td></tr>
-<tr><td>&#92;(dR/dt&#92;)</td><td>+8.00 people/day</td><td>Increasing</td><td>Infectious people enter the recovered compartment</td></tr>
-<tr><td>Total rate</td><td>0.00 people/day</td><td>Constant total</td><td>No one enters or leaves the population</td></tr>
+<tr><td>&#92;(dS/dt&#92;)</td><td>−21.60</td><td><span class="sign-note">−</span> Susceptible population is decreasing</td></tr>
+<tr><td>&#92;(dI/dt&#92;)</td><td>+13.60</td><td><span class="sign-note">+</span> Infectious population is increasing</td></tr>
+<tr><td>&#92;(dR/dt&#92;)</td><td>+8.00</td><td><span class="sign-note">+</span> Recovered population is increasing</td></tr>
 </tbody>
 </table>
-
-<div class="direction-grid">
-<div class="direction-card"><span class="sign">−</span><strong>Susceptible decreases</strong></div>
-<div class="direction-card"><span class="sign">+</span><strong>Infectious increases</strong></div>
-<div class="direction-card"><span class="sign">+</span><strong>Recovered increases</strong></div>
-</div>
-</section>
-
-<section class="lesson-section">
-<h2>Biological interpretation</h2>
 <div class="interpretation-box">
-<p>At this epidemic state, the infection flow is 21.6 people per day and the recovery flow is 8 people per day. The infectious population therefore has a positive net rate of &#92;(21.6-8=13.6&#92;) people per day.</p>
-<p>This does not mean that the compartments will continue changing at these fixed rates. As &#92;(S&#92;) and &#92;(I&#92;) change, the function must be evaluated again at the new state. A numerical method repeatedly performs that calculation to construct the epidemic trajectory.</p>
+<p>The signs describe the direction of change at the current state. The infection flow exceeds the recovery flow, so &#92;(I&#92;) is increasing. These rates will change as the compartment sizes change.</p>
 </div>
 </section>
 
 <section class="lesson-section">
-<h2>Function and model conditions</h2>
-<div class="technical-box">
-<ul>
-<li>The function requires five arguments in the order <span class="inline-code">S, I, R, beta, gamma</span>.</li>
-<li>The total population must be positive because the infection term divides by &#92;(N&#92;).</li>
-<li>Compartments and rate parameters cannot be negative.</li>
-<li>The function returns rates, not updated compartment sizes.</li>
-<li>The derivative sum should be zero in this closed SIR model.</li>
-<li>The triple quotation marks create a short function description called a docstring.</li>
-</ul>
+<h2>Why the total population remains constant</h2>
+<p>Adding the equations makes the repeated flows cancel:</p>
+<p class="formula-line">&#92;[&#92;frac{dS}{dt}+&#92;frac{dI}{dt}+&#92;frac{dR}{dt}=-&#92;beta&#92;frac{SI}{N}+&#92;beta&#92;frac{SI}{N}-&#92;gamma I+&#92;gamma I=0.&#92;]</p>
+<p>Python verifies the same result using <span class="inline-code">total_rate</span>.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Place the equations in a reusable function</h2>
+<p>After the individual equations are understood, we can group them:</p>
+<div class="step-card">
+<pre><code>def sir_rates(S, I, R, beta, gamma):
+    N = S + I + R
+    infection_flow = beta * S * I / N
+    recovery_flow = gamma * I
+
+    dS_dt = -infection_flow
+    dI_dt = infection_flow - recovery_flow
+    dR_dt = recovery_flow
+
+    return dS_dt, dI_dt, dR_dt</code></pre>
+<p class="code-explain">The function does not change the mathematics. It packages the same equations so that a numerical method can evaluate them repeatedly at different epidemic states.</p>
 </div>
 </section>
 
 <section class="lesson-section">
 <h2>Try it yourself</h2>
 <div class="experiment-box">
-<p>Keep &#92;(S=900&#92;), &#92;(I=80&#92;) and &#92;(R=20&#92;), but change <span class="inline-code">beta = 0.3</span> to <span class="inline-code">beta = 0.05</span>.</p>
+<p>Change <span class="inline-code">beta = 0.3</span> to <span class="inline-code">beta = 0.05</span>.</p>
 <ol>
+<li>Substitute the new value into the infection-flow formula by hand.</li>
 <li>Predict the sign of &#92;(dI/dt&#92;).</li>
-<li>Run the function.</li>
-<li>Decide whether the infectious population is increasing or decreasing at this state.</li>
-<li>Explain why &#92;(dS/dt+dI/dt+dR/dt&#92;) remains zero.</li>
+<li>Run the Python code and compare it with your calculation.</li>
+<li>Explain why the total rate is still zero.</li>
 </ol>
 </div>
 </section>
