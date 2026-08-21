@@ -1,1 +1,78 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Turing patterns | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>.lesson-content{max-width:850px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}</style></head><body><main class="section container"><a class="back-link" href="../">← Spatial Mathematical Biology</a><article class="lesson-content"><h1 class="section-title">Turing patterns</h1><p>A Turing pattern is a spatial pattern generated when diffusion destabilises an equilibrium that is stable in the corresponding non-spatial system.</p><h2>Two-component system</h2>\[\frac{\partial u}{\partial t}=D_u\nabla^2u+f(u,v),\]\[\frac{\partial v}{\partial t}=D_v\nabla^2v+g(u,v).\]<p>Without diffusion, the homogeneous equilibrium may be stable. With unequal diffusion rates, some spatial perturbations can grow.</p><h2>Diffusion-driven instability</h2><p>The mathematical test compares the reaction Jacobian with the diffusion coefficients and determines whether a spatial mode has positive growth rate.</p><h2>Biological interpretation</h2><p>Turing mechanisms have been studied as possible explanations for developmental and pigmentation patterns.</p><div class="box"><strong>Key idea.</strong> In a Turing mechanism, diffusion does not simply smooth differences; together with reaction dynamics it can create stable spatial structure.</div></article></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Turing patterns | MathsBio</title><link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="../../plot-utils.js"></script>
+<style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.lesson-content h3{font-size:1.2rem;margin-top:1.5rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.figure{margin:1.5rem 0;padding:14px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:680px;height:auto;display:block}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}.defs{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td{padding:10px 12px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th{background:#edf5f0}</style>
+</head><body><main class="section container"><a class="back-link" href="../">← Spatial Mathematical Biology</a><article class="lesson-content">
+<h1 class="section-title">Turing patterns</h1>
+<p>A <strong>Turing pattern</strong> is a spatial pattern that can arise when diffusion destabilises a homogeneous equilibrium that is stable without spatial movement. The idea was introduced by Alan Turing in 1952 as a mathematical mechanism for biological pattern formation.</p>
+<div class="box"><strong>Central idea.</strong> Reaction dynamics can keep a spatially uniform state stable, while diffusion can make particular spatial wavelengths grow. This is called <strong>diffusion-driven instability</strong>.</div>
+
+<h2>Reaction–diffusion model</h2>
+<p>For two interacting quantities \(u(x,t)\) and \(v(x,t)\),</p>
+\[\frac{\partial u}{\partial t}=D_u\nabla^2u+f(u,v),\]
+\[\frac{\partial v}{\partial t}=D_v\nabla^2v+g(u,v).\]
+<table class="defs"><tr><th>Term</th><th>Meaning</th></tr><tr><td>\(f(u,v),g(u,v)\)</td><td>local reaction or interaction dynamics</td></tr><tr><td>\(D_u,D_v\)</td><td>diffusion coefficients</td></tr><tr><td>\(\nabla^2\)</td><td>Laplacian describing spatial spreading</td></tr></table>
+<p>A homogeneous equilibrium \((u^*,v^*)\) satisfies \(f(u^*,v^*)=g(u^*,v^*)=0\).</p>
+
+<h2>Stable without diffusion</h2>
+<p>The reaction Jacobian at the equilibrium is</p>
+\[J=\begin{pmatrix}f_u&f_v\\g_u&g_v\end{pmatrix}.\]
+<p>For the non-spatial two-variable system, local stability requires</p>
+\[\operatorname{tr}(J)=f_u+g_v<0,\qquad \det(J)=f_ug_v-f_vg_u>0.\]
+<p>So a small uniform disturbance decays when diffusion is absent.</p>
+
+<h2>Spatial perturbations</h2>
+<p>A small spatial perturbation can be decomposed into modes such as</p>
+\[e^{\lambda t}\cos(kx),\]
+<p>where \(k\) is the <strong>wavenumber</strong> and \(\lambda\) is its growth rate. The wavelength is</p>
+\[L=\frac{2\pi}{k}.\]
+<p>After including diffusion, the matrix governing a mode of wavenumber \(k\) is</p>
+\[J_k=J-k^2\begin{pmatrix}D_u&0\\0&D_v\end{pmatrix}.\]
+<p>The growth rates are the eigenvalues of \(J_k\). A Turing instability occurs if at least one spatial mode has a positive largest eigenvalue.</p>
+
+<h2>A numerical Turing example</h2>
+<p>Consider the linearised reaction matrix and diffusion coefficients</p>
+\[J=\begin{pmatrix}1&-2\\2&-3\end{pmatrix},\qquad D_u=0.05,\qquad D_v=1.\]
+<p>Without diffusion, \(\operatorname{tr}(J)=-2<0\) and \(\det(J)=1>0\), so the homogeneous equilibrium is stable. For a spatial mode,</p>
+\[J_k=\begin{pmatrix}1-0.05k^2&-2\\2&-3-k^2\end{pmatrix}.\]
+<p>The two growth rates are calculated from the characteristic equation</p>
+\[\lambda^2-\operatorname{tr}(J_k)\lambda+\det(J_k)=0.\]
+<div class="figure"><svg id="dispersion" viewBox="0 0 850 470" role="img" aria-label="Largest growth rate as a function of wavenumber"></svg><div class="caption">This curve is calculated directly from the eigenvalue formula for \(J_k\). The dashed horizontal line is \(\lambda=0\). Modes above it grow; modes below it decay.</div></div>
+<p>Notice that \(k=0\), the non-spatial mode, has negative growth rate. A band of non-zero wavenumbers has positive growth rate. This is precisely the diffusion-driven instability.</p>
+
+<h2>What the growing mode looks like</h2>
+<p>If a mode with wavenumber \(k\) grows, its spatial shape can be represented by</p>
+\[u(x)=u^*+A\cos(kx).\]
+<p>For illustration, take \(u^*=1\), \(A=0.18\) and \(k=2\):</p>
+<div class="figure"><svg id="mode" viewBox="0 0 850 470" role="img" aria-label="Cosine spatial mode generated from its mathematical function"></svg><div class="caption">The spatial curve is generated from the displayed function \(u(x)=1+0.18\cos(2x)\); it is not hand-drawn.</div></div>
+<p>As the unstable mode grows, peaks and troughs become more pronounced. Nonlinear reaction terms eventually become important and can limit the growth, producing a persistent spatial pattern.</p>
+
+<h2>Classical two-component conditions</h2>
+<p>For a stable reaction equilibrium to become unstable through diffusion, a common set of conditions is</p>
+\[f_u+g_v<0,\]
+\[f_ug_v-f_vg_u>0,\]
+\[D_vf_u+D_ug_v>0,\]
+\[(D_vf_u+D_ug_v)^2>4D_uD_v(f_ug_v-f_vg_u).\]
+<p>The first two give stability without diffusion. The last two allow diffusion to destabilise a range of spatial modes.</p>
+
+<h2>Why unequal diffusion matters</h2>
+<p>If the two components diffuse at very different rates, local reaction feedback and spatial spreading act on different scales. In the classical activator–inhibitor interpretation, a slowly spreading activator can reinforce a local increase while a faster spreading inhibitor suppresses nearby regions.</p>
+<div class="example"><strong>Important.</strong> Unequal diffusion alone does not guarantee a Turing pattern. The reaction Jacobian and diffusion coefficients must jointly satisfy the instability conditions.</div>
+
+<h2>From instability to biological pattern</h2>
+<p>The linear analysis predicts which small perturbations initially grow. It does not by itself determine the final nonlinear pattern. The final structure also depends on the nonlinear reaction terms, domain size, geometry, boundary conditions and initial perturbations.</p>
+<p>Turing mechanisms have been investigated in developmental biology, pigmentation, tissue organisation and other systems in which interacting substances or signals can generate spatial structure.</p>
+<div class="box"><strong>Key idea.</strong> A Turing pattern is not simply a pattern produced by diffusion. The non-spatial equilibrium must first be stable, and diffusion must then make one or more non-zero spatial modes unstable.</div>
+</article></main>
+<script>
+window.addEventListener('load',function(){
+const P=window.MathsBioPlot;
+const largestGrowth=function(k){const q=k*k;const tr=-2-1.05*q;const det=1-0.85*q+0.05*q*q;const disc=Math.max(0,tr*tr-4*det);return 0.5*(tr+Math.sqrt(disc));};
+const d=document.getElementById('dispersion');const cd=P.plotFunction(d,{xMin:0,xMax:5,yMin:-1.15,yMax:0.25,xLabel:'Wavenumber k',yLabel:'Largest growth rate λ',xTicks:[0,1,2,3,4,5],yTicks:[-1,-0.75,-0.5,-0.25,0,0.25]},[{fn:largestGrowth}]);P.hline(d,cd,0);P.label(d,cd,4.85,0.04,'λ = 0',{anchor:'end'});
+const m=document.getElementById('mode');const cm=P.plotFunction(m,{xMin:0,xMax:2*Math.PI,yMin:0.75,yMax:1.25,xLabel:'Position x',yLabel:'u(x)',xTicks:[0,Math.PI/2,Math.PI,3*Math.PI/2,2*Math.PI],yTicks:[0.8,0.9,1,1.1,1.2]},[{fn:x=>1+0.18*Math.cos(2*x)}]);P.hline(m,cm,1);P.label(m,cm,2*Math.PI-0.08,1.025,'u* = 1',{anchor:'end'});
+});
+</script></body></html>
