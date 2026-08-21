@@ -1,1 +1,254 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Initial conditions and population conservation in Python for mathematical biology."><title>Initial conditions and population conservation | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Deterministic Models</a><p class="section-number">04</p><h1 class="section-title">Initial conditions and population conservation</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Learn how to define, validate and interpret initial conditions and population conservation in an SIR model.">
+<title>Initial conditions and population conservation | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.condition-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.condition-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px;text-align:center}.condition-card strong{display:block;margin-bottom:8px;color:#174c34}.validity-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.valid-box,.invalid-box{padding:20px;border-radius:10px;background:#fff}.valid-box{border:2px solid #79ad8d}.invalid-box{border:2px solid #d18a8a}.valid-box h3{color:#176b45}.invalid-box h3{color:#923b3b}.logic-table{width:100%;border-collapse:collapse;background:#fff}.logic-table th,.logic-table td{padding:12px 14px;border:1px solid #d6e3db;text-align:left;vertical-align:top}.logic-table th{background:#eaf4ee;color:#174c34}.invariant-strip{padding:22px;text-align:center;background:#eaf4ee;border-radius:12px;font-size:1.1rem}.two-code-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.mini-code{padding:18px;background:#fff;border:1px solid #dce7e0;border-radius:10px}@media(max-width:800px){.condition-grid,.validity-grid,.two-code-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Deterministic Models</a>
+<p class="section-number">04</p>
+<h1 class="section-title">Initial conditions and population conservation</h1>
+<p class="lesson-intro">Differential equations describe how an epidemic changes, but they cannot determine one particular epidemic until its starting state is supplied. In this lesson, we define initial conditions and use Python to check whether they form a valid closed SIR population.</p>
+
+<section class="lesson-section">
+<h2>Biological scenario</h2>
+<div class="scenario-box">
+<p>A town has 5,000 residents. At the beginning of an outbreak, 12 residents are infectious and 3 have already recovered. Everyone else is susceptible.</p>
+<p>Before using these values in a model, we must calculate the missing compartment and verify that the initial state is biologically consistent.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>What is an initial condition?</h2>
+<p>An initial condition gives the value of a model variable at the starting time, usually &#92;(t=0&#92;).</p>
+<div class="math-box">
+<p class="formula-line">&#92;[I(0)=12,&#92;qquad R(0)=3.&#92;]</p>
+<p>Because &#92;(N=5000&#92;), the susceptible population is</p>
+<p class="formula-line">&#92;[S(0)=N-I(0)-R(0)=5000-12-3=4985.&#92;]</p>
+</div>
+<p>The notation &#92;(S(0)&#92;) means “the susceptible population at time zero.” It is not multiplication of &#92;(S&#92;) by zero.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Conditions for a valid initial state</h2>
+<div class="condition-grid">
+<div class="condition-card"><strong>Non-negative compartments</strong>&#92;[S(0),I(0),R(0)&#92;geq0&#92;]</div>
+<div class="condition-card"><strong>Positive population</strong>&#92;[N&gt;0&#92;]</div>
+<div class="condition-card"><strong>Correct total</strong>&#92;[S(0)+I(0)+R(0)=N&#92;]</div>
+</div>
+<p>For individual counts, whole numbers are normally supplied initially. A deterministic solution may later contain decimal compartment values because it is a continuous approximation.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Counts and proportions</h2>
+<p>The same epidemic state can be represented by numbers of people or by population proportions.</p>
+<table class="result-table">
+<thead><tr><th>Compartment</th><th>Count</th><th>Proportion</th></tr></thead>
+<tbody>
+<tr><td>Susceptible</td><td>4,985</td><td>0.9970</td></tr>
+<tr><td>Infectious</td><td>12</td><td>0.0024</td></tr>
+<tr><td>Recovered</td><td>3</td><td>0.0006</td></tr>
+<tr><td>Total</td><td>5,000</td><td>1.0000</td></tr>
+</tbody>
+</table>
+<div class="math-box">
+<p>For proportions, define &#92;(s=S/N&#92;), &#92;(i=I/N&#92;) and &#92;(r=R/N&#92;). Then</p>
+<p class="formula-line">&#92;[s(0)+i(0)+r(0)=1.&#92;]</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>What population conservation means</h2>
+<div class="invariant-strip">&#92;[S(t)+I(t)+R(t)=N&#92;qquad&#92;text{for every time }t.&#92;]</div>
+<p>A quantity that remains unchanged throughout a model is called an <strong>invariant</strong>. In the closed SIR model, infection and recovery move people between compartments but do not change the total population.</p>
+<div class="technical-box">
+<p>This conservation statement depends on the modelling assumptions. It would change if the model included births, deaths unrelated to the disease, immigration or emigration.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Valid and invalid examples</h2>
+<div class="validity-grid">
+<div class="valid-box">
+<h3>Valid</h3>
+<p><span class="inline-code">S = 4985</span><br><span class="inline-code">I = 12</span><br><span class="inline-code">R = 3</span><br><span class="inline-code">N = 5000</span></p>
+<p>All values are non-negative and their sum is 5,000.</p>
+</div>
+<div class="invalid-box">
+<h3>Invalid</h3>
+<p><span class="inline-code">S = 4990</span><br><span class="inline-code">I = 12</span><br><span class="inline-code">R = 3</span><br><span class="inline-code">N = 5000</span></p>
+<p>The compartment sum is 5,005, so five people have been counted twice or the data are inconsistent.</p>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Programming objective</h2>
+<p>We will write a function that calculates the compartment total, checks each validity condition and returns a clear validation report.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Programming ideas used in the check</h2>
+<table class="logic-table">
+<thead><tr><th>Python</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>S &gt;= 0</code></td><td>Checks whether &#92;(S&#92;) is non-negative.</td></tr>
+<tr><td><code>and</code></td><td>Requires all connected conditions to be true.</td></tr>
+<tr><td><code>==</code></td><td>Tests whether two values are equal; it does not assign a value.</td></tr>
+<tr><td><code>if</code></td><td>Runs a block only when its condition is true.</td></tr>
+<tr><td><code>else</code></td><td>Runs the alternative block when the condition is false.</td></tr>
+<tr><td><code>return</code></td><td>Sends the validation results back from the function.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Build the validation program</h2>
+
+<div class="step-card">
+<h3>Step 1: Calculate the missing susceptible population</h3>
+<pre><code>S0 = N - I0 - R0</code></pre>
+<p class="code-explain">The zero in <span class="inline-code">S0</span> is part of the variable name and indicates the value at time zero.</p>
+</div>
+
+<div class="step-card">
+<h3>Step 2: Form Boolean conditions</h3>
+<pre><code>non_negative = S0 &gt;= 0 and I0 &gt;= 0 and R0 &gt;= 0
+positive_population = N &gt; 0
+correct_total = S0 + I0 + R0 == N</code></pre>
+<p class="code-explain">Each comparison produces either <span class="inline-code">True</span> or <span class="inline-code">False</span>. These are Boolean values.</p>
+</div>
+
+<div class="step-card">
+<h3>Step 3: Combine the checks</h3>
+<pre><code>valid = non_negative and positive_population and correct_total</code></pre>
+<p class="code-explain">The state is valid only when every required condition is true.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Run the initial-condition validator</h2>
+<p>Change the values and run the code. The program will report each condition separately so that an invalid state can be diagnosed.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Initial-condition validator</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">def validate_initial_conditions(S0, I0, R0, N):
+    """Check whether an initial closed SIR population is valid."""
+    
+    compartment_total = S0 + I0 + R0
+    
+    non_negative = S0 &gt;= 0 and I0 &gt;= 0 and R0 &gt;= 0
+    positive_population = N &gt; 0
+    correct_total = compartment_total == N
+    
+    valid = non_negative and positive_population and correct_total
+    
+    return {
+        "non_negative": non_negative,
+        "positive_population": positive_population,
+        "correct_total": correct_total,
+        "compartment_total": compartment_total,
+        "valid": valid
+    }
+
+
+# Starting information
+N = 5000
+I0 = 12
+R0 = 3
+
+# Calculate the missing initial compartment
+S0 = N - I0 - R0
+
+# Validate the initial state
+report = validate_initial_conditions(S0, I0, R0, N)
+
+# Calculate proportions
+s0 = S0 / N
+i0 = I0 / N
+r0 = R0 / N
+
+# Display the initial state
+print("Initial SIR state")
+print("--------------------------------")
+print(f"Susceptible S(0): {S0}")
+print(f"Infectious  I(0): {I0}")
+print(f"Recovered   R(0): {R0}")
+print(f"Population     N: {N}")
+
+print("\nValidation report")
+print("--------------------------------")
+print(f"Non-negative values: {report['non_negative']}")
+print(f"Positive population: {report['positive_population']}")
+print(f"Correct total:       {report['correct_total']}")
+print(f"Overall valid state: {report['valid']}")
+
+print("\nInitial proportions")
+print("--------------------------------")
+print(f"s(0) = {s0:.4f}")
+print(f"i(0) = {i0:.4f}")
+print(f"r(0) = {r0:.4f}")
+print(f"sum  = {s0 + i0 + r0:.4f}")</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Expected outcome</h2>
+<table class="result-table">
+<thead><tr><th>Check</th><th>Outcome</th><th>Interpretation</th></tr></thead>
+<tbody>
+<tr><td>Non-negative values</td><td>True</td><td>No compartment contains an impossible negative population</td></tr>
+<tr><td>Positive population</td><td>True</td><td>The model has a population to describe</td></tr>
+<tr><td>Correct total</td><td>True</td><td>The compartments contain exactly 5,000 people</td></tr>
+<tr><td>Overall state</td><td>Valid</td><td>The initial conditions can be used in the closed SIR model</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<div class="interpretation-box">
+<p>The model begins with 4,985 susceptible, 12 infectious and 3 recovered residents. Infectious residents make up 0.24% of the population. The conditions are internally consistent and account for every resident exactly once.</p>
+<p>Validation cannot prove that the data are factually correct. It checks that the values are mathematically and biologically consistent with the stated closed-population assumptions.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why counts use exact equality here</h2>
+<div class="technical-box">
+<p>The program uses <span class="inline-code">compartment_total == N</span> because the initial values are whole-person counts and their addition is exact. When checking calculated decimal proportions or numerical solutions, a small tolerance may be needed because decimal arithmetic can introduce tiny rounding differences.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try an invalid state</h2>
+<div class="experiment-box">
+<p>Replace the calculated line <span class="inline-code">S0 = N - I0 - R0</span> with <span class="inline-code">S0 = 4990</span>.</p>
+<ol>
+<li>Predict which condition will become <span class="inline-code">False</span>.</li>
+<li>Run the code and inspect the report.</li>
+<li>Calculate the compartment total by hand.</li>
+<li>Explain why the state violates the population assumption.</li>
+</ol>
+</div>
+</section>
+</main>
+</body>
+</html>
