@@ -179,7 +179,8 @@ dR_dt = recovery_flow
 
 # Conservation check
 total_rate = dS_dt + dI_dt + dR_dt
-assert abs(total_rate) < 1e-12
+tolerance = 1e-12
+assert abs(total_rate) < tolerance
 
 # Display the calculation
 print("Flow calculations")
@@ -222,6 +223,19 @@ print(f"Sum   = {total_rate:6.2f} people/day")</textarea>
 <p>Adding the equations makes the repeated flows cancel:</p>
 <p class="formula-line">&#92;[&#92;frac{dS}{dt}+&#92;frac{dI}{dt}+&#92;frac{dR}{dt}=-&#92;beta&#92;frac{SI}{N}+&#92;beta&#92;frac{SI}{N}-&#92;gamma I+&#92;gamma I=0.&#92;]</p>
 <p>Python verifies the same result using <span class="inline-code">total_rate</span>.</p>
+<div class="technical-box">
+<h3>Understanding the conservation check</h3>
+<pre><code>tolerance = 1e-12
+assert abs(total_rate) &lt; tolerance</code></pre>
+<p>Mathematically, <span class="inline-code">total_rate</span> should equal exactly zero. However, computers store many decimal numbers approximately, so a correct calculation can sometimes produce an extremely small value near zero.</p>
+<ul>
+<li><span class="inline-code">1e-12</span> means &#92;(1&#92;times10^{-12}=0.000000000001&#92;). This is the accepted numerical tolerance.</li>
+<li><span class="inline-code">abs(total_rate)</span> gives the distance of <span class="inline-code">total_rate</span> from zero, whether the small value is positive or negative.</li>
+<li><span class="inline-code">&lt; tolerance</span> asks whether that distance is sufficiently small to be treated as zero.</li>
+<li><span class="inline-code">assert</span> checks that the condition is true. If it is false, Python stops with an <span class="inline-code">AssertionError</span>.</li>
+</ul>
+<p>We do not normally use <span class="inline-code">total_rate == 0</span> for decimal calculations because a harmless computer-rounding difference could make that exact comparison false.</p>
+</div>
 </section>
 
 <section class="lesson-section">
