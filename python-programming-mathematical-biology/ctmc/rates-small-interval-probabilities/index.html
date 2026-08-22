@@ -1,1 +1,309 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="From rates to small-interval probabilities in Python for mathematical biology."><title>From rates to small-interval probabilities | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">02</p><h1 class="section-title">From rates to small-interval probabilities</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Connect CTMC transition rates to infection, recovery and no-event probabilities over a sufficiently small time interval.">
+<title>From rates to small-interval probabilities | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.unit-flow{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin:22px 0}.unit-card{padding:20px;text-align:center;background:#eaf4ee;border-radius:10px}.unit-arrow{font-size:1.8rem;color:#176b45;font-weight:700}.prob-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.prob-card{padding:19px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.prob-card h3{margin-top:0;color:#174c34}.order-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin:22px 0}.order-card{padding:20px;background:#eaf4ee;border-radius:10px}.condition-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}.compare-table td:first-child{font-weight:700;color:#174c34}@media(max-width:800px){.unit-flow,.prob-grid,.order-grid{grid-template-columns:1fr}.unit-arrow{transform:rotate(90deg);text-align:center}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Continuous-Time Markov Chains</a>
+<p class="section-number">02</p>
+<h1 class="section-title">From rates to small-interval probabilities</h1>
+<p class="lesson-intro">A transition rate is an instantaneous event intensity. Over a sufficiently short interval, multiplying the current rate by the interval length gives the leading approximation to the event probability.</p>
+
+<section class="lesson-section">
+<h2>Return to the SIS scenario</h2>
+<p>At state &#92;(I(t)=i&#92;), the current infection and recovery rates are:</p>
+<div class="math-box">
+&#92;[
+b(i)=&#92;beta&#92;frac{(N-i)i}{N},
+&#92;qquad
+d(i)=&#92;gamma i.
+&#92;]
+</div>
+<p>For &#92;(N=1000&#92;), &#92;(i=10&#92;), &#92;(&#92;beta=0.3&#92;) and &#92;(&#92;gamma=0.1&#92;):</p>
+<div class="math-box">
+&#92;[
+b(10)=2.97&#92;text{ events/day},
+&#92;qquad
+d(10)=1.00&#92;text{ event/day}.
+&#92;]
+</div>
+<p>We now ask what these rates imply during a short future interval of length &#92;(h&#92;) days, conditional on the current state.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why multiply rate by time?</h2>
+<div class="unit-flow">
+<div class="unit-card"><strong>Rate</strong><br>events per day</div>
+<div class="unit-arrow">×</div>
+<div class="unit-card"><strong>Short time</strong><br>days</div>
+</div>
+<div class="math-box">
+&#92;[
+&#92;frac{&#92;text{events}}{&#92;text{day}}
+&#92;times
+&#92;text{day}
+=
+&#92;text{events}.
+&#92;]
+</div>
+<p>For a one-event transition, this dimensionless leading quantity becomes the approximate probability of that event. Multiplication is therefore required both by the instantaneous-rate definition and by the units.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The precise small-interval statements</h2>
+<p>Conditional on &#92;(I(t)=i&#92;), as &#92;(h&#92;downarrow0&#92;):</p>
+<div class="prob-grid">
+<div class="prob-card"><h3>One infection</h3><div class="math-box">&#92;[&#92;Pr(i&#92;to i+1)=b(i)h+o(h).&#92;]</div></div>
+<div class="prob-card"><h3>One recovery</h3><div class="math-box">&#92;[&#92;Pr(i&#92;to i-1)=d(i)h+o(h).&#92;]</div></div>
+<div class="prob-card"><h3>No event</h3><div class="math-box">&#92;[&#92;Pr(i&#92;to i)=1-[b(i)+d(i)]h+o(h).&#92;]</div></div>
+</div>
+<p>The notation &#92;(o(h)&#92;), pronounced “little o of h,” represents terms that become negligible compared with &#92;(h&#92;) as the interval shrinks:</p>
+<div class="math-box">
+&#92;[
+&#92;frac{o(h)}{h}&#92;longrightarrow0
+&#92;qquad&#92;text{as }h&#92;downarrow0.
+&#92;]
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why the no-event probability is the remainder</h2>
+<p>To first order in &#92;(h&#92;), the possible outcomes are one infection, one recovery or no event. Their probabilities must sum to 1:</p>
+<div class="math-box">
+&#92;[
+b(i)h+d(i)h+
+&#92;big(1-[b(i)+d(i)]h&#92;big)
+=1.
+&#92;]
+</div>
+<p>The no-event probability falls as the current event rates or interval length increase.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What about two or more events?</h2>
+<div class="order-grid">
+<div class="order-card"><h3>One event</h3><p>Its probability is of order &#92;(h&#92;): approximately proportional to the interval length.</p></div>
+<div class="order-card"><h3>Two or more events</h3><p>Its probability is of smaller order, usually &#92;(O(h^2)&#92;), and therefore negligible relative to &#92;(h&#92;) as &#92;(h&#92;to0&#92;).</p></div>
+</div>
+<div class="math-box">
+&#92;[
+&#92;Pr(&#92;text{two or more events in }(t,t+h])
+=o(h).
+&#92;]
+</div>
+<p>This is why only one-jump destinations appear in the infinitesimal CTMC description. Over a longer interval, several events may occur and the first-order formulas should not be treated as exact.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Numerical example</h2>
+<p>Use &#92;(h=0.01&#92;) day, approximately 14.4 minutes:</p>
+<div class="math-box">
+&#92;[
+&#92;begin{aligned}
+&#92;Pr(&#92;text{infection})&&#92;approx2.97(0.01)=0.0297,&#92;&#92;
+&#92;Pr(&#92;text{recovery})&&#92;approx1.00(0.01)=0.0100,&#92;&#92;
+&#92;Pr(&#92;text{no event})&&#92;approx1-3.97(0.01)=0.9603.
+&#92;end{aligned}
+&#92;]
+</div>
+<p>Thus infection has approximately 2.97% probability, recovery 1%, and no event 96.03% during this short interval, conditional on the state remaining the current state until a jump.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Necessary validity condition</h2>
+<div class="condition-box">
+<p>The first-order no-event approximation must not be negative:</p>
+<div class="math-box">
+&#92;[
+[b(i)+d(i)]h&#92;le1.
+&#92;]
+</div>
+<p>If the current total rate is positive:</p>
+<div class="math-box">
+&#92;[
+h&#92;le&#92;frac{1}{b(i)+d(i)}.
+&#92;]
+</div>
+</div>
+<p>This condition is necessary for valid first-order probabilities at the current state, but it is not sufficient for high accuracy. A value close to 1 leaves substantial possibility of multiple events over the interval, which the first-order approximation omits.</p>
+</section>
+
+<section class="lesson-section">
+<h2>“Valid” and “sufficiently small” are different</h2>
+<div class="table-wrap"><table class="compare-table"><thead><tr><th>Question</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>Are the approximate probabilities valid?</td><td>They lie between 0 and 1 and sum to 1.</td></tr>
+<tr><td>Is the interval sufficiently small?</td><td>Ignored higher-order and multiple-event effects are acceptably small for the intended use.</td></tr>
+</tbody></table></div>
+<p>There is no universal cutoff such as 0.1 that guarantees adequate accuracy for every model. The required interval depends on the rates, state space and purpose of the calculation.</p>
+</section>
+
+<section class="lesson-section">
+<h2>This does not turn the CTMC into a DTMC simulation</h2>
+<p>The short-interval formulas define the local behaviour of the continuous-time process. A Gillespie CTMC simulation does not advance through a chosen sequence of tiny fixed steps. Instead, it generates the next event time directly.</p>
+<p>Lesson 3 derives the total rate and exponential waiting time used for that direct simulation.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>The code calculates first-order probabilities for several interval lengths, checks validity and plots how the approximation changes with &#92;(h&#92;). It does not draw random events.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Rates to short-interval probabilities</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Current SIS state and transition rates
+N = 1000
+i = 10
+beta = 0.30
+gamma = 0.10
+
+infection_rate = beta * (N - i) * i / N
+recovery_rate = gamma * i
+total_rate = infection_rate + recovery_rate
+
+if total_rate &lt; 0:
+    raise ValueError("Total rate cannot be negative.")
+
+if total_rate == 0:
+    maximum_valid_h = float("inf")
+else:
+    maximum_valid_h = 1 / total_rate
+
+# Compare several short-interval choices
+h_values = np.array([0.001, 0.01, 0.05, 0.10, 0.25, 0.30])
+
+rows = []
+
+for h in h_values:
+    if h &lt;= 0:
+        raise ValueError("h must be positive.")
+
+    p_infection = infection_rate * h
+    p_recovery = recovery_rate * h
+    p_no_event = 1 - total_rate * h
+
+    valid = (
+        p_infection &gt;= 0
+        and p_recovery &gt;= 0
+        and p_no_event &gt;= -1e-12
+    )
+
+    rows.append({
+        "h (days)": h,
+        "infection probability": p_infection,
+        "recovery probability": p_recovery,
+        "no-event probability": p_no_event,
+        "total": p_infection + p_recovery + p_no_event,
+        "valid first-order probabilities": valid
+    })
+
+probability_table = pd.DataFrame(rows)
+
+print(f"Infection rate: {infection_rate:.3f} events/day")
+print(f"Recovery rate: {recovery_rate:.3f} events/day")
+print(f"Current total rate: {total_rate:.3f} events/day")
+print(f"Maximum h for non-negative first-order remainder: "
+      f"{maximum_valid_h:.4f} days")
+print()
+print(probability_table.round(5).to_string(index=False))
+
+# Display the first-order formulas over a range of h
+h_grid = np.linspace(0, 0.32, 250)
+p_infection_grid = infection_rate * h_grid
+p_recovery_grid = recovery_rate * h_grid
+p_no_event_grid = 1 - total_rate * h_grid
+
+plt.figure(figsize=(9, 5))
+plt.plot(
+    h_grid,
+    p_infection_grid,
+    label="Infection: b(i)h",
+    color="#dc2626"
+)
+plt.plot(
+    h_grid,
+    p_recovery_grid,
+    label="Recovery: d(i)h",
+    color="#2563eb"
+)
+plt.plot(
+    h_grid,
+    p_no_event_grid,
+    label="No event: 1 - [b(i)+d(i)]h",
+    color="#16a34a"
+)
+plt.axvline(
+    maximum_valid_h,
+    color="black",
+    linestyle="--",
+    label="Validity boundary"
+)
+plt.axhline(0, color="black", linewidth=0.8)
+plt.xlabel("Interval length h (days)")
+plt.ylabel("First-order probability")
+plt.title("Short-interval probability approximations")
+plt.ylim(-0.3, 1.1)
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the new code</h2>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>maximum_valid_h = 1 / total_rate</code></td><td>Finds the current-state interval boundary at which the first-order no-event remainder reaches zero.</td></tr>
+<tr><td><code>float("inf")</code></td><td>Represents no finite upper boundary when the total event rate is zero.</td></tr>
+<tr><td><code>p_no_event &gt;= -1e-12</code></td><td>Allows only a tiny negative floating-point round-off value, not a genuinely negative probability.</td></tr>
+<tr><td><code>np.linspace(0, 0.32, 250)</code></td><td>Creates 250 evenly spaced interval lengths for drawing the approximation curves.</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="lesson-section">
+<h2>Why <code>h &lt;= 0</code> can be checked exactly</h2>
+<p>&#92;(h&#92;) is a directly supplied interval length. Zero and negative intervals are invalid inputs, so the code checks <code>h &lt;= 0</code> directly.</p>
+<p>The tolerance appears only in a calculated floating-point probability, where arithmetic may produce a tiny round-off difference from the mathematical value zero.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>At the current state, infection has the larger rate, so its short-interval probability is larger than the recovery probability. As &#92;(h&#92;) shrinks, both event probabilities shrink towards zero and no event becomes increasingly likely.</p>
+<p>Increasing &#92;(h&#92;) makes the first-order event probabilities larger, but eventually the approximation becomes unsuitable because more than one event may occur within the interval. Direct CTMC simulation avoids choosing this artificial fixed step.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has—and has not—done</h2>
+<div class="summary-box"><p><strong>You can now:</strong></p><ul>
+<li>derive event probabilities to first order from transition rates;</li>
+<li>calculate the no-event remainder;</li>
+<li>interpret &#92;(o(h)&#92;) and neglected multiple-event probability;</li>
+<li>check the necessary non-negativity condition; and</li>
+<li>distinguish mathematical validity from approximation accuracy.</li>
+</ul><p><strong>Not yet:</strong> Lesson 3 combines the competing rates and uses the exact exponential waiting-time distribution to generate when the next CTMC event occurs.</p></div>
+</section>
+
+<nav class="lesson-nav"><a href="../events-transition-rates/">← Previous lesson</a><a href="../total-rate-exponential-waiting-time/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
