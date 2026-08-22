@@ -1,1 +1,163 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Extinction probability and outbreak probability in Python for mathematical biology."><title>Extinction probability and outbreak probability | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">12</p><h1 class="section-title">Extinction probability and outbreak probability</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Define and estimate CTMC epidemic extinction and major-outbreak probabilities with Monte Carlo uncertainty in Python.">
+<title>Extinction probability and outbreak probability | MathsBio</title><link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js"></script>
+<style>.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{padding:21px;background:#eaf4ee;border-radius:10px}.definition{padding:22px;background:#f1f8f4;border:2px solid #9fc8b1;border-radius:11px}@media(max-width:760px){.two{grid-template-columns:1fr}}</style></head><body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container">
+<a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">12</p><h1 class="section-title">Extinction probability and outbreak probability</h1>
+<p class="lesson-intro">Stochastic models are valuable because identical initial conditions can lead to early extinction or a large epidemic. Monte Carlo simulation estimates how often each clearly defined event occurs.</p>
+
+<section class="lesson-section"><h2>Define the event before estimating its probability</h2>
+<p>Start an SIR epidemic with one infectious person in a population of 200. We define a <strong>major outbreak</strong> as reaching at least 20 people ever infected. If the epidemic becomes extinct before that threshold is reached, we call it <strong>early extinction</strong>.</p>
+<div class="two"><div class="card"><h3>Major outbreak</h3><div class="math-box">&#92;[A=&#92;{N-S(t)&#92;ge20&#92;text{ for some }t&#92;}.&#92;]</div></div><div class="card"><h3>Early extinction</h3><div class="math-box">&#92;[A^c=&#92;{I(t)=0&#92;text{ before }N-S(t)&#92;ge20&#92;}.&#92;]</div></div></div>
+<p>Under this stopping experiment, these events are complementary, so &#92;(&#92;Pr(A)+&#92;Pr(A^c)=1&#92;).</p>
+<div class="definition"><strong>The threshold is part of the question.</strong> “Outbreak probability” is incomplete unless the model, initial state, time window and outbreak criterion are stated.</div>
+</section>
+
+<section class="lesson-section"><h2>Monte Carlo estimator</h2>
+<p>For run &#92;(r&#92;), define &#92;(Y_r=1&#92;) if a major outbreak occurs and &#92;(Y_r=0&#92;) otherwise. For &#92;(M&#92;) independent simulations:</p>
+<div class="math-box">&#92;[&#92;widehat p=&#92;frac{1}{M}&#92;sum_{r=1}^{M}Y_r=&#92;frac{&#92;text{number of major outbreaks}}{M}.&#92;]</div>
+<p>This is an estimate, not the exact probability. Repeating the whole Monte Carlo experiment with a different seed produces a slightly different value.</p>
+</section>
+
+<section class="lesson-section"><h2>Quantify simulation uncertainty</h2>
+<p>An estimated Monte Carlo standard error is</p>
+<div class="math-box">&#92;[&#92;operatorname{SE}(&#92;widehat p)=&#92;sqrt{&#92;frac{&#92;widehat p(1-&#92;widehat p)}{M}}.&#92;]</div>
+<p>A simple approximate 95% Monte Carlo interval is &#92;(&#92;widehat p&#92;pm1.96&#92;operatorname{SE}(&#92;widehat p)&#92;). Increasing &#92;(M&#92;) reduces simulation error at the slow rate &#92;(1/&#92;sqrt M&#92;).</p>
+</section>
+
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<p>Run 3,000 independent threshold experiments. Each simulation stops as soon as it reaches the major-outbreak threshold or becomes extinct, because later events cannot change its classification.</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Extinction and outbreak probabilities</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def reaches_major_outbreak(
+    rng, N, I0, beta, gamma, outbreak_threshold
+):
+    S = N - I0
+    I = I0
+    ever_infected = I0
+
+    while I > 0 and ever_infected < outbreak_threshold:
+        infection_rate = beta * S * I / N
+        recovery_rate = gamma * I
+        total_rate = infection_rate + recovery_rate
+
+        # The event type is enough for this threshold question.
+        # Waiting times do not affect which boundary is reached first.
+        if rng.random() < infection_rate / total_rate:
+            S -= 1
+            I += 1
+            ever_infected += 1
+        else:
+            I -= 1
+
+    return ever_infected >= outbreak_threshold
+
+# Model and event definition
+N = 200
+I0 = 1
+beta = 0.25
+gamma = 0.10
+outbreak_threshold = 20
+
+number_of_runs = 3000
+seed = 314
+rng = np.random.default_rng(seed)
+
+major = np.zeros(number_of_runs, dtype=bool)
+
+for run in range(number_of_runs):
+    major[run] = reaches_major_outbreak(
+        rng, N, I0, beta, gamma, outbreak_threshold
+    )
+
+major_count = int(major.sum())
+extinction_count = number_of_runs - major_count
+
+p_major = major.mean()
+p_extinction = 1 - p_major
+standard_error = np.sqrt(
+    p_major * (1 - p_major) / number_of_runs
+)
+lower = max(0, p_major - 1.96 * standard_error)
+upper = min(1, p_major + 1.96 * standard_error)
+
+results = pd.DataFrame({
+    "event": ["Major outbreak", "Early extinction"],
+    "count": [major_count, extinction_count],
+    "estimated probability": [p_major, p_extinction]
+})
+
+print("Event definition")
+print(f"Initial infectious count: {I0}")
+print(f"Major-outbreak threshold: {outbreak_threshold} ever infected")
+print(f"Independent runs: {number_of_runs}")
+print()
+print(results.round(4).to_string(index=False))
+print()
+print(f"Monte Carlo SE for major-outbreak estimate: {standard_error:.4f}")
+print(f"Approximate 95% Monte Carlo interval: [{lower:.4f}, {upper:.4f}]")
+print(f"Probabilities sum to: {p_major + p_extinction:.4f}")
+
+# Running estimate shows Monte Carlo convergence
+run_numbers = np.arange(1, number_of_runs + 1)
+running_probability = np.cumsum(major) / run_numbers
+
+plt.figure(figsize=(9.5, 4.9))
+plt.plot(run_numbers, running_probability,
+         color="#174c34", linewidth=1.5)
+plt.axhline(p_major, color="#b42318", linestyle="--",
+            label=f"Final estimate = {p_major:.3f}")
+plt.xlabel("Number of simulated trajectories")
+plt.ylabel("Estimated major-outbreak probability")
+plt.title("Monte Carlo estimate stabilises as runs accumulate")
+plt.ylim(0, 1)
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+# Probability display with Monte Carlo uncertainty
+plt.figure(figsize=(7.8, 4.8))
+probabilities = [p_major, p_extinction]
+colours = ["#b42318", "#39815e"]
+
+plt.bar(results["event"], probabilities, color=colours)
+plt.errorbar(
+    0, p_major, yerr=1.96 * standard_error,
+    fmt="none", ecolor="black", capsize=6
+)
+plt.ylabel("Estimated probability")
+plt.title("Major outbreak versus early extinction")
+plt.ylim(0, 1)
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div></div>
+</section>
+
+<section class="lesson-section"><h2>Why waiting times are omitted here</h2>
+<p>This specific question asks which boundary is reached first, not when it is reached. In a CTMC, the next event type depends on rate proportions, while the exponential waiting time only places that event on the clock. Omitting waiting times makes this classification experiment faster without changing the boundary reached.</p>
+<div class="definition"><strong>Do not generalise this omission.</strong> Waiting times are essential for duration, peak time, probability by a specified date, intervention timing and time-dependent rates. Those questions require the full Gillespie clock.</div>
+</section>
+
+<section class="lesson-section"><h2>Early-phase analytical reference</h2>
+<p>When the population is large and susceptible depletion is negligible, an SIR epidemic starting with &#92;(I_0&#92;) infectious people is approximately a birth–death branching process. If &#92;(&#92;beta&gt;&#92;gamma&#92;), its eventual fade-out probability is approximately</p>
+<div class="math-box">&#92;[q^{I_0}&#92;approx&#92;left(&#92;frac{&#92;gamma}{&#92;beta}&#92;right)^{I_0}.&#92;]</div>
+<p>This is not exactly the same as extinction before a finite threshold in a finite SIR population. Use it as early-phase intuition, not as a replacement for the stated Monte Carlo event.</p>
+</section>
+
+<section class="lesson-section"><h2>Interpretation and sensitivity to definitions</h2>
+<ul>
+<li>Increasing the threshold usually reduces the estimated probability of crossing it.</li>
+<li>Starting with more infectious people usually reduces early fade-out probability.</li>
+<li>A probability estimate applies only to the parameter values and initial state used.</li>
+<li>Monte Carlo uncertainty is different from uncertainty in biological parameters.</li>
+</ul>
+</section>
+
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now define complementary epidemic events, estimate their probabilities from independent CTMC simulations, report counts as well as proportions, calculate Monte Carlo standard error, and distinguish a finite-threshold estimate from an early branching-process approximation. The next lesson measures continuous outcomes such as size, duration and peak.</p></div></section>
+<nav class="lesson-nav"><a href="../many-ctmc-trajectories/">← Previous lesson</a><a href="../outbreak-outcomes/">Next lesson →</a></nav>
+</main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
