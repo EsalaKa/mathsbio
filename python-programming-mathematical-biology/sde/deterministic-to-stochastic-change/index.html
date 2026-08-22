@@ -1,12 +1,22 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Move intuitively from deterministic epidemic change to stochastic change with workable Python."><title>From deterministic change to stochastic change | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">01</p><h1 class="section-title">From deterministic change to stochastic change</h1><p class="lesson-intro">A deterministic epidemic model gives the expected direction of change. A stochastic model also represents the variation between possible epidemic histories.</p>
 <section class="lesson-section"><h2>Scenario: the same epidemic state can change differently</h2>
 <p>In a population of 1,000, suppose &#92;(S=900&#92;) and &#92;(I=100&#92;). Infection occurs at rate &#92;(a_{&#92;mathrm{inf}}=&#92;beta SI/N&#92;) and recovery at rate &#92;(a_{&#92;mathrm{rec}}=&#92;gamma I&#92;).</p>
-<p>With &#92;(&#92;beta=0.30&#92;) and &#92;(&#92;gamma=0.10&#92;), these rates are 27 and 10 people per day. The deterministic model uses their difference:</p>
+<p>With &#92;(&#92;beta=0.30&#92;) and &#92;(&#92;gamma=0.10&#92;), these rates are 27 infection events per day and 10 recovery events per day. The deterministic model uses their difference:</p>
 <div class="math-box">&#92;[&#92;frac{dI}{dt}=27-10=17.&#92;]</div>
 </section>
 <section class="lesson-section"><h2>What the deterministic change means</h2>
 <p>Over &#92;(&#92;Delta t=0.1&#92;) day, Euler’s method gives &#92;(&#92;Delta I&#92;approx17(0.1)=1.7&#92;). This is an expected net change across many comparable epidemics. It does not mean that exactly 1.7 people change state.</p>
 <div class="definition-box"><p>A deterministic model follows one average-direction path. It does not show the probability of no infections, unusually many infections, or early extinction.</p></div>
+</section>
+<section class="lesson-section"><h2>Why the average is not the whole answer</h2>
+<p>Suppose two epidemics have the same expected increase. In one realisation, recoveries may temporarily exceed infections; in another, infection may rise rapidly. Their average can be identical even though their biological consequences are different.</p>
+<table><thead><tr><th>Question</th><th>Deterministic path</th><th>Stochastic repetitions</th></tr></thead><tbody>
+<tr><td>What is the expected direction?</td><td>Yes</td><td>Yes, through the ensemble average</td></tr>
+<tr><td>Can infection decrease despite positive expected growth?</td><td>No probability supplied</td><td>Frequency can be estimated</td></tr>
+<tr><td>What is the chance of early extinction?</td><td>Not represented</td><td>Can be estimated from many paths</td></tr>
+<tr><td>What is the chance of exceeding hospital capacity?</td><td>Only one predicted path</td><td>A distribution of peaks can be compared with capacity</td></tr>
+</tbody></table>
+<p>The stochastic model is not better merely because it is random. It is useful when variability, thresholds, rare outcomes or extinction are part of the biological question.</p>
 </section>
 <section class="lesson-section"><h2>Actual event counts fluctuate</h2>
 <p>During a short interval, let &#92;(K_{&#92;mathrm{inf}}&#92;) and &#92;(K_{&#92;mathrm{rec}}&#92;) be random infection and recovery counts. Then</p>
@@ -57,14 +67,20 @@ summary = pd.DataFrame({
         "Mean simulated change",
         "SD of simulated changes",
         "Minimum simulated change",
-        "Maximum simulated change"
+        "Maximum simulated change",
+        "Probability net change is negative",
+        "Probability net change is zero",
+        "Probability net change is positive"
     ],
     "value": [
         deterministic_change,
         random_changes.mean(),
         random_changes.std(ddof=1),
         random_changes.min(),
-        random_changes.max()
+        random_changes.max(),
+        (random_changes < 0).mean(),
+        (random_changes == 0).mean(),
+        (random_changes > 0).mean()
     ]
 })
 
@@ -72,6 +88,13 @@ print(summary.round(4).to_string(index=False))
 print()
 print("First 15 random net changes")
 print(random_changes[:15])
+print()
+print("The three estimated probabilities sum to:")
+print(
+    (random_changes < 0).mean()
+    + (random_changes == 0).mean()
+    + (random_changes > 0).mean()
+)
 
 bins = np.arange(
     random_changes.min() - 0.5,
