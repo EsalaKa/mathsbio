@@ -1,1 +1,305 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Programming a CTMC SEIR model in Python for mathematical biology."><title>Programming a CTMC SEIR model | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">09</p><h1 class="section-title">Programming a CTMC SEIR model</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Program and interpret a continuous-time Markov-chain SEIR epidemic with infection, latent progression and recovery events.">
+<title>Programming a CTMC SEIR model | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:9px;align-items:center;margin:22px 0}.node{padding:19px 10px;text-align:center;background:#eaf4ee;border:2px solid #9fc8b1;border-radius:11px}.arrow{color:#174c34;font-weight:700;text-align:center}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{padding:19px;background:#eaf4ee;border-radius:10px}.latent{padding:22px;background:#f1f8f4;border:2px solid #9fc8b1;border-radius:11px}@media(max-width:820px){.flow,.three{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+</style></head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Continuous-Time Markov Chains</a>
+<p class="section-number">09</p>
+<h1 class="section-title">Programming a CTMC SEIR model</h1>
+<p class="lesson-intro">The SEIR model separates becoming infected from becoming infectious. A newly infected person first enters a random latent period in the exposed compartment.</p>
+
+<section class="lesson-section">
+<h2>Scenario: infection with a latent period</h2>
+<p>A closed population contains 300 people. Initially, 294 are susceptible, 4 are exposed and 2 are infectious. Exposed individuals carry the infection but are not yet infectious in this basic model.</p>
+<div class="flow">
+<div class="node"><strong>Susceptible</strong><br>&#92;(S&#92;)</div><div class="arrow">infection →</div>
+<div class="node"><strong>Exposed</strong><br>&#92;(E&#92;)</div><div class="arrow">progression →</div>
+<div class="node"><strong>Infectious</strong><br>&#92;(I&#92;)</div><div class="arrow">recovery →</div>
+<div class="node"><strong>Removed</strong><br>&#92;(R&#92;)</div>
+</div>
+<div class="latent"><strong>Important distinction:</strong> an infection event increases &#92;(E&#92;), not &#92;(I&#92;). Infectious prevalence rises later, only when a progression event moves an exposed person into &#92;(I&#92;).</div>
+</section>
+
+<section class="lesson-section">
+<h2>Three events and their rates</h2>
+<div class="three">
+<div class="card"><h3>1. Infection</h3><div class="math-box">&#92;[(S,E,I,R)&#92;to(S-1,E+1,I,R)&#92;]</div><div class="math-box">&#92;[a_1=&#92;beta&#92;frac{SI}{N}.&#92;]</div></div>
+<div class="card"><h3>2. Progression</h3><div class="math-box">&#92;[(S,E,I,R)&#92;to(S,E-1,I+1,R)&#92;]</div><div class="math-box">&#92;[a_2=&#92;sigma E.&#92;]</div></div>
+<div class="card"><h3>3. Recovery</h3><div class="math-box">&#92;[(S,E,I,R)&#92;to(S,E,I-1,R+1)&#92;]</div><div class="math-box">&#92;[a_3=&#92;gamma I.&#92;]</div></div>
+</div>
+<p>The total rate is &#92;(a_0=a_1+a_2+a_3&#92;). At each jump, Gillespie’s algorithm selects one and only one of these events.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret the progression parameter</h2>
+<p>Each exposed individual progresses at rate &#92;(&#92;sigma&#92;) per day. Under the Markov assumption, that person’s latent time is exponentially distributed:</p>
+<div class="math-box">&#92;[T_E&#92;sim&#92;operatorname{Exp}(&#92;sigma),&#92;qquad &#92;mathbb E[T_E]=&#92;frac{1}{&#92;sigma}.&#92;]</div>
+<p>For &#92;(&#92;sigma=0.20&#92;) per day, the mean latent period is 5 days. This is a mean, not a fixed five-day delay: individual progression times vary randomly.</p>
+</section>
+
+<section class="lesson-section">
+<h2>When has an SEIR epidemic ended?</h2>
+<div class="table-wrap"><table><thead><tr><th>Condition</th><th>Can infection continue?</th><th>Reason</th></tr></thead><tbody>
+<tr><td>&#92;(I=0&#92;) but &#92;(E&gt;0&#92;)</td><td>Yes</td><td>Exposed people can progress and create new infectious people.</td></tr>
+<tr><td>&#92;(E=0&#92;) but &#92;(I&gt;0&#92;)</td><td>Yes</td><td>Infectious people can still infect or recover.</td></tr>
+<tr><td>&#92;(E=0&#92;) and &#92;(I=0&#92;)</td><td>No</td><td>All three event rates are zero.</td></tr>
+</tbody></table></div>
+<p>Therefore, the correct biological stopping condition is <code>E == 0 and I == 0</code>, not merely <code>I == 0</code>.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>Run a complete SEIR epidemic. The program prints event identities that verify the compartment bookkeeping, plots all four state paths, and compares the cumulative infection and progression processes.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>CTMC SEIR model</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Initial state
+S, E, I, R = 294, 4, 2, 0
+initial_S = S
+initial_E = E
+initial_I = I
+N = S + E + I + R
+
+# Per-day parameters
+beta = 0.32
+sigma = 0.20
+gamma = 0.10
+
+time = 0.0
+seed = 21
+rng = np.random.default_rng(seed)
+
+times = [time]
+S_values = [S]
+E_values = [E]
+I_values = [I]
+R_values = [R]
+event_rows = []
+
+while E > 0 or I > 0:
+    # Recalculate all three event rates
+    infection_rate = beta * S * I / N
+    progression_rate = sigma * E
+    recovery_rate = gamma * I
+
+    rates = np.array([
+        infection_rate,
+        progression_rate,
+        recovery_rate
+    ])
+    total_rate = rates.sum()
+
+    if total_rate <= 0:
+        raise ValueError(
+            "Active infection exists but total rate is not positive."
+        )
+
+    # Generate the next jump time
+    waiting_time = rng.exponential(1 / total_rate)
+    time += waiting_time
+
+    # Select an event from cumulative rate proportions
+    cumulative = np.cumsum(rates / total_rate)
+    u = rng.random()
+
+    if u < cumulative[0]:
+        S -= 1
+        E += 1
+        event = "infection"
+    elif u < cumulative[1]:
+        E -= 1
+        I += 1
+        event = "progression"
+    else:
+        I -= 1
+        R += 1
+        event = "recovery"
+
+    # Validate the new state
+    if min(S, E, I, R) < 0:
+        raise ValueError("A compartment became negative.")
+
+    if S + E + I + R != N:
+        raise ValueError("Population conservation failed.")
+
+    times.append(time)
+    S_values.append(S)
+    E_values.append(E)
+    I_values.append(I)
+    R_values.append(R)
+
+    event_rows.append({
+        "time": time,
+        "waiting time": waiting_time,
+        "event": event,
+        "S": S,
+        "E": E,
+        "I": I,
+        "R": R
+    })
+
+trajectory = pd.DataFrame({
+    "time": times,
+    "S": S_values,
+    "E": E_values,
+    "I": I_values,
+    "R": R_values
+})
+event_log = pd.DataFrame(event_rows)
+
+event_counts = event_log["event"].value_counts()
+n_infections = int(event_counts.get("infection", 0))
+n_progressions = int(event_counts.get("progression", 0))
+n_recoveries = int(event_counts.get("recovery", 0))
+
+peak_E = int(trajectory["E"].max())
+peak_E_time = trajectory.loc[
+    trajectory["E"].idxmax(), "time"
+]
+peak_I = int(trajectory["I"].max())
+peak_I_time = trajectory.loc[
+    trajectory["I"].idxmax(), "time"
+]
+final_size = N - S
+
+print("CTMC SEIR summary")
+print(f"Mean latent period: {1 / sigma:.2f} days")
+print(f"Mean infectious period: {1 / gamma:.2f} days")
+print(f"Epidemic duration: {time:.3f} days")
+print(f"Peak E: {peak_E} at {peak_E_time:.3f} days")
+print(f"Peak I: {peak_I} at {peak_I_time:.3f} days")
+print(f"Final state [S, E, I, R]: [{S}, {E}, {I}, {R}]")
+print(f"Final epidemic size: {final_size}")
+
+print()
+print("Event counts")
+print(event_counts.to_string())
+
+# Event-count identities provide useful checks
+print()
+print("Bookkeeping checks")
+print(
+    "Progressions = initial E + infections:",
+    n_progressions == initial_E + n_infections
+)
+print(
+    "Recoveries = initial I + progressions:",
+    n_recoveries == initial_I + n_progressions
+)
+print(
+    "Final R = recoveries:",
+    R == n_recoveries
+)
+
+print()
+print("First 10 events")
+print(event_log.head(10).round(4).to_string(index=False))
+
+# Figure 1: compartment paths
+plt.figure(figsize=(9.5, 5.2))
+plt.step(times, S_values, where="post",
+         label="Susceptible", color="#2563eb")
+plt.step(times, E_values, where="post",
+         label="Exposed", color="#f59e0b")
+plt.step(times, I_values, where="post",
+         label="Infectious", color="#dc2626")
+plt.step(times, R_values, where="post",
+         label="Removed", color="#39815e")
+plt.xlabel("Continuous time (days)")
+plt.ylabel("Number of people")
+plt.title("One complete CTMC SEIR epidemic")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+# Figure 2: cumulative infection and progression events
+infection_indicator = (
+    event_log["event"] == "infection"
+).astype(int)
+progression_indicator = (
+    event_log["event"] == "progression"
+).astype(int)
+
+cumulative_infections = infection_indicator.cumsum()
+cumulative_progressions = progression_indicator.cumsum()
+
+plt.figure(figsize=(9.5, 4.8))
+plt.step(event_log["time"], cumulative_infections,
+         where="post", label="New infections",
+         color="#2563eb")
+plt.step(event_log["time"], cumulative_progressions,
+         where="post", label="Progressions to infectious",
+         color="#b45309")
+plt.xlabel("Continuous time (days)")
+plt.ylabel("Cumulative event count")
+plt.title("Infection occurs before infectious progression")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the three-event selection</h2>
+<div class="table-wrap"><table><thead><tr><th>Random interval</th><th>Selected event</th></tr></thead><tbody>
+<tr><td>&#92;(0&#92;le U&lt;a_1/a_0&#92;)</td><td>Infection</td></tr>
+<tr><td>&#92;(a_1/a_0&#92;le U&lt;(a_1+a_2)/a_0&#92;)</td><td>Progression</td></tr>
+<tr><td>&#92;((a_1+a_2)/a_0&#92;le U&lt;1&#92;)</td><td>Recovery</td></tr>
+</tbody></table></div>
+<p><code>np.cumsum(rates / total_rate)</code> creates the upper boundaries of these intervals. The final boundary is 1 apart from tiny floating-point rounding.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why the event-count checks work</h2>
+<p>Every person entering &#92;(E&#92;) must eventually progress before the simulation ends. Therefore:</p>
+<div class="math-box">&#92;[&#92;text{progressions}=E(0)+&#92;text{infection events}.&#92;]</div>
+<p>Likewise, every person entering &#92;(I&#92;) must eventually recover:</p>
+<div class="math-box">&#92;[&#92;text{recoveries}=I(0)+&#92;text{progression events}.&#92;]</div>
+<p>These are not extra model assumptions. They are accounting identities for a completed closed SEIR epidemic and useful checks on the program.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret the two plots</h2>
+<p>The compartment plot shows that the exposed peak can occur before the infectious peak. The exact timing and separation vary between trajectories.</p>
+<p>In the cumulative-event plot, infection events usually lead progression events because people must first enter &#92;(E&#92;). The gap represents people currently waiting in the exposed compartment; initial exposed people explain the initial offset in the bookkeeping identity.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Reduce <code>sigma</code> to <code>0.10</code>. The mean latent period becomes 10 days; compare the peak times.</li>
+<li>Increase <code>sigma</code> to <code>1.0</code>. Observe how the model approaches faster SIR-like progression.</li>
+<li>Use <code>I = 0</code> but keep <code>E = 4</code>. Confirm that the program does not stop prematurely.</li>
+<li>Try several seeds and compare whether the exposed or infectious peak changes more.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>What is unique to this lesson?</h2>
+<div class="summary-box"><p>You have separated infection from infectiousness, interpreted the exponential latent period, selected among three competing events, used the correct SEIR extinction condition, and verified the simulation with event-count identities. The next lesson moves from trajectory simulation to the CTMC generator matrix.</p></div>
+</section>
+
+<nav class="lesson-nav"><a href="../ctmc-sir-model/">← Previous lesson</a><a href="../generator-matrix/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body></html>
