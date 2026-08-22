@@ -1,1 +1,320 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Uniform random numbers and probability intervals in Python for mathematical biology."><title>Uniform random numbers and probability intervals | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">04</p><h1 class="section-title">Uniform random numbers and probability intervals</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Learn how a uniform random number and cumulative probability intervals select infection, recovery or no change in a DTMC epidemic model.">
+<title>Uniform random numbers and probability intervals | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>
+window.MathJax={tex:{inlineMath:[['&#92;&#92;(','&#92;&#92;)']],displayMath:[['&#92;&#92;[','&#92;&#92;]'],['$$','$$']]}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+
+<main class="container page-shell">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+
+<section class="lesson-hero">
+<p class="eyebrow">DTMC · Lesson 4</p>
+<h1>Uniform random numbers and probability intervals</h1>
+<p class="lead">Turn one random number into one categorical event. This is the bridge between calculated transition probabilities and a simulated epidemic path.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Learning purpose</h2>
+<div class="definition-box">
+<p>In the previous lesson, we calculated the probabilities of infection, recovery and no change. Here we learn how a computer uses those probabilities to <strong>select one event at random</strong>.</p>
+</div>
+<p>This page does not yet update the values of &#92;(S&#92;), &#92;(I&#92;) and &#92;(R&#92;). Producing the next epidemic state is the separate purpose of Lesson 5.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Scenario: what happens during the next time step?</h2>
+<p>Suppose the current epidemic state and time step give:</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Possible event</th><th>Probability</th><th>Percentage</th></tr></thead>
+<tbody>
+<tr><td>Infection</td><td>0.297</td><td>29.7%</td></tr>
+<tr><td>Recovery</td><td>0.100</td><td>10.0%</td></tr>
+<tr><td>No change</td><td>0.603</td><td>60.3%</td></tr>
+</tbody>
+</table>
+</div>
+<p>The probabilities describe uncertainty. They do not say which event will actually occur in this particular step. The computer therefore needs a random selection rule.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Step 1: draw a uniform random number</h2>
+<div class="definition-box">
+<p>A <strong>uniform random number</strong> &#92;(U&#92;) on &#92;([0,1)&#92;) can take any value from 0 up to, but not including, 1. Equal-length subintervals are equally likely.</p>
+</div>
+<div class="math-box">
+&#92;[
+U&#92;sim &#92;operatorname{Uniform}(0,1).
+&#92;]
+</div>
+<p>For example, an interval of length 0.20 has probability 0.20. This makes the unit interval a natural measuring line for probabilities.</p>
+<div class="note-box">
+<p><strong>Important:</strong> “Uniform” does not mean the generated numbers will be evenly spaced. Individual values are unpredictable. It means that, over many independent draws, equal-length intervals are selected with approximately equal frequency.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Step 2: place the event probabilities on the unit interval</h2>
+<p>Start at 0 and place the probabilities beside one another. The interval length assigned to each event equals its probability.</p>
+<div class="math-box">
+&#92;[
+&#92;begin{aligned}
+&#92;text{infection: }&[0,0.297),&#92;&#92;
+&#92;text{recovery: }&[0.297,0.397),&#92;&#92;
+&#92;text{no change: }&[0.397,1).
+&#92;end{aligned}
+&#92;]
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Interval</th><th>Length</th><th>Selected event</th></tr></thead>
+<tbody>
+<tr><td>&#92;(0&#92;le U&lt;0.297&#92;)</td><td>0.297</td><td>Infection</td></tr>
+<tr><td>&#92;(0.297&#92;le U&lt;0.397&#92;)</td><td>0.100</td><td>Recovery</td></tr>
+<tr><td>&#92;(0.397&#92;le U&lt;1&#92;)</td><td>0.603</td><td>No change</td></tr>
+</tbody>
+</table>
+</div>
+<p>The second boundary is cumulative:</p>
+<div class="math-box">
+&#92;[
+0.397=p_{&#92;mathrm{infection}}+p_{&#92;mathrm{recovery}}
+=0.297+0.100.
+&#92;]
+</div>
+<p>The last interval automatically receives the remaining probability.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why use cumulative boundaries?</h2>
+<p>The first boundary is the infection probability. The second boundary is the first probability plus the recovery probability:</p>
+<div class="math-box">
+&#92;[
+c_1=p_{&#92;mathrm{infection}},&#92;qquad
+c_2=p_{&#92;mathrm{infection}}+p_{&#92;mathrm{recovery}}.
+&#92;]
+</div>
+<p>These cumulative values divide one continuous line into three non-overlapping regions. Because the probabilities sum to 1, the regions cover the whole unit interval without gaps.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Step 3: locate the random number</h2>
+<div class="example-box">
+<p><strong>Example A:</strong> If &#92;(U=0.18&#92;), then &#92;(0.18&lt;0.297&#92;), so infection is selected.</p>
+<p><strong>Example B:</strong> If &#92;(U=0.35&#92;), then &#92;(0.297&#92;le0.35&lt;0.397&#92;), so recovery is selected.</p>
+<p><strong>Example C:</strong> If &#92;(U=0.82&#92;), then &#92;(0.82&#92;ge0.397&#92;), so no change is selected.</p>
+</div>
+<p>Exactly one event is selected because every possible &#92;(U&#92;) belongs to exactly one interval.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What happens exactly at a boundary?</h2>
+<p>We must use one consistent convention. Here, each interval includes its left endpoint and excludes its right endpoint:</p>
+<div class="math-box">
+&#92;[
+[0,0.297),&#92;quad[0.297,0.397),&#92;quad[0.397,1).
+&#92;]
+</div>
+<p>Therefore &#92;(U=0.297&#92;) selects recovery, and &#92;(U=0.397&#92;) selects no change. This convention prevents overlap. For a continuous uniform distribution, hitting one exact boundary has probability zero, but precise programming conditions are still necessary.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Translate the interval rule into Python</h2>
+<pre><code>if u &lt; p_infection:
+    event = "infection"
+elif u &lt; p_infection + p_recovery:
+    event = "recovery"
+else:
+    event = "no change"</code></pre>
+<div class="explanation-grid">
+<div class="concept-card"><h3><code>if</code></h3><p>Tests the first interval. If true, Python selects infection and skips the remaining branches.</p></div>
+<div class="concept-card"><h3><code>elif</code></h3><p>Means “else if”. It is checked only when the infection condition was false.</p></div>
+<div class="concept-card"><h3><code>else</code></h3><p>Catches every remaining value. These values belong to the no-change interval.</p></div>
+</div>
+<div class="note-box">
+<p>The recovery condition does not need to repeat <code>u &gt;= p_infection</code>. Reaching <code>elif</code> already means the first condition was false.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>The code draws 12 visible random numbers, maps each one to an event, and then uses 10,000 additional draws to check that the long-run event frequencies are close to the specified probabilities.</p>
+
+<div class="python-cell" data-python-cell>
+<div class="python-toolbar">
+<button class="run-python" type="button">▶ Run code</button>
+<button class="reset-python" type="button">Reset</button>
+<button class="copy-python" type="button">Copy</button>
+</div>
+<textarea class="python-code" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Probabilities calculated in Lesson 3
+p_infection = 0.297
+p_recovery = 0.100
+p_no_change = 0.603
+
+# Cumulative interval boundaries
+infection_end = p_infection
+recovery_end = p_infection + p_recovery
+
+def choose_event(u):
+    if u &lt; infection_end:
+        return "infection"
+    elif u &lt; recovery_end:
+        return "recovery"
+    else:
+        return "no change"
+
+# A seed makes this demonstration reproducible
+seed = 7
+rng = np.random.default_rng(seed)
+
+# Show how individual random numbers are classified
+u_values = rng.random(12)
+selected_events = [choose_event(u) for u in u_values]
+
+draw_table = pd.DataFrame({
+    "random number u": np.round(u_values, 4),
+    "selected event": selected_events
+})
+
+print("Probability intervals")
+print(f"Infection: [0, {infection_end:.3f})")
+print(f"Recovery:  [{infection_end:.3f}, {recovery_end:.3f})")
+print(f"No change: [{recovery_end:.3f}, 1)")
+print()
+print("First 12 random selections")
+print(draw_table.to_string(index=False))
+
+# Check the rule over many independent draws
+number_of_draws = 10000
+many_u = rng.random(number_of_draws)
+many_events = [choose_event(u) for u in many_u]
+
+event_names = ["infection", "recovery", "no change"]
+observed = [
+    many_events.count(name) / number_of_draws
+    for name in event_names
+]
+theoretical = [p_infection, p_recovery, p_no_change]
+
+comparison = pd.DataFrame({
+    "event": event_names,
+    "theoretical probability": theoretical,
+    "observed proportion": np.round(observed, 4)
+})
+
+print()
+print("Comparison after 10,000 draws")
+print(comparison.to_string(index=False))
+
+x = np.arange(len(event_names))
+width = 0.36
+
+plt.figure(figsize=(8, 4.6))
+plt.bar(x - width/2, theoretical, width,
+        label="Theoretical probability", color="#2563eb")
+plt.bar(x + width/2, observed, width,
+        label="Observed proportion", color="#f59e0b")
+plt.xticks(x, ["Infection", "Recovery", "No change"])
+plt.ylabel("Probability or proportion")
+plt.ylim(0, 0.70)
+plt.title("Uniform random selection reproduces the probabilities")
+plt.legend()
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()
+plt.show()</textarea>
+<div class="python-status" aria-live="polite"></div>
+<pre class="python-output" aria-live="polite"></pre>
+<div class="python-output-images"></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand every new programming idea</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>np.random.default_rng(7)</code></td><td>Creates a modern NumPy random-number generator with seed 7.</td></tr>
+<tr><td><code>rng.random(12)</code></td><td>Produces 12 values from the uniform distribution on &#92;([0,1)&#92;).</td></tr>
+<tr><td><code>def choose_event(u):</code></td><td>Defines a reusable function that accepts one number and applies the interval rule.</td></tr>
+<tr><td><code>return "infection"</code></td><td>Ends the function and sends the selected event name back to the caller.</td></tr>
+<tr><td><code>[choose_event(u) for u in u_values]</code></td><td>Applies the same selection rule to every random number in the array.</td></tr>
+<tr><td><code>many_events.count(name)</code></td><td>Counts how many simulated draws produced a particular event.</td></tr>
+<tr><td><code>count / number_of_draws</code></td><td>Converts an event count into an observed proportion.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>What does the random seed mean?</h2>
+<div class="definition-box">
+<p>A <strong>random seed</strong> is a starting value for a pseudo-random number generator. Using the same seed and the same code produces the same sequence of numbers.</p>
+</div>
+<p>Reproducibility is useful in teaching, testing and scientific reporting. Another researcher can repeat the exact simulated example.</p>
+<div class="warning-box">
+<p>A seed does not make the model deterministic in meaning and does not change the intended probabilities. It only fixes which pseudo-random sequence is used for that run. Changing the seed gives another valid realisation.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why observed proportions are not exactly equal to probabilities</h2>
+<p>In 10,000 draws, the observed infection proportion will usually be close to 0.297, but it need not equal 0.297 exactly. Random sampling creates variation.</p>
+<p>As the number of independent draws increases, the observed proportions generally become closer to their theoretical probabilities. This is the practical idea behind the law of large numbers. A later lesson will study many complete epidemic trajectories and Monte Carlo uncertainty properly.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Change <code>seed = 7</code> to <code>seed = 25</code>. Which first 12 events change?</li>
+<li>Change <code>number_of_draws</code> from <code>10000</code> to <code>100</code>. Are the observed proportions less stable?</li>
+<li>Use <code>p_infection = 0.15</code>, <code>p_recovery = 0.25</code> and <code>p_no_change = 0.60</code>. Update the interval boundaries by running the code.</li>
+<li>Test <code>choose_event(0.297)</code> and <code>choose_event(0.397)</code> to confirm the boundary convention.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>A uniform draw is not itself an infection level, a recovery time or a biological measurement. It is a computational device for selecting among biological events according to their probabilities.</p>
+<p>For one step, the result is one event. Across many repeated selections made under the same state and probabilities, infection, recovery and no change appear in approximately the required proportions.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has—and has not—done</h2>
+<div class="summary-box">
+<p><strong>You can now:</strong></p>
+<ul>
+<li>interpret &#92;(U&#92;sim&#92;operatorname{Uniform}(0,1)&#92;);</li>
+<li>convert event probabilities into cumulative intervals;</li>
+<li>use <code>if</code>, <code>elif</code> and <code>else</code> to select exactly one event;</li>
+<li>use a seed for reproducible random selections; and</li>
+<li>compare theoretical probabilities with observed proportions.</li>
+</ul>
+<p><strong>Not yet:</strong> we have returned only an event name. We have not changed &#92;(S&#92;), &#92;(I&#92;) or &#92;(R&#92;). Lesson 5 combines the selected event with the current state to program one complete DTMC transition.</p>
+</div>
+</section>
+
+<nav class="lesson-nav">
+<a href="../infection-recovery-no-change/">← Previous lesson</a>
+<a href="../one-dtmc-transition/">Next lesson →</a>
+</nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
