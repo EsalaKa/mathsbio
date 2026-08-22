@@ -31,11 +31,36 @@
 </section>
 
 <section class="lesson-section">
-<h2>Three levels of experiment</h2>
+<h2>Start with an exactly understandable sensitivity</h2>
+<p>Before using simulation, consider the basic reproduction number for the simple SIR model:</p>
+<div class="sensitivity-box">
+<p class="formula-line">&#92;[&#92;mathcal{R}_0=&#92;frac{&#92;beta}{&#92;gamma}.&#92;]</p>
+</div>
+<p>At &#92;(&#92;beta=0.30&#92;) and &#92;(&#92;gamma=0.10&#92;), we have &#92;(&#92;mathcal{R}_0=3&#92;).</p>
+<div class="interpret-grid">
+<div class="interpret-card">
+<h3>Increase transmission by 1%</h3>
+<p>If &#92;(&#92;beta&#92;) increases by 1% while &#92;(&#92;gamma&#92;) remains fixed, &#92;(&#92;mathcal{R}_0&#92;) increases by exactly 1%. Its normalized sensitivity to &#92;(&#92;beta&#92;) is +1.</p>
+</div>
+<div class="interpret-card">
+<h3>Increase recovery by 1%</h3>
+<p>If &#92;(&#92;gamma&#92;) increases by 1%, &#92;(&#92;mathcal{R}_0&#92;) decreases by approximately 1% for a small change. Its normalized local sensitivity to &#92;(&#92;gamma&#92;) is −1.</p>
+</div>
+</div>
+<p>The signs are intuitive: greater transmission increases epidemic potential, while faster recovery decreases it. This simple example gives meaning to a sensitivity coefficient before we calculate one numerically.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Four complementary questions</h2>
 <div class="experiment-levels">
-<div class="experiment-level"><span>LEVEL 1</span><strong>One parameter at a time</strong><p>Change &#92;(&#92;beta&#92;) while keeping everything else fixed.</p></div>
-<div class="experiment-level"><span>LEVEL 2</span><strong>Parameter grid</strong><p>Test combinations of &#92;(&#92;beta&#92;) and &#92;(&#92;gamma&#92;).</p></div>
-<div class="experiment-level"><span>LEVEL 3</span><strong>Local sensitivity</strong><p>Estimate response to small changes around the baseline.</p></div>
+<div class="experiment-level"><span>QUESTION 1</span><strong>Exact formula sensitivity</strong><p>How does &#92;(&#92;mathcal{R}_0=&#92;beta/&#92;gamma&#92;) respond algebraically?</p></div>
+<div class="experiment-level"><span>QUESTION 2</span><strong>One parameter at a time</strong><p>How do full epidemic curves change across selected &#92;(&#92;beta&#92;) values?</p></div>
+<div class="experiment-level"><span>QUESTION 3</span><strong>Two-parameter response</strong><p>How does peak size vary across combinations of &#92;(&#92;beta&#92;) and &#92;(&#92;gamma&#92;)?</p></div>
+</div>
+<div class="experiment-levels">
+<div class="experiment-level"><span>QUESTION 4</span><strong>Intervention timing</strong><p>How does changing the day of a transmission reduction alter peak and final size?</p></div>
+<div class="experiment-level"><span>QUESTION 5</span><strong>Local coefficient</strong><p>What is the derivative-like response near the baseline?</p></div>
+<div class="experiment-level"><span>QUESTION 6</span><strong>Robustness</strong><p>Does the conclusion change with the perturbation size or parameter range?</p></div>
 </div>
 </section>
 
@@ -99,6 +124,14 @@
 <div class="warning-box">
 <p>This interpretation is local and approximate. It applies near the chosen baseline and for the selected perturbation size.</p>
 </div>
+<h3>Absolute versus normalized sensitivity</h3>
+<table class="design-table">
+<thead><tr><th>Measure</th><th>Approximate form</th><th>Interpretation</th></tr></thead>
+<tbody>
+<tr><td>Absolute sensitivity</td><td>&#92;(&#92;Delta Y/&#92;Delta p&#92;)</td><td>Outcome-unit change per parameter-unit change; its numerical size depends on units.</td></tr>
+<tr><td>Normalized sensitivity</td><td>&#92;((&#92;Delta Y/Y)/(&#92;Delta p/p)&#92;)</td><td>Percentage outcome change per percentage parameter change; dimensionless and easier to compare.</td></tr>
+</tbody>
+</table>
 </section>
 
 <section class="lesson-section">
@@ -122,7 +155,7 @@ sensitivity = (
 </section>
 
 <section class="lesson-section">
-<h2>Run the complete sensitivity experiment</h2>
+<h2>Run the complete multi-scenario sensitivity experiment</h2>
 <div class="python-lab">
 <div class="python-lab-header"><span>Interactive Python</span><span>SIR parameter experiments</span></div>
 <textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
@@ -146,23 +179,26 @@ def sir_rhs(t, y, beta, gamma):
     ]
 
 
-def simulate_sir(beta, gamma):
-    """Solve the shared SIR scenario and return outcomes."""
+def timed_sir_rhs(
+    t,
+    y,
+    beta_before,
+    beta_after,
+    intervention_day,
+    gamma
+):
+    """Return SIR derivatives with a timed beta change."""
     
-    time = np.linspace(0, 200, 2001)
+    if t &lt; intervention_day:
+        beta = beta_before
+    else:
+        beta = beta_after
     
-    solution = solve_ivp(
-        sir_rhs,
-        t_span=(0, 200),
-        y0=[990, 10, 0],
-        t_eval=time,
-        args=(beta, gamma),
-        rtol=1e-8,
-        atol=1e-10
-    )
-    
-    if not solution.success:
-        raise RuntimeError(solution.message)
+    return sir_rhs(t, y, beta, gamma)
+
+
+def outcomes_from_solution(solution):
+    """Extract shared outcomes from a solved SIR trajectory."""
     
     S, I, R = solution.y
     peak_index = np.argmax(I)
@@ -176,6 +212,49 @@ def simulate_sir(beta, gamma):
         "peak_time": solution.t[peak_index],
         "final_size": 10 + 990 - S[-1]
     }
+
+
+def simulate_sir(beta, gamma):
+    """Solve the shared constant-parameter SIR scenario."""
+    
+    reporting_times = np.linspace(0, 200, 2001)
+    
+    solution = solve_ivp(
+        sir_rhs,
+        t_span=(0, 200),
+        y0=[990, 10, 0],
+        t_eval=reporting_times,
+        args=(beta, gamma),
+        rtol=1e-8,
+        atol=1e-10
+    )
+    
+    if not solution.success:
+        raise RuntimeError(solution.message)
+    
+    return outcomes_from_solution(solution)
+
+
+def simulate_intervention(intervention_day):
+    """Solve an SIR scenario with beta reduced on a chosen day."""
+    
+    reporting_times = np.linspace(0, 200, 2001)
+    
+    solution = solve_ivp(
+        timed_sir_rhs,
+        t_span=(0, 200),
+        y0=[990, 10, 0],
+        t_eval=reporting_times,
+        args=(0.30, 0.12, intervention_day, 0.10),
+        rtol=1e-8,
+        atol=1e-10,
+        max_step=0.5
+    )
+    
+    if not solution.success:
+        raise RuntimeError(solution.message)
+    
+    return outcomes_from_solution(solution)
 
 
 def normalized_sensitivity(
@@ -193,7 +272,8 @@ def normalized_sensitivity(
     )[outcome_name]
     
     if parameter_name == "beta":
-        delta = change_fraction * beta_baseline
+        parameter_baseline = beta_baseline
+        delta = change_fraction * parameter_baseline
         
         outcome_plus = simulate_sir(
             beta_baseline + delta,
@@ -204,11 +284,10 @@ def normalized_sensitivity(
             beta_baseline - delta,
             gamma_baseline
         )[outcome_name]
-        
-        parameter_baseline = beta_baseline
     
     elif parameter_name == "gamma":
-        delta = change_fraction * gamma_baseline
+        parameter_baseline = gamma_baseline
+        delta = change_fraction * parameter_baseline
         
         outcome_plus = simulate_sir(
             beta_baseline,
@@ -219,33 +298,40 @@ def normalized_sensitivity(
             beta_baseline,
             gamma_baseline - delta
         )[outcome_name]
-        
-        parameter_baseline = gamma_baseline
     
     else:
         raise ValueError("parameter_name must be beta or gamma.")
     
-    derivative = (
+    absolute_sensitivity = (
         outcome_plus - outcome_minus
     ) / (2 * delta)
     
-    return derivative * parameter_baseline / baseline
+    normalized = (
+        absolute_sensitivity
+        * parameter_baseline
+        / baseline
+    )
+    
+    return normalized
 
 
-# Baseline and comparison values
+# Baseline and ranges
 beta_baseline = 0.30
 gamma_baseline = 0.10
 
 beta_values = np.array([0.20, 0.25, 0.30, 0.35, 0.40])
 gamma_values = np.array([0.07, 0.10, 0.13])
 
-# One-at-a-time beta results
-beta_results = []
+# Exact R0 sensitivity example
+R0_baseline = beta_baseline / gamma_baseline
+R0_beta_sensitivity = 1.0
+R0_gamma_sensitivity = -1.0
 
-for beta in beta_values:
-    beta_results.append(
-        simulate_sir(beta, gamma_baseline)
-    )
+# One-at-a-time beta results
+beta_results = [
+    simulate_sir(beta, gamma_baseline)
+    for beta in beta_values
+]
 
 # Two-dimensional peak grid
 peak_grid = np.zeros(
@@ -254,15 +340,16 @@ peak_grid = np.zeros(
 
 for row, gamma in enumerate(gamma_values):
     for column, beta in enumerate(beta_values):
-        result = simulate_sir(beta, gamma)
-        peak_grid[row, column] = result["peak_I"]
+        peak_grid[row, column] = simulate_sir(
+            beta, gamma
+        )["peak_I"]
 
 # Local normalized sensitivities
 sensitivity_labels = [
     "beta → peak",
     "gamma → peak",
-    "beta → final size",
-    "gamma → final size"
+    "beta → final",
+    "gamma → final"
 ]
 
 sensitivity_values = [
@@ -280,7 +367,32 @@ sensitivity_values = [
     )
 ]
 
-# Display one-at-a-time outcome table
+# Extra scenario: intervention timing
+intervention_days = np.array([10, 20, 30, 40, 50, 60, 70])
+intervention_results = [
+    simulate_intervention(day)
+    for day in intervention_days
+]
+
+intervention_peaks = np.array([
+    result["peak_I"]
+    for result in intervention_results
+])
+
+intervention_final_sizes = np.array([
+    result["final_size"]
+    for result in intervention_results
+])
+
+# Display exact example
+print("Exact sensitivity example")
+print("---------------------------------------------")
+print(f"Baseline R0:                  {R0_baseline:.2f}")
+print(f"Normalized sensitivity to beta:  {R0_beta_sensitivity:+.1f}")
+print(f"Normalized sensitivity to gamma: {R0_gamma_sensitivity:+.1f}")
+
+# Display one-at-a-time table
+print("\nOne-at-a-time beta experiment")
 print("beta   Peak I   Peak day   Final epidemic size")
 print("------------------------------------------------")
 
@@ -291,15 +403,24 @@ for beta, result in zip(beta_values, beta_results):
         f"{result['final_size']:19.2f}"
     )
 
-# Display the peak matrix
-print("\nPeak infectious matrix")
-print("Rows: gamma values; columns: beta values")
+# Display intervention-timing table
+print("\nIntervention timing experiment")
+print("Day   Peak I   Peak day   Final epidemic size")
 print("------------------------------------------------")
-print(np.round(peak_grid, 2))
 
-# Display sensitivity values
+for day, result in zip(
+    intervention_days,
+    intervention_results
+):
+    print(
+        f"{day:3d}  {result['peak_I']:7.2f}  "
+        f"{result['peak_time']:8.1f}  "
+        f"{result['final_size']:19.2f}"
+    )
+
+# Display local sensitivities
 print("\nLocal normalized sensitivities")
-print("------------------------------------------------")
+print("---------------------------------------------")
 
 for label, value in zip(
     sensitivity_labels,
@@ -307,60 +428,79 @@ for label, value in zip(
 ):
     print(f"{label:20s} {value:8.3f}")
 
-# Create three plots
-fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
+# Create four complementary plots
+fig, axes = plt.subplots(2, 2, figsize=(12, 9))
 
-# Plot 1: infectious trajectories
+# Panel 1: beta trajectories
 for beta, result in zip(beta_values, beta_results):
-    axes[0].plot(
+    axes[0, 0].plot(
         result["time"],
         result["I"],
         label=f"beta={beta:.2f}"
     )
 
-axes[0].set_title("One-at-a-time comparison")
-axes[0].set_xlabel("Time (days)")
-axes[0].set_ylabel("Infectious population")
-axes[0].grid(alpha=0.25)
-axes[0].legend(fontsize=8)
+axes[0, 0].set_title("A. One-at-a-time beta comparison")
+axes[0, 0].set_xlabel("Time (days)")
+axes[0, 0].set_ylabel("Infectious population")
+axes[0, 0].grid(alpha=0.25)
+axes[0, 0].legend(fontsize=8)
 
-# Plot 2: heatmap
-image = axes[1].imshow(
+# Panel 2: two-parameter heatmap
+image = axes[0, 1].imshow(
     peak_grid,
     origin="lower",
     aspect="auto",
     cmap="viridis"
 )
 
-axes[1].set_xticks(range(len(beta_values)))
-axes[1].set_xticklabels(
+axes[0, 1].set_xticks(range(len(beta_values)))
+axes[0, 1].set_xticklabels(
     [f"{value:.2f}" for value in beta_values]
 )
-axes[1].set_yticks(range(len(gamma_values)))
-axes[1].set_yticklabels(
+axes[0, 1].set_yticks(range(len(gamma_values)))
+axes[0, 1].set_yticklabels(
     [f"{value:.2f}" for value in gamma_values]
 )
-axes[1].set_xlabel("beta")
-axes[1].set_ylabel("gamma")
-axes[1].set_title("Peak infectious population")
-fig.colorbar(image, ax=axes[1], label="Peak I")
+axes[0, 1].set_xlabel("beta")
+axes[0, 1].set_ylabel("gamma")
+axes[0, 1].set_title("B. Peak response surface")
+fig.colorbar(image, ax=axes[0, 1], label="Peak I")
 
-# Plot 3: local sensitivities
+# Panel 3: local sensitivity
 colours = [
     "seagreen" if value &gt;= 0 else "indianred"
     for value in sensitivity_values
 ]
 
-axes[2].bar(
+axes[1, 0].bar(
     sensitivity_labels,
     sensitivity_values,
     color=colours
 )
-axes[2].axhline(0, color="black", linewidth=0.8)
-axes[2].set_title("Local normalized sensitivity")
-axes[2].set_ylabel("Sensitivity")
-axes[2].tick_params(axis="x", rotation=35)
-axes[2].grid(axis="y", alpha=0.25)
+axes[1, 0].axhline(0, color="black", linewidth=0.8)
+axes[1, 0].set_title("C. Local normalized sensitivity")
+axes[1, 0].set_ylabel("Sensitivity")
+axes[1, 0].tick_params(axis="x", rotation=25)
+axes[1, 0].grid(axis="y", alpha=0.25)
+
+# Panel 4: extra intervention-timing scenario
+axes[1, 1].plot(
+    intervention_days,
+    intervention_peaks,
+    "o-",
+    label="Peak infectious"
+)
+axes[1, 1].plot(
+    intervention_days,
+    intervention_final_sizes,
+    "s--",
+    label="Final epidemic size"
+)
+axes[1, 1].set_title("D. Sensitivity to intervention timing")
+axes[1, 1].set_xlabel("Intervention day")
+axes[1, 1].set_ylabel("People")
+axes[1, 1].grid(alpha=0.25)
+axes[1, 1].legend()
 
 fig.tight_layout()</textarea>
 <div class="code-controls">
@@ -389,6 +529,21 @@ fig.tight_layout()</textarea>
 <tr><td><code>np.round(array, 2)</code></td><td>Rounds displayed values to two decimal places without changing the original array.</td></tr>
 <tr><td><code>imshow(matrix)</code></td><td>Displays a two-dimensional array as a colour image.</td></tr>
 <tr><td><code>fig.colorbar(...)</code></td><td>Adds a scale explaining how colours correspond to numerical values.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Extra scenario: sensitivity to intervention timing</h2>
+<p>Suppose transmission falls from &#92;(&#92;beta=0.30&#92;) to &#92;(&#92;beta=0.12&#92;) on an intervention day &#92;(T_L&#92;). We now treat &#92;(T_L&#92;) as the input being varied.</p>
+<div class="sensitivity-box">
+<p class="formula-line">&#92;[T_L&#92;in&#92;{10,20,30,40,50,60,70&#92;}&#92;quad&#92;text{days}.&#92;]</p>
+</div>
+<p>This scenario is useful because timing can have a nonlinear effect. Delaying an early intervention may strongly increase the peak, while delaying an intervention until after the uncontrolled peak may make little further difference to that peak.</p>
+<table class="design-table">
+<thead><tr><th>Input</th><th>Outputs</th><th>Question</th></tr></thead>
+<tbody>
+<tr><td>Intervention day &#92;(T_L&#92;)</td><td>Peak infectious population and final epidemic size</td><td>How rapidly is benefit lost as intervention is delayed?</td></tr>
 </tbody>
 </table>
 </section>
@@ -428,7 +583,7 @@ fig.tight_layout()</textarea>
 <section class="lesson-section">
 <h2>Try changing the perturbation size</h2>
 <div class="experiment-box">
-<p>Change <span class="inline-code">change_fraction=0.05</span> to 0.01 and then to 0.20 in the function calls or default definition.</p>
+<p>First change <span class="inline-code">change_fraction=0.05</span> to 0.01 and then to 0.20. Next extend <span class="inline-code">intervention_days</span> to include days 80 and 100.</p>
 <ol>
 <li>Compare the sensitivity estimates.</li>
 <li>Identify which estimates remain stable.</li>
