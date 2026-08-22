@@ -1,1 +1,319 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Infection, recovery and no-change events in Python for mathematical biology."><title>Infection, recovery and no-change events | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">03</p><h1 class="section-title">Infection, recovery and no-change events</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Derive infection, recovery and no-change transition probabilities for a one-event SIR DTMC.">
+<title>Infection, recovery and no-change events | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.event-flow{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}.event-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.event-card h3{margin-top:0;color:#174c34}.rate-probability{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:17px;margin:22px 0}.rp-card{padding:22px;text-align:center;background:#eaf4ee;border-radius:11px}.rp-arrow{font-size:2rem;color:#176b45;font-weight:700}.transition-table{width:100%;border-collapse:collapse;background:#fff}.transition-table th,.transition-table td{padding:12px 14px;border:1px solid #d6e3db;text-align:left;vertical-align:top}.transition-table th{background:#eaf4ee;color:#174c34}.one-event-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}.validity-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.validity-card{padding:19px;text-align:center;background:#fff;border:1px solid #dce7e0;border-radius:10px}.validity-card strong{display:block;color:#174c34}.boundary-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.boundary-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.boundary-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}@media(max-width:800px){.event-flow,.validity-grid,.boundary-grid,.rate-probability{grid-template-columns:1fr}.rp-arrow{transform:rotate(90deg);text-align:center}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+<p class="section-number">03</p>
+<h1 class="section-title">Infection, recovery and no-change events</h1>
+<p class="lesson-intro">We now connect biological event mechanisms to transition probabilities. This lesson uses a one-event-per-step SIR DTMC: during one sufficiently short step, either one infection occurs, one recovery occurs, or the state does not change.</p>
+
+<section class="lesson-section">
+<h2>Biological scenario</h2>
+<div class="scenario-box">
+<p>A closed population contains 1,000 people and is currently in state</p>
+<p class="formula-line">&#92;[(S,I,R)=(990,10,0).&#92;]</p>
+<p>We use &#92;(&#92;beta=0.3&#92;) per day, &#92;(&#92;gamma=0.1&#92;) per day and a step of &#92;(&#92;Delta t=0.1&#92;) day. We want the probabilities of infection, recovery and no change during the next step.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>The model permits three outcomes per step</h2>
+<div class="event-flow">
+<div class="event-card">
+<h3>One infection</h3>
+<p class="formula-line">&#92;[(S,I,R)&#92;to(S-1,I+1,R).&#92;]</p>
+</div>
+<div class="event-card">
+<h3>One recovery</h3>
+<p class="formula-line">&#92;[(S,I,R)&#92;to(S,I-1,R+1).&#92;]</p>
+</div>
+<div class="event-card">
+<h3>No change</h3>
+<p class="formula-line">&#92;[(S,I,R)&#92;to(S,I,R).&#92;]</p>
+</div>
+</div>
+<p>The outcomes are mutually exclusive in this particular DTMC construction: exactly one is assigned to each step.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Rates and probabilities are different quantities</h2>
+<div class="rate-probability">
+<div class="rp-card"><strong>Event rate</strong><p>Expected event frequency per unit time at the current state.</p></div>
+<div class="rp-arrow">× &#92;(&#92;Delta t&#92;) →</div>
+<div class="rp-card"><strong>Short-step probability</strong><p>Approximate chance of one event during the next interval.</p></div>
+</div>
+<div class="math-box">
+<p>For a sufficiently short step,</p>
+<p class="formula-line">&#92;[&#92;Pr(&#92;text{one event in }&#92;Delta t)&#92;approx&#92;text{event rate}&#92;times&#92;Delta t.&#92;]</p>
+</div>
+<p>A rate can exceed one per day. A probability cannot exceed one. Multiplication by the time length converts the rate into a dimensionless short-interval probability.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Infection probability</h2>
+<p>The deterministic infection-event rate at state &#92;((S,I,R)&#92;) is</p>
+<p class="formula-line">&#92;[a_{&#92;mathrm{inf}}(S,I)=&#92;beta&#92;frac{SI}{N}.&#92;]</p>
+<p>The corresponding one-step probability is approximated by</p>
+<p class="formula-line">&#92;[p_{&#92;mathrm{inf}}(S,I)=&#92;beta&#92;frac{SI}{N}&#92;Delta t.&#92;]</p>
+<p>At the scenario state,</p>
+<p class="formula-line">&#92;[p_{&#92;mathrm{inf}}=0.3&#92;times&#92;frac{990&#92;times10}{1000}&#92;times0.1=0.297.&#92;]</p>
+</section>
+
+<section class="lesson-section">
+<h2>Recovery probability</h2>
+<p>The recovery-event rate is</p>
+<p class="formula-line">&#92;[a_{&#92;mathrm{rec}}(I)=&#92;gamma I.&#92;]</p>
+<p>Therefore,</p>
+<p class="formula-line">&#92;[p_{&#92;mathrm{rec}}(I)=&#92;gamma I&#92;Delta t.&#92;]</p>
+<p>For the scenario,</p>
+<p class="formula-line">&#92;[p_{&#92;mathrm{rec}}=0.1&#92;times10&#92;times0.1=0.100.&#92;]</p>
+</section>
+
+<section class="lesson-section">
+<h2>No-change probability</h2>
+<p>The three probabilities must sum to one, so no change receives the remaining probability:</p>
+<p class="formula-line">&#92;[p_{&#92;mathrm{stay}}=1-p_{&#92;mathrm{inf}}-p_{&#92;mathrm{rec}}.&#92;]</p>
+<p>Hence,</p>
+<p class="formula-line">&#92;[p_{&#92;mathrm{stay}}=1-0.297-0.100=0.603.&#92;]</p>
+<table class="transition-table">
+<thead><tr><th>Event</th><th>Next state</th><th>Probability</th></tr></thead>
+<tbody>
+<tr><td>Infection</td><td>&#92;((989,11,0)&#92;)</td><td>0.297</td></tr>
+<tr><td>Recovery</td><td>&#92;((990,9,1)&#92;)</td><td>0.100</td></tr>
+<tr><td>No change</td><td>&#92;((990,10,0)&#92;)</td><td>0.603</td></tr>
+<tr><td><strong>Total</strong></td><td>—</td><td><strong>1.000</strong></td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>The one-event approximation</h2>
+<div class="one-event-box">
+<p>The formulas above approximate the chance of one infection or one recovery during a short interval. They do not represent multiple infections or recoveries within the same step.</p>
+<p>Making &#92;(&#92;Delta t&#92;) smaller reduces the neglected probability of multiple events, but increases the number of simulation steps.</p>
+</div>
+<p>This is one way to construct a DTMC from continuous event rates. Other discrete-time epidemic models may use binomial numbers of infections and recoveries per step; those are different model constructions.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Time-step validity at the current state</h2>
+<p>The combined event probability is</p>
+<p class="formula-line">&#92;[p_{&#92;mathrm{event}}=&#92;left(&#92;beta&#92;frac{SI}{N}+&#92;gamma I&#92;right)&#92;Delta t.&#92;]</p>
+<p>We require</p>
+<p class="formula-line">&#92;[p_{&#92;mathrm{event}}&#92;leq1.&#92;]</p>
+<p>If the total event rate is positive, the largest step satisfying this probability condition at the current state is</p>
+<p class="formula-line">&#92;[&#92;Delta t_{&#92;max}=&#92;frac{1}{&#92;beta SI/N+&#92;gamma I}.&#92;]</p>
+<div class="validity-grid">
+<div class="validity-card"><strong>Necessary</strong>all probabilities lie in &#92;([0,1]&#92;)</div>
+<div class="validity-card"><strong>Necessary</strong>probabilities sum to one</div>
+<div class="validity-card"><strong>Accuracy</strong>the step is sufficiently short for the one-event approximation</div>
+</div>
+<div class="technical-box">
+<p>Satisfying &#92;(p_{&#92;mathrm{event}}&#92;leq1&#92;) is necessary but does not by itself guarantee that the approximation is biologically accurate.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Current-state validity versus whole-model validity</h2>
+<p>A step can be valid at one state but invalid at another because event rates change with &#92;(S&#92;) and &#92;(I&#92;).</p>
+<div class="boundary-box">
+<p>To use one fixed &#92;(&#92;Delta t&#92;) for an entire DTMC, it should satisfy the probability conditions for every state that the model may visit—not only the initial state.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Boundary states</h2>
+<div class="boundary-grid">
+<div class="boundary-card">
+<h3>No susceptible people</h3>
+<p>If &#92;(S=0&#92;), then &#92;(p_{&#92;mathrm{inf}}=0&#92;) because infection cannot move anyone out of &#92;(S&#92;).</p>
+</div>
+<div class="boundary-card">
+<h3>No infectious people</h3>
+<p>If &#92;(I=0&#92;), then both event probabilities are zero and &#92;(p_{&#92;mathrm{stay}}=1&#92;). The epidemic is absorbing in this closed model.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Program the three probabilities</h2>
+<div class="step-card">
+<pre><code>infection_rate = beta * S * I / N
+recovery_rate = gamma * I
+
+p_infection = infection_rate * dt
+p_recovery = recovery_rate * dt
+p_stay = 1 - p_infection - p_recovery</code></pre>
+<p class="code-explain">The rate variables retain units of events per day. The probability variables are dimensionless.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Run the event-probability calculator</h2>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>SIR event probabilities</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import matplotlib.pyplot as plt
+
+# Current SIR state
+S = 990
+I = 10
+R = 0
+N = S + I + R
+
+# Event-rate parameters
+beta = 0.3
+gamma = 0.1
+
+# Fixed DTMC time step
+dt = 0.1
+
+# Validate inputs
+if min(S, I, R, beta, gamma) &lt; 0:
+    raise ValueError("Counts and parameters cannot be negative.")
+
+if N &lt;= 0:
+    raise ValueError("Population must be positive.")
+
+if dt &lt;= 0:
+    raise ValueError("dt must be positive.")
+
+# Calculate event rates
+infection_rate = beta * S * I / N
+recovery_rate = gamma * I
+total_event_rate = infection_rate + recovery_rate
+
+# Convert rates into short-step probabilities
+p_infection = infection_rate * dt
+p_recovery = recovery_rate * dt
+p_stay = 1 - p_infection - p_recovery
+
+# Validate probabilities
+probabilities = {
+    "Infection": p_infection,
+    "Recovery": p_recovery,
+    "No change": p_stay
+}
+
+for event, probability in probabilities.items():
+    if probability &lt; -1e-12 or probability &gt; 1 + 1e-12:
+        raise ValueError(
+            f"Invalid probability for {event}: "
+            f"{probability:.3f}. Reduce dt."
+        )
+
+# Maximum step satisfying the current-state sum condition
+if total_event_rate &gt; 0:
+    maximum_current_dt = 1 / total_event_rate
+else:
+    maximum_current_dt = float("inf")
+
+# Possible next states
+next_states = {
+    "Infection": (S - 1, I + 1, R),
+    "Recovery": (S, I - 1, R + 1),
+    "No change": (S, I, R)
+}
+
+# Display rates and probabilities
+print("Current state:", (S, I, R))
+print(f"Time step: {dt:.3f} day")
+print("\nEvent       Rate per day   Probability   Next state")
+print("------------------------------------------------------")
+
+for event in probabilities:
+    if event == "Infection":
+        rate = infection_rate
+    elif event == "Recovery":
+        rate = recovery_rate
+    else:
+        rate = 0.0
+    
+    print(
+        f"{event:10s} {rate:12.3f} "
+        f"{probabilities[event]:12.3f} "
+        f"{next_states[event]}"
+    )
+
+print("------------------------------------------------------")
+print(f"Probability total: {sum(probabilities.values()):.3f}")
+print(
+    "Largest dt satisfying the current-state "
+    f"sum condition: {maximum_current_dt:.3f}"
+)
+
+# Plot the event distribution
+plt.figure(figsize=(8, 4.6))
+plt.bar(
+    probabilities.keys(),
+    probabilities.values(),
+    color=["indianred", "steelblue", "seagreen"]
+)
+plt.xlabel("Next-step outcome")
+plt.ylabel("Probability")
+plt.title("One-event SIR DTMC probabilities")
+plt.ylim(0, 1)
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the new code</h2>
+<table class="transition-table">
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>float("inf")</code></td><td>Represents positive infinity when the total event rate is zero and no upper bound is required by the probability sum at that state.</td></tr>
+<tr><td><code>if ... elif ... else</code></td><td>Selects the matching displayed rate for each event label.</td></tr>
+<tr><td><code>probabilities.keys()</code></td><td>Returns event labels for the horizontal graph axis.</td></tr>
+<tr><td><code>probabilities.values()</code></td><td>Returns the corresponding probability heights.</td></tr>
+<tr><td><code>1 + 1e-12</code></td><td>Allows only a tiny floating-point tolerance above one; it does not permit a meaningfully invalid probability.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Try changing the time step</h2>
+<div class="experiment-box">
+<p>Run the program with <span class="inline-code">dt = 0.01</span>, 0.1, 0.25 and 1.0.</p>
+<ol>
+<li>Compare the three probabilities.</li>
+<li>Identify when no-change probability becomes negative.</li>
+<li>Compare each value with <span class="inline-code">maximum_current_dt</span>.</li>
+<li>Explain why merely obtaining non-negative probabilities does not prove the one-event approximation is sufficiently accurate.</li>
+</ol>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Boundary of this lesson</h2>
+<div class="boundary-box">
+<p>The code calculates all possible event probabilities and next states but does not choose one. Lesson 4 will map these probabilities to uniform-random-number intervals.</p>
+</div>
+</section>
+</main>
+</body>
+</html>
