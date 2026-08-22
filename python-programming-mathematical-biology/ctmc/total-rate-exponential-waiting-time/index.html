@@ -1,1 +1,375 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Total event rate and exponential waiting time in Python for mathematical biology."><title>Total event rate and exponential waiting time | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">03</p><h1 class="section-title">Total event rate and exponential waiting time</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Combine competing CTMC event rates and generate the exact exponential waiting time to the next epidemic event.">
+<title>Total event rate and exponential waiting time | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.question-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.question-card{padding:21px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.question-card h3{margin-top:0;color:#174c34}.rate-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:14px;align-items:center;margin:24px 0}.rate-card{padding:19px;text-align:center;background:#eaf4ee;border-radius:10px}.rate-symbol{font-size:1.7rem;color:#176b45;font-weight:700}.distribution-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.distribution-card{padding:18px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.distribution-card strong{display:block;color:#174c34;margin-bottom:6px}.zero-rate-box{padding:22px;background:#f1f8f4;border:2px solid #9fc8b1;border-radius:11px}.clock-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.clock-card{padding:20px;background:#eaf4ee;border-radius:10px}@media(max-width:800px){.question-grid,.rate-flow,.distribution-grid,.clock-grid{grid-template-columns:1fr}.rate-symbol{transform:rotate(90deg);text-align:center}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Continuous-Time Markov Chains</a>
+<p class="section-number">03</p>
+<h1 class="section-title">Total event rate and exponential waiting time</h1>
+<p class="lesson-intro">Several biological events may be possible from the current state. Their rates combine to determine how long the CTMC waits before the next event of any type.</p>
+
+<section class="lesson-section">
+<h2>Separate “when?” from “which?”</h2>
+<div class="question-grid">
+<div class="question-card"><h3>When does the next event occur?</h3><p>The total event rate determines the random waiting time.</p><strong>This lesson</strong></div>
+<div class="question-card"><h3>Which event occurs?</h3><p>Relative event rates determine whether the jump is infection, recovery or another event.</p><strong>Lesson 4</strong></div>
+</div>
+<p>Keeping these questions separate makes the Gillespie algorithm easier to understand and program.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Add competing event rates</h2>
+<p>At SIS state &#92;(I=i&#92;), infection and recovery are both possible:</p>
+<div class="rate-flow">
+<div class="rate-card"><strong>Infection rate</strong>&#92;(b(i)&#92;)</div>
+<div class="rate-symbol">+</div>
+<div class="rate-card"><strong>Recovery rate</strong>&#92;(d(i)&#92;)</div>
+<div class="rate-symbol">=</div>
+<div class="rate-card"><strong>Total rate</strong>&#92;(a(i)=b(i)+d(i)&#92;)</div>
+</div>
+<div class="definition-box">
+<p>The <strong>total event rate</strong> is the sum of the rates of all events currently possible. It measures the instantaneous rate at which the process leaves its present state.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Worked current state</h2>
+<p>For &#92;(N=1000&#92;), &#92;(i=10&#92;), &#92;(&#92;beta=0.3&#92;) and &#92;(&#92;gamma=0.1&#92;):</p>
+<div class="math-box">
+&#92;[
+b(10)=2.97,&#92qquad d(10)=1.00,
+&#92;]
+&#92;[
+a(10)=2.97+1.00=3.97&#92;text{ events/day}.
+&#92;]
+</div>
+<p>A larger total rate produces a shorter typical waiting time. A smaller total rate produces a longer typical waiting time.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The exponential waiting-time model</h2>
+<div class="definition-box">
+<p>If the process is currently in a state with total rate &#92;(a&gt;0&#92;), the waiting time &#92;(&#92;tau&#92;) to the next event is exponentially distributed:</p>
+<div class="math-box">
+&#92;[
+&#92;tau&#92;sim&#92;operatorname{Exponential}(a).
+&#92;]
+</div>
+</div>
+<p>The rate &#92;(a&#92;) remains fixed only while the state remains unchanged. When an event occurs, the state changes, the rates are recalculated, and a new waiting time is generated.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Three descriptions of the same distribution</h2>
+<div class="distribution-grid">
+<div class="distribution-card"><strong>Survival function</strong>&#92;[&#92;Pr(&#92;tau&gt;t)=e^{-at}.&#92;]<p>Probability that no event has occurred by time &#92;(t&#92;).</p></div>
+<div class="distribution-card"><strong>Cumulative distribution</strong>&#92;[&#92;Pr(&#92;tau&#92;le t)=1-e^{-at}.&#92;]<p>Probability that the next event occurs by time &#92;(t&#92;).</p></div>
+<div class="distribution-card"><strong>Density</strong>&#92;[f(t)=ae^{-at},&#92;quad t&#92;ge0.&#92;]<p>Describes how waiting-time probability is distributed over continuous time.</p></div>
+</div>
+<p>The density can exceed 1 for some parameter values; it is not a point probability. Probabilities are obtained from areas under the density curve.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Mean and median waiting times</h2>
+<p>The mean waiting time is:</p>
+<div class="math-box">
+&#92;[
+&#92;mathbb E[&#92;tau]=&#92;frac{1}{a}.
+&#92;]
+</div>
+<p>At &#92;(a=3.97&#92;) events/day:</p>
+<div class="math-box">
+&#92;[
+&#92;mathbb E[&#92;tau]
+=&#92;frac{1}{3.97}
+&#92;approx0.2519&#92;text{ day}
+&#92;approx6.05&#92;text{ hours}.
+&#92;]
+</div>
+<p>The median solves &#92;(&#92;Pr(&#92;tau&#92;le t)=0.5&#92;):</p>
+<div class="math-box">
+&#92;[
+&#92;operatorname{median}(&#92;tau)
+=&#92;frac{&#92;log 2}{a}.
+&#92;]
+</div>
+<p>The mean exceeds the median because the exponential distribution has a long right tail: most waits are relatively short, but occasional long waits raise the average.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Connection with the previous lesson</h2>
+<p>The exact no-event probability over length &#92;(h&#92;) is:</p>
+<div class="math-box">
+&#92;[
+&#92;Pr(&#92;tau&gt;h)=e^{-ah}.
+&#92;]
+</div>
+<p>For very small &#92;(h&#92;), the exponential expansion gives:</p>
+<div class="math-box">
+&#92;[
+e^{-ah}=1-ah+O(h^2).
+&#92;]
+</div>
+<p>This recovers the first-order no-event approximation &#92;(1-ah&#92;) from Lesson 2. The exponential distribution provides the exact waiting-time description without advancing through artificial small fixed steps.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Generate a waiting time from a uniform number</h2>
+<p>Let &#92;(U&#92;sim&#92;operatorname{Uniform}(0,1)&#92;). Inverse-transform sampling gives:</p>
+<div class="math-box">
+&#92;[
+&#92;tau=-&#92;frac{&#92;log U}{a}.
+&#92;]
+</div>
+<p>Because &#92;(0&lt;U&#92;le1&#92;), &#92;(&#92;log U&#92;le0&#92;) and therefore &#92;(&#92;tau&#92;ge0&#92;).</p>
+<ol>
+<li>Generate one uniform value.</li>
+<li>Take its natural logarithm.</li>
+<li>Change the sign.</li>
+<li>Divide by the current total rate.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>Why use (1-	exttt{rng.random()})?</h2>
+<p>NumPy's <code>rng.random()</code> generates values in &#92;([0,1)&#92;). The logarithm of zero is not finite. Therefore the code uses:</p>
+<pre><code>u = 1.0 - rng.random()</code></pre>
+<p>This gives &#92;(U&#92;in(0,1]&#92;) and guarantees that <code>np.log(u)</code> is defined. The transformation has the same uniform distribution apart from irrelevant endpoint conventions.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The memoryless property</h2>
+<div class="math-box">
+&#92;[
+&#92;Pr(&#92;tau&gt;s+t&#92;mid&#92;tau&gt;s)
+=
+&#92;Pr(&#92;tau&gt;t).
+&#92;]
+</div>
+<p>Conditional on no event having occurred during the first &#92;(s&#92;) time units, the distribution of the additional waiting time is the same as it was initially.</p>
+<p>Memorylessness does not mean the process has no state. It means that while the state and its rates remain unchanged, elapsed waiting time alone does not alter the future waiting-time distribution.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Competing-clock intuition</h2>
+<div class="clock-grid">
+<div class="clock-card"><strong>Infection clock</strong><p>Imagine an exponential clock with rate &#92;(b(i)&#92;).</p></div>
+<div class="clock-card"><strong>Recovery clock</strong><p>Imagine another exponential clock with rate &#92;(d(i)&#92;).</p></div>
+</div>
+<p>The first clock to ring gives the next-event time. The minimum of these independent exponential clocks is exponential with rate &#92;(b(i)+d(i)&#92;).</p>
+<p>This intuition explains why rates add. Lesson 4 uses the same competing rates to determine which clock wins.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What if the total rate is zero?</h2>
+<div class="zero-rate-box">
+<div class="math-box">
+&#92;[
+a=0&#92;quad&#92;Longrightarrow&#92;quad&#92;tau=&#92;infty.
+&#92;]
+</div>
+<p>No event is possible from the current state. The process remains there indefinitely, so the code must not divide by zero or try to generate a finite waiting time.</p>
+</div>
+<p>For the closed SIS model, this occurs at &#92;(I=0&#92;), the absorbing extinction state.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>The code generates 10,000 waiting times at the current state and compares their empirical mean, histogram and survival curve with the exponential theory. It does not choose event types.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Exponential CTMC waiting times</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Current SIS state and rates
+N = 1000
+i = 10
+beta = 0.30
+gamma = 0.10
+
+infection_rate = beta * (N - i) * i / N
+recovery_rate = gamma * i
+total_rate = infection_rate + recovery_rate
+
+if total_rate &lt; 0:
+    raise ValueError("Total rate cannot be negative.")
+
+if total_rate == 0:
+    raise ValueError(
+        "No event is possible: the waiting time is infinite."
+    )
+
+theoretical_mean = 1 / total_rate
+theoretical_median = np.log(2) / total_rate
+
+# One waiting time by inverse-transform sampling
+seed = 7
+rng = np.random.default_rng(seed)
+
+u = 1.0 - rng.random()
+one_waiting_time = -np.log(u) / total_rate
+
+print("Current rates")
+print(f"Infection rate: {infection_rate:.3f} events/day")
+print(f"Recovery rate: {recovery_rate:.3f} events/day")
+print(f"Total rate: {total_rate:.3f} events/day")
+print()
+print(f"Uniform value U: {u:.6f}")
+print(f"Generated waiting time: {one_waiting_time:.6f} days")
+print(f"Generated waiting time: "
+      f"{one_waiting_time * 24:.3f} hours")
+print()
+
+# Many waiting times from the same current state
+number_of_draws = 10000
+u_values = 1.0 - rng.random(number_of_draws)
+waiting_times = -np.log(u_values) / total_rate
+
+summary_table = pd.DataFrame({
+    "quantity": [
+        "Theoretical mean (days)",
+        "Empirical mean (days)",
+        "Theoretical median (days)",
+        "Empirical median (days)",
+        "Minimum simulated wait (days)",
+        "Maximum simulated wait (days)"
+    ],
+    "value": [
+        theoretical_mean,
+        waiting_times.mean(),
+        theoretical_median,
+        np.median(waiting_times),
+        waiting_times.min(),
+        waiting_times.max()
+    ]
+})
+
+print("Waiting-time summary")
+print(summary_table.round(6).to_string(index=False))
+print()
+print("First 10 waiting times (days)")
+print(np.round(waiting_times[:10], 6))
+
+# Figure 1: histogram and theoretical density
+t_grid = np.linspace(
+    0,
+    np.percentile(waiting_times, 99.5),
+    300
+)
+density = total_rate * np.exp(-total_rate * t_grid)
+
+plt.figure(figsize=(9, 4.9))
+plt.hist(
+    waiting_times,
+    bins=45,
+    density=True,
+    color="#9fc8b1",
+    edgecolor="white",
+    label="Simulated waiting-time density"
+)
+plt.plot(
+    t_grid,
+    density,
+    color="#174c34",
+    linewidth=2.5,
+    label="Theoretical exponential density"
+)
+plt.xlabel("Waiting time to next event (days)")
+plt.ylabel("Probability density")
+plt.title("Exponential waiting times at the current state")
+plt.legend()
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()
+
+# Figure 2: empirical and theoretical survival
+survival_times = np.linspace(0, 1.5, 180)
+empirical_survival = np.array([
+    (waiting_times &gt; t).mean()
+    for t in survival_times
+])
+theoretical_survival = np.exp(
+    -total_rate * survival_times
+)
+
+plt.figure(figsize=(9, 4.9))
+plt.step(
+    survival_times,
+    empirical_survival,
+    where="post",
+    color="#2563eb",
+    label="Empirical Pr(wait &gt; t)"
+)
+plt.plot(
+    survival_times,
+    theoretical_survival,
+    color="#dc2626",
+    linestyle="--",
+    linewidth=2.2,
+    label="Theoretical exp(-a t)"
+)
+plt.xlabel("Time t (days)")
+plt.ylabel("Probability no event has occurred")
+plt.title("Exponential survival function")
+plt.ylim(0, 1.03)
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the new code</h2>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>np.log(u)</code></td><td>Calculates the natural logarithm required by inverse-transform sampling.</td></tr>
+<tr><td><code>-np.log(u) / total_rate</code></td><td>Transforms one uniform value into an exponential waiting time.</td></tr>
+<tr><td><code>rng.random(10000)</code></td><td>Generates 10,000 uniform values in one NumPy array.</td></tr>
+<tr><td><code>density=True</code></td><td>Scales histogram area to 1 so it can be compared with a probability-density curve.</td></tr>
+<tr><td><code>(waiting_times &gt; t).mean()</code></td><td>Calculates the proportion of simulated waits exceeding &#92;(t&#92;), an empirical survival probability.</td></tr>
+<tr><td><code>np.percentile(..., 99.5)</code></td><td>Limits the plotted range so a few extreme waits do not compress the main histogram.</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>At the current state, the CTMC waits a random amount of continuous time before either infection or recovery occurs. The mean wait is about 6.05 hours, but individual waits may be much shorter or considerably longer.</p>
+<p>The exponential model determines only when the next event occurs. It does not yet say whether that event is infection or recovery. That conditional selection is the unique purpose of Lesson 4.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has—and has not—done</h2>
+<div class="summary-box"><p><strong>You can now:</strong></p><ul>
+<li>add competing transition rates to obtain the total leaving rate;</li>
+<li>interpret exponential survival, cumulative probability and density;</li>
+<li>calculate mean and median waiting times;</li>
+<li>generate waiting times by inverse transformation;</li>
+<li>explain memorylessness and the zero-total-rate case; and</li>
+<li>connect the exact survival function to the short-interval approximation.</li>
+</ul><p><strong>Not yet:</strong> no event type has been selected and no state has been updated. Lesson 4 converts competing rates into conditional event probabilities.</p></div>
+</section>
+
+<nav class="lesson-nav"><a href="../rates-small-interval-probabilities/">← Previous lesson</a><a href="../selecting-events/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
