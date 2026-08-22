@@ -1,1 +1,107 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Euler–Maruyama method from scratch in Python for mathematical biology."><title>Euler–Maruyama method from scratch | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">05</p><h1 class="section-title">Euler–Maruyama method from scratch</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Derive and program Euler–Maruyama from scratch for a biological population SDE."><title>Euler–Maruyama method from scratch | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">05</p><h1 class="section-title">Euler–Maruyama method from scratch</h1><p class="lesson-intro">Euler–Maruyama is the simplest explicit method for approximating an SDE on a time grid. It adds one Brownian diffusion contribution to the familiar Euler drift update.</p>
+<section class="lesson-section"><h2>From the SDE to a computable update</h2>
+<div class="math-box">&#92;[dX=f(X,t)dt+g(X,t)dW.&#92;]</div>
+<p>On the grid &#92;(t_n=n&#92;Delta t&#92;), Euler–Maruyama replaces the infinitesimal expression by</p>
+<div class="math-box">&#92;[X_{n+1}=X_n+f(X_n,t_n)&#92;Delta t+g(X_n,t_n)&#92;Delta W_n,&#92;qquad &#92;Delta W_n=&#92;sqrt{&#92;Delta t}Z_n.&#92;]</div>
+</section>
+<section class="lesson-section"><h2>Four operations in every step</h2><ol><li>Evaluate drift at the current state.</li><li>Evaluate diffusion at the current state.</li><li>Generate one new Brownian increment.</li><li>Add drift change and diffusion change to the current state.</li></ol>
+<p>Both coefficients use &#92;(X_n&#92;), not the already updated value &#92;(X_{n+1}&#92;). This makes the method explicit.</p></section>
+<section class="lesson-section"><h2>Scenario: fluctuating logistic population</h2>
+<p>Let &#92;(X(t)&#92;) be a population growing toward carrying capacity &#92;(K&#92;), while environmental variation changes growth continuously:</p>
+<div class="math-box">&#92;[dX=rX&#92;left(1-&#92;frac{X}{K}&#92;right)dt+&#92;eta XdW.&#92;]</div>
+<p>The drift is logistic growth. The diffusion scale &#92;(&#92;eta X&#92;) makes environmental fluctuation proportional to current population size.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2><p>The code implements Euler–Maruyama line by line and compares it with deterministic Euler using the same drift and initial value.</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Euler–Maruyama from scratch</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def drift(x, r, K):
+    return r * x * (1 - x / K)
+
+def diffusion(x, eta):
+    return eta * x
+
+# Model and numerical settings
+r = 0.8
+K = 500
+eta = 0.12
+X0 = 40
+T = 20
+dt = 0.02
+seed = 31
+
+if dt <= 0:
+    raise ValueError("dt must be positive.")
+
+steps = int(round(T / dt))
+times = np.linspace(0, T, steps + 1)
+
+rng = np.random.default_rng(seed)
+X_sde = np.zeros(steps + 1)
+X_deterministic = np.zeros(steps + 1)
+X_sde[0] = X0
+X_deterministic[0] = X0
+
+first_steps = []
+
+for n in range(steps):
+    Z = rng.normal(0, 1)
+    dW = np.sqrt(dt) * Z
+
+    drift_change = drift(X_sde[n], r, K) * dt
+    diffusion_change = diffusion(
+        X_sde[n], eta
+    ) * dW
+
+    X_sde[n + 1] = (
+        X_sde[n]
+        + drift_change
+        + diffusion_change
+    )
+
+    X_deterministic[n + 1] = (
+        X_deterministic[n]
+        + drift(X_deterministic[n], r, K) * dt
+    )
+
+    if n < 8:
+        first_steps.append({
+            "n": n,
+            "time": times[n],
+            "X_n": X_sde[n],
+            "Z_n": Z,
+            "dW_n": dW,
+            "drift change": drift_change,
+            "diffusion change": diffusion_change,
+            "X_next": X_sde[n + 1]
+        })
+
+step_table = pd.DataFrame(first_steps)
+
+print("First 8 Euler–Maruyama updates")
+print(step_table.round(4).to_string(index=False))
+print()
+print(f"Final deterministic value: {X_deterministic[-1]:.3f}")
+print(f"Final stochastic value: {X_sde[-1]:.3f}")
+print(f"Minimum stochastic value: {X_sde.min():.3f}")
+
+plt.figure(figsize=(9.5, 5.2))
+plt.plot(times, X_deterministic,
+         color="#174c34", linewidth=2.2,
+         label="Deterministic Euler")
+plt.plot(times, X_sde,
+         color="#b42318", linewidth=1.2,
+         label="Euler–Maruyama path")
+plt.axhline(K, color="black", linestyle="--",
+            label="Carrying capacity")
+plt.xlabel("Time")
+plt.ylabel("Population X")
+plt.title("Drift creates the trend; diffusion creates fluctuation")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Read one stored row</h2><table><thead><tr><th>Column</th><th>Meaning</th></tr></thead><tbody><tr><td><code>X_n</code></td><td>Current population before the update.</td></tr><tr><td><code>dW_n</code></td><td>New Brownian increment for this interval.</td></tr><tr><td><code>drift change</code></td><td>Systematic contribution &#92;(f(X_n)&#92;Delta t&#92;).</td></tr><tr><td><code>diffusion change</code></td><td>Random contribution &#92;(g(X_n)&#92;Delta W_n&#92;).</td></tr><tr><td><code>X_next</code></td><td>Sum of the current state and both contributions.</td></tr></tbody></table></section>
+<section class="lesson-section"><h2>Euler versus Euler–Maruyama</h2><table><thead><tr><th>Euler</th><th>Euler–Maruyama</th></tr></thead><tbody><tr><td>&#92;(x_{n+1}=x_n+f(x_n)&#92;Delta t&#92;)</td><td>Adds &#92;(g(x_n)&#92;Delta W_n&#92;) as well.</td></tr><tr><td>Same inputs give the same path.</td><td>Different Brownian increments give different paths.</td></tr><tr><td>Approximates an ODE.</td><td>Approximates an SDE.</td></tr></tbody></table></section>
+<section class="lesson-section"><h2>Numerical cautions</h2><p>A smaller &#92;(&#92;Delta t&#92;) usually represents the SDE more accurately but needs more steps. Euler–Maruyama may generate biologically impossible negative values for some models. Do not silently replace them without explaining the chosen boundary treatment; a later lesson examines this issue directly.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now translate an SDE into an explicit Euler–Maruyama loop, separate drift and diffusion changes, store diagnostic rows, and compare a stochastic path with deterministic Euler.</p></div></section><nav class="lesson-nav"><a href="../simulating-brownian-increments/">← Previous lesson</a><a href="../stochastic-sis-model/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
