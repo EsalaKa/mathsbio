@@ -1,1 +1,46 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Difference equations | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Mathematical Foundations</a><h1 class="section-title">Difference equations</h1></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Learn how difference equations model biological change at separate time points.">
+<link rel="canonical" href="https://mathsbio.com/mathematical-foundations/difference-equations/">
+<title>Difference equations | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a><a href="../">Foundations</a></nav></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Mathematical Foundations</a>
+<p class="section-number">01 · Lesson 05</p>
+<h1 class="section-title">Difference equations</h1>
+<p class="lesson-intro">A difference equation describes how a quantity is updated from one separate time point to the next. It is suitable when observations or biological events occur in daily, seasonal, generational or other discrete steps.</p>
+
+<section class="lesson-section"><h2>Scenario: one breeding season at a time</h2><div class="scenario-box"><p>A population of annual plants produces seeds, then the adult plants die. Because generations do not substantially overlap, it is natural to count the population once per breeding season rather than describe every instant continuously.</p></div><p>Let &#92;(N_n&#92;) be the population at season &#92;(n&#92;). A simple update is</p><div class="math-box formula-line">&#92;[N_{n+1}=&#92;lambda N_n,&#92;]</div><p>where &#92;(&#92;lambda&#92;) is the multiplication factor per season. The equation reads: “the next population equals &#92;(&#92;lambda&#92;) times the current population.”</p></section>
+
+<section class="lesson-section"><h2>State, index and update rule</h2><table class="result-table"><thead><tr><th>Symbol</th><th>Meaning</th></tr></thead><tbody><tr><td>&#92;(n&#92;)</td><td>Discrete time index: &#92;(0,1,2,&#92;ldots&#92;)</td></tr><tr><td>&#92;(N_n&#92;)</td><td>Population at the current time point</td></tr><tr><td>&#92;(N_{n+1}&#92;)</td><td>Population at the next time point</td></tr><tr><td>&#92;(&#92;lambda&#92;)</td><td>Dimensionless growth factor per step</td></tr></tbody></table><p>The initial value &#92;(N_0&#92;) is required. Once &#92;(N_0&#92;) and the rule are known, repeated substitution generates the trajectory.</p></section>
+
+<section class="lesson-section"><h2>Iterating the model</h2><p>Suppose &#92;(N_0=100&#92;) and &#92;(&#92;lambda=1.2&#92;). Then</p><div class="math-box formula-line">&#92;[N_1=120,&#92;qquad N_2=144,&#92;qquad N_3=172.8.&#92;]</div><p>The general solution is</p><div class="math-box formula-line">&#92;[N_n=N_0&#92;lambda^n.&#92;]</div><ul><li>If &#92;(&#92;lambda&gt;1&#92;), the population grows.</li><li>If &#92;(&#92;lambda=1&#92;), it remains constant.</li><li>If &#92;(0&lt;&#92;lambda&lt;1&#92;), it declines toward zero.</li></ul><div class="technical-box"><p>A decimal result may represent an expected population or density. If the model is meant to track literal individuals, an integer-valued or stochastic formulation may be more appropriate.</p></div></section>
+
+<section class="lesson-section"><h2>Change form and update form</h2><p>The same rule can be written using the one-step change:</p><div class="math-box formula-line">&#92;[N_{n+1}-N_n=(r)N_n,&#92;]</div><p>where &#92;(r=&#92;lambda-1&#92;) is the proportional change per step. Rearranging gives</p><div class="math-box formula-line">&#92;[N_{n+1}=(1+r)N_n.&#92;]</div><p>Here &#92;(r=0.2&#92;) means a 20% net increase per complete step, whereas &#92;(&#92;lambda=1.2&#92;) is the factor by which the state is multiplied. Confusing these two quantities produces incorrect updates.</p></section>
+
+<section class="lesson-section"><h2>Density-dependent growth</h2><p>Unlimited geometric growth eventually becomes unrealistic. A discrete logistic model is</p><div class="math-box formula-line">&#92;[N_{n+1}=N_n+rN_n&#92;left(1-&#92;frac{N_n}{K}&#92;right),&#92;]</div><p>where &#92;(K&#92;) is carrying capacity and &#92;(r&#92;) controls the per-step response to crowding.</p><ul><li>When &#92;(N_n&#92;) is much smaller than &#92;(K&#92;), growth is approximately proportional to &#92;(N_n&#92;).</li><li>When &#92;(N_n=K&#92;), the added change is zero.</li><li>When &#92;(N_n&gt;K&#92;), the crowding term is negative.</li></ul><p>Unlike the continuous logistic ODE, the discrete model can oscillate or become highly irregular when &#92;(r&#92;) is large. Discrete updating is therefore not merely a different notation for the same dynamics.</p></section>
+
+<section class="lesson-section"><h2>Equilibria</h2><p>An equilibrium &#92;(N^*&#92;) remains unchanged by the update. For a model &#92;(N_{n+1}=F(N_n)&#92;), it satisfies</p><div class="math-box formula-line">&#92;[N^*=F(N^*).&#92;]</div><p>For the discrete logistic model, the equilibria are &#92;(N^*=0&#92;) and &#92;(N^*=K&#92;). Finding an equilibrium does not establish whether nearby trajectories approach it. Stability must also be checked.</p></section>
+
+<section class="lesson-section"><h2>Local stability</h2><p>For a one-dimensional update &#92;(N_{n+1}=F(N_n)&#92;), an equilibrium is locally stable when</p><div class="math-box formula-line">&#92;[&#92;left|F'(N^*)&#92;right|&lt;1.&#92;]</div><p>The derivative measures how a small deviation is multiplied during one update. A magnitude below one makes sufficiently small deviations shrink. A negative derivative can make deviations alternate from one side of the equilibrium to the other.</p></section>
+
+<section class="lesson-section"><h2>Difference equation versus ODE</h2><table class="result-table"><thead><tr><th>Difference equation</th><th>Ordinary differential equation</th></tr></thead><tbody><tr><td>Separate time points</td><td>Continuous time</td></tr><tr><td>Specifies the next state</td><td>Specifies instantaneous rate</td></tr><tr><td>&#92;(N_{n+1}=F(N_n)&#92;)</td><td>&#92;(dN/dt=f(N)&#92;)</td></tr><tr><td>Step length is part of the biological model</td><td>Time varies continuously</td></tr></tbody></table><p>Euler’s method also produces a difference equation, but there the update is a numerical approximation to an underlying ODE. In a genuinely discrete biological model, the update rule itself is the model.</p></section>
+
+<section class="lesson-section"><h2>Deterministic updating versus a DTMC</h2><p>A deterministic difference equation gives one definite next state from the current state. A discrete-time Markov chain instead assigns probabilities to possible next states. Both use fixed time points, but only the DTMC represents random transitions. The detailed construction of DTMC epidemic models belongs to the Python programming pathway.</p></section>
+
+<section class="lesson-section"><h2>Conditions and limitations</h2><ul><li>Define what one time step represents biologically.</li><li>Keep growth factors and per-step rates conceptually distinct.</li><li>Check that updates preserve non-negativity and any population bounds.</li><li>Do not assume that a smaller numerical step represents the same biological model unless the rule was derived for that step.</li><li>Examine equilibrium stability; an equilibrium value alone does not describe nearby behaviour.</li><li>Declare whether non-integer results represent counts, densities or expectations.</li></ul></section>
+
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now build and iterate a difference equation, distinguish growth factors from proportional change, find equilibria, interpret local stability, and explain the differences between a discrete biological model, an ODE approximation and a DTMC.</p></div></section>
+<nav class="lesson-nav"><a href="../partial-differential-equations/">← Previous lesson</a><a href="../linear-algebra-and-matrices/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
