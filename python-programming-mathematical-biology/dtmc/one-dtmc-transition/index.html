@@ -155,8 +155,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def one_sir_transition(S, I, R, beta, gamma, dt, rng):
+    # Check the supplied state and parameters
+    if min(S, I, R) &lt; 0:
+        raise ValueError("Compartment counts cannot be negative.")
+
+    if beta &lt; 0 or gamma &lt; 0 or dt &lt;= 0:
+        raise ValueError("beta and gamma must be non-negative; dt must be positive.")
+
     # Population size before the transition
     N = S + I + R
+
+    if N == 0:
+        raise ValueError("The population must be greater than zero.")
 
     # Transition probabilities from the current state
     p_infection = beta * S * I / N * dt
@@ -247,20 +257,18 @@ print("State transition")
 print(state_table.to_string(index=False))
 
 labels = ["Susceptible", "Infectious", "Removed"]
-before = [S, I, R]
-after = [next_S, next_I, next_R]
-x = np.arange(3)
-width = 0.36
+changes = [next_S - S, next_I - I, next_R - R]
+colours = ["#2563eb" if value == 0 else
+           "#dc2626" if value &lt; 0 else "#16a34a"
+           for value in changes]
 
 plt.figure(figsize=(8, 4.6))
-plt.bar(x - width/2, before, width, label="Before",
-        color="#2563eb")
-plt.bar(x + width/2, after, width, label="After",
-        color="#f59e0b")
-plt.xticks(x, labels)
-plt.ylabel("Number of people")
-plt.title(f"One DTMC transition: {result['event']}")
-plt.legend()
+bars = plt.bar(labels, changes, color=colours)
+plt.axhline(0, color="black", linewidth=1)
+plt.bar_label(bars, fmt="%+g")
+plt.ylabel("Change during one step")
+plt.ylim(-1.4, 1.4)
+plt.title(f"Compartment changes: {result['event']}")
 plt.grid(axis="y", alpha=0.25)
 plt.tight_layout()
 plt.show()</textarea>
@@ -325,7 +333,7 @@ p_{&#92;mathrm{stay}}=1.
 <li>Change <code>seed = 7</code> to several other integers. Observe different valid one-step outcomes.</li>
 <li>Use <code>S, I, R = 990, 0, 10</code>. Confirm that no change is always selected.</li>
 <li>Set <code>dt = 1.0</code>. Read the error message and explain why the probabilities are invalid for the current state.</li>
-<li>Temporarily replace the infection update with <code>next_S = S</code>. Run the code and observe how the population-conservation check detects the mistake.</li>
+<li>Set <code>seed = 2</code>, then temporarily replace the infection update with <code>next_S = S</code>. The selected infection will make the population-conservation check detect the mistake.</li>
 <li>Use a state with more infectious people and examine how the infection interval changes.</li>
 </ol>
 </section>
