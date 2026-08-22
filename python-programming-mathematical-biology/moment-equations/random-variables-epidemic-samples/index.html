@@ -115,7 +115,9 @@ print(
 )
 print(
     "Relative frequencies sum to:",
-    frequency_table["relative frequency"].sum()
+    round(
+        frequency_table["relative frequency"].sum(), 10
+    )
 )
 
 bins = np.arange(-0.5, N + 1.5, 1)
