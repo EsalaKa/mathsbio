@@ -1,1 +1,81 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Brownian motion and normal random increments in Python for mathematical biology."><title>Brownian motion and normal random increments | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">03</p><h1 class="section-title">Brownian motion and normal random increments</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Understand Brownian motion, independent normal increments and computer representations."><title>Brownian motion and normal random increments | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">03</p><h1 class="section-title">Brownian motion and normal random increments</h1><p class="lesson-intro">Brownian motion supplies the continuous random input used by an SDE. Its increments have a precise normal distribution even though individual paths look irregular.</p>
+<section class="lesson-section"><h2>Brownian motion is the source of continuous random fluctuation</h2>
+<p>Standard Brownian motion &#92;(W(t)&#92;) starts at &#92;(W(0)=0&#92;). Its path is continuous, but it changes irregularly and has no ordinary derivative.</p>
+<div class="math-box">&#92;[&#92;Delta W=W(t+&#92;Delta t)-W(t).&#92;]</div>
+<p>&#92;(&#92;Delta W&#92;) is the change in Brownian motion over an interval; it is not the value &#92;(W(t)&#92;) itself.</p></section>
+<section class="lesson-section"><h2>Distribution of an increment</h2>
+<div class="math-box">&#92;[&#92;Delta W&#92;sim N(0,&#92;Delta t).&#92;]</div>
+<table><thead><tr><th>Property</th><th>Meaning</th></tr></thead><tbody><tr><td>Mean 0</td><td>No systematic upward or downward direction.</td></tr><tr><td>Variance &#92;(&#92;Delta t&#92;)</td><td>Longer intervals allow more variation.</td></tr><tr><td>SD &#92;(&#92;sqrt{&#92;Delta t}&#92;)</td><td>Typical increment size scales with the square root of time.</td></tr><tr><td>Independent disjoint increments</td><td>A new interval’s increment does not depend on earlier non-overlapping increments.</td></tr></tbody></table>
+</section>
+<section class="lesson-section"><h2>Why the path shown by a computer looks discrete</h2>
+<p>Brownian motion is continuous in the mathematical model. A computer stores it only at finitely many times and draws lines between those points. Reducing &#92;(&#92;Delta t&#92;) reveals more detail, but it does not turn the model from discrete into continuous; it improves a discrete representation of a continuous path.</p>
+</section>
+<section class="lesson-section"><h2>Accumulating increments</h2>
+<div class="math-box">&#92;[W(t_n)=&#92;sum_{k=0}^{n-1}&#92;Delta W_k.&#92;]</div>
+<p>Brownian motion is constructed by cumulatively adding independent increments. Increments fluctuate around zero, but their cumulative sum need not remain near zero on one path.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2><p>The first graph shows six continuous-line representations of Brownian paths. The second checks the distribution of &#92;(W(1)&#92;) across 10,000 independent paths.</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Brownian paths and increments</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+T = 1.0
+dt = 0.002
+steps = int(T / dt)
+seed = 15
+rng = np.random.default_rng(seed)
+
+times = np.linspace(0, T, steps + 1)
+
+# Six displayed paths
+dW = np.sqrt(dt) * rng.normal(
+    0, 1, size=(6, steps)
+)
+W = np.column_stack([
+    np.zeros(6),
+    np.cumsum(dW, axis=1)
+])
+
+plt.figure(figsize=(9, 5))
+for path in W:
+    plt.plot(times, path, linewidth=1)
+
+plt.axhline(0, color="black", linewidth=0.8)
+plt.xlabel("Time")
+plt.ylabel("W(t)")
+plt.title("Six Brownian-motion paths")
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+# Distribution at the fixed time T = 1
+number_of_paths = 10000
+increments = np.sqrt(dt) * rng.normal(
+    0, 1, size=(number_of_paths, steps)
+)
+W_at_T = increments.sum(axis=1)
+
+summary = pd.DataFrame({
+    "quantity": ["Theoretical", "Simulated"],
+    "mean of W(1)": [0, W_at_T.mean()],
+    "variance of W(1)": [T, W_at_T.var(ddof=1)]
+})
+
+print(summary.round(4).to_string(index=False))
+
+plt.figure(figsize=(9, 5))
+plt.hist(W_at_T, bins=45, density=True,
+         color="#79ae90", edgecolor="white")
+x = np.linspace(-4, 4, 400)
+normal_density = (
+    np.exp(-(x ** 2) / 2) / np.sqrt(2 * np.pi)
+)
+plt.plot(x, normal_density, color="#b42318",
+         linewidth=2, label="N(0, 1) density")
+plt.xlabel("W(1)")
+plt.ylabel("Density")
+plt.title("Across paths, W(1) is normally distributed")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Brownian motion is not biological population size</h2><p>&#92;(W(t)&#92;) can be negative and has no direct interpretation as a number of infected people. In an SDE, the diffusion coefficient transforms its increment into a state-dependent perturbation of the biological variable.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now distinguish Brownian motion from its increments, state their distribution and independence, construct paths by cumulative addition, and explain why a computer plot is a grid-based representation of a continuous stochastic process.</p></div></section><nav class="lesson-nav"><a href="../drift-diffusion/">← Previous lesson</a><a href="../simulating-brownian-increments/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
