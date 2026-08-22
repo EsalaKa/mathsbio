@@ -1,1 +1,558 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Programming a DTMC SEIR model in Python for mathematical biology."><title>Programming a DTMC SEIR model | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">09</p><h1 class="section-title">Programming a DTMC SEIR model</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Build a DTMC SEIR epidemic model with exposure, latent progression, recovery, valid probabilities and correct extinction conditions.">
+<title>Programming a DTMC SEIR model | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.seir-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:11px;align-items:center;margin:24px 0}.seir-card{padding:18px 12px;text-align:center;background:#fff;border:1px solid #dce7e0;border-radius:10px}.seir-card strong{display:block;color:#174c34}.flow-arrow{font-size:1.6rem;color:#176b45;font-weight:700}.event-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.event-card{padding:19px;background:#eaf4ee;border-radius:10px}.event-card h3{margin-top:0;color:#174c34}.boundary-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin:22px 0}.boundary-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.danger-card{border:2px solid #d4a54c;background:#fff8e8}.period-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin:22px 0}.period-card{padding:20px;text-align:center;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}@media(max-width:850px){.seir-flow,.event-grid,.boundary-grid,.period-grid{grid-template-columns:1fr}.flow-arrow{transform:rotate(90deg);text-align:center}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+
+<main class="section container">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+<p class="section-number">09</p>
+<h1 class="section-title">Programming a DTMC SEIR model</h1>
+<p class="lesson-intro">SEIR separates infection from infectiousness. A newly infected person first enters an exposed compartment and becomes infectious only after a latent period.</p>
+
+<section class="lesson-section">
+<h2>The new biological idea: exposure before infectiousness</h2>
+<div class="seir-flow">
+<div class="seir-card"><strong>Susceptible</strong>&#92;(S&#92;)</div>
+<div class="flow-arrow">→</div>
+<div class="seir-card"><strong>Exposed</strong>&#92;(E&#92;)</div>
+<div class="flow-arrow">→</div>
+<div class="seir-card"><strong>Infectious</strong>&#92;(I&#92;)</div>
+<div class="flow-arrow">→</div>
+<div class="seir-card"><strong>Removed</strong>&#92;(R&#92;)</div>
+</div>
+<div class="math-box">
+&#92;[
+S&#92;xrightarrow{&#92;text{infection}}E
+&#92;xrightarrow{&#92;text{progression}}I
+&#92;xrightarrow{&#92;text{recovery}}R.
+&#92;]
+</div>
+<div class="definition-box">
+<p>An <strong>exposed</strong> person is infected but not yet infectious in this basic model. Exposure and progression are therefore different biological events.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why not move directly from (S) to (I)?</h2>
+<p>In SIR, a new infection immediately increases &#92;(I&#92;). In SEIR, the same infection event changes:</p>
+<div class="math-box">
+&#92;[
+(S,E,I,R)&#92;longrightarrow(S-1,E+1,I,R).
+&#92;]
+</div>
+<p>The infectious count changes later, when a progression event occurs:</p>
+<div class="math-box">
+&#92;[
+(S,E,I,R)&#92;longrightarrow(S,E-1,I+1,R).
+&#92;]
+</div>
+<p>This separation introduces a delay between acquiring infection and becoming able to transmit.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The SEIR state space</h2>
+<p>For a closed population of size &#92;(N&#92;):</p>
+<div class="math-box">
+&#92;[
+S_n+E_n+I_n+R_n=N.
+&#92;]
+</div>
+<p>The full integer-valued state is &#92;(X_n=(S_n,E_n,I_n,R_n)&#92;). Its state space is:</p>
+<div class="math-box">
+&#92;[
+&#92;mathcal S=
+&#92;left&#92;{(s,e,i,r)&#92;in&#92;mathbb Z_{&#92;ge0}^{4}:
+s+e+i+r=N&#92;right&#92;}.
+&#92;]
+</div>
+<p>Only three compartment counts are mathematically independent because the fourth can be obtained from conservation. We nevertheless store all four because this makes biological interpretation and validation clearer.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Three events and four outcomes</h2>
+<p>Under the one-event-per-step assumption, three biological events are possible, plus no change:</p>
+<div class="event-grid">
+<div class="event-card">
+<h3>Infection</h3>
+<div class="math-box">&#92;[(s,e,i,r)&#92;to(s-1,e+1,i,r).&#92;]</div>
+</div>
+<div class="event-card">
+<h3>Progression</h3>
+<div class="math-box">&#92;[(s,e,i,r)&#92;to(s,e-1,i+1,r).&#92;]</div>
+</div>
+<div class="event-card">
+<h3>Recovery</h3>
+<div class="math-box">&#92;[(s,e,i,r)&#92;to(s,e,i-1,r+1).&#92;]</div>
+</div>
+</div>
+<p>No change leaves &#92;((s,e,i,r)&#92;) unchanged. These four outcomes must be mutually exclusive and their probabilities must sum to 1.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Transition probabilities</h2>
+<p>Let &#92;(&#92;beta&#92;) be the transmission parameter, &#92;(&#92;sigma&#92;) the exposed-to-infectious progression rate and &#92;(&#92;gamma&#92;) the recovery rate. For a sufficiently short &#92;(&#92;Delta t&#92;):</p>
+<div class="math-box">
+&#92;[
+&#92;begin{aligned}
+p_{&#92;mathrm{inf}}
+&=&#92;beta&#92;frac{SI}{N}&#92;Delta t,&#92;&#92;
+p_{&#92;mathrm{prog}}
+&=&#92;sigma E&#92;Delta t,&#92;&#92;
+p_{&#92;mathrm{rec}}
+&=&#92;gamma I&#92;Delta t,&#92;&#92;
+p_{&#92;mathrm{stay}}
+&=1-p_{&#92;mathrm{inf}}-p_{&#92;mathrm{prog}}-p_{&#92;mathrm{rec}}.
+&#92;end{aligned}
+&#92;]
+</div>
+<div class="note-box">
+<p>Infection still depends on susceptible and infectious people—not exposed people—because this basic SEIR model assumes exposed individuals do not transmit.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret (sigma) correctly</h2>
+<div class="period-grid">
+<div class="period-card">
+<strong>Mean latent period</strong>
+<div class="math-box">&#92;[1/&#92;sigma.&#92;]</div>
+<p>With &#92;(&#92;sigma=0.2&#92;) per day, the mean latent period is 5 days.</p>
+</div>
+<div class="period-card">
+<strong>Mean infectious period</strong>
+<div class="math-box">&#92;[1/&#92;gamma.&#92;]</div>
+<p>With &#92;(&#92;gamma=0.1&#92;) per day, the mean infectious period is 10 days.</p>
+</div>
+</div>
+<p>These are mean waiting periods implied by constant progression and recovery rates. They do not mean that every individual progresses after exactly 5 days or recovers after exactly 10 days.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The crucial extinction condition</h2>
+<div class="boundary-grid">
+<div class="boundary-card danger-card">
+<h3>(I=0) is not sufficient</h3>
+<p>If &#92;(I=0&#92;) but &#92;(E&gt;0&#92;), exposed people can progress into the infectious compartment. The epidemic process can continue.</p>
+</div>
+<div class="boundary-card">
+<h3>(E=0) and (I=0)</h3>
+<p>When both infected compartments are empty, infection, progression and recovery probabilities are all zero. The state is absorbing.</p>
+</div>
+</div>
+<div class="math-box">
+&#92;[
+&#92;text{Extinction condition:}&#92;qquad E=0&#92;quad&#92;text{and}&#92;quad I=0.
+&#92;]
+</div>
+<p>This is why the simulation must use <code>if E == 0 and I == 0</code>, not merely <code>if I == 0</code>.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Probability validity now includes progression</h2>
+<p>The time-step condition becomes:</p>
+<div class="math-box">
+&#92;[
+p_{&#92;mathrm{inf}}+
+p_{&#92;mathrm{prog}}+
+p_{&#92;mathrm{rec}}
+&#92;le1.
+&#92;]
+</div>
+<p>Adding a compartment adds an event and therefore another contribution to the total event probability. A time step valid for an SIR model is not automatically valid after SEIR progression is added.</p>
+<p>A simple sufficient bound over the whole state space is:</p>
+<div class="math-box">
+&#92;[
+&#92;left(
+&#92;frac{&#92;beta N}{4}
++&#92;sigma N
++&#92;gamma N
+&#92;right)&#92;Delta t&#92;le1.
+&#92;]
+</div>
+<p>The bound is conservative but easy to calculate and guarantees non-negative no-change probability everywhere.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>Click <strong>Run code</strong> to simulate one SEIR trajectory. The output reports both exposed and infectious peaks, completed outbreak size, event counts and two graphs.</p>
+
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>DTMC SEIR epidemic</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def seir_probabilities(S, E, I, N, beta, sigma, gamma, dt):
+    p_infection = beta * S * I / N * dt
+    p_progression = sigma * E * dt
+    p_recovery = gamma * I * dt
+    p_no_change = (
+        1 - p_infection - p_progression - p_recovery
+    )
+
+    return (
+        p_infection,
+        p_progression,
+        p_recovery,
+        p_no_change
+    )
+
+def one_seir_transition(
+    S, E, I, R, beta, sigma, gamma, dt, rng
+):
+    N = S + E + I + R
+
+    probabilities = seir_probabilities(
+        S, E, I, N, beta, sigma, gamma, dt
+    )
+    p_infection, p_progression, p_recovery, p_no_change = (
+        probabilities
+    )
+
+    if p_no_change &lt; -1e-12:
+        raise ValueError("dt gives invalid transition probabilities.")
+
+    u = rng.random()
+
+    if u &lt; p_infection:
+        return S - 1, E + 1, I, R, "infection"
+    elif u &lt; p_infection + p_progression:
+        return S, E - 1, I + 1, R, "progression"
+    elif u &lt; p_infection + p_progression + p_recovery:
+        return S, E, I - 1, R + 1, "recovery"
+    else:
+        return S, E, I, R, "no change"
+
+# Parameters and initial state
+beta = 0.30
+sigma = 0.20
+gamma = 0.10
+dt = 0.01
+max_days = 250
+seed = 11
+
+S, E, I, R = 195, 3, 2, 0
+N = S + E + I + R
+
+initial_S = S
+initial_E = E
+initial_I = I
+initial_R = R
+
+if min(S, E, I, R, beta, sigma, gamma) &lt; 0:
+    raise ValueError("Counts and rates cannot be negative.")
+
+if N &lt;= 0 or dt &lt;= 0:
+    raise ValueError("N and dt must be positive.")
+
+# Conservative probability check over the whole state space
+upper_probability_bound = (
+    beta * N / 4
+    + sigma * N
+    + gamma * N
+) * dt
+
+if upper_probability_bound &gt; 1:
+    raise ValueError("dt is not guaranteed valid over the state space.")
+
+# Store the initial state
+rng = np.random.default_rng(seed)
+times = [0.0]
+S_values = [S]
+E_values = [E]
+I_values = [I]
+R_values = [R]
+events = ["initial state"]
+
+max_steps = int(max_days / dt)
+
+for step in range(max_steps):
+    S, E, I, R, event = one_seir_transition(
+        S, E, I, R, beta, sigma, gamma, dt, rng
+    )
+
+    times.append((step + 1) * dt)
+    S_values.append(S)
+    E_values.append(E)
+    I_values.append(I)
+    R_values.append(R)
+    events.append(event)
+
+    # I = 0 alone is not an extinction condition in SEIR
+    if E == 0 and I == 0:
+        break
+
+trajectory = pd.DataFrame({
+    "time": times,
+    "S": S_values,
+    "E": E_values,
+    "I": I_values,
+    "R": R_values,
+    "event": events
+})
+
+# Validate every stored state
+totals = (
+    trajectory["S"] + trajectory["E"]
+    + trajectory["I"] + trajectory["R"]
+)
+
+if not (totals == N).all():
+    raise ValueError("Population conservation failed.")
+
+if (trajectory[["S", "E", "I", "R"]] &lt; 0).any().any():
+    raise ValueError("A compartment became negative.")
+
+if not (trajectory["S"].diff().dropna() &lt;= 0).all():
+    raise ValueError("Susceptible count increased.")
+
+if not (trajectory["R"].diff().dropna() &gt;= 0).all():
+    raise ValueError("Removed count decreased.")
+
+# Calculate realised outcomes
+final_time = trajectory["time"].iloc[-1]
+final_S = trajectory["S"].iloc[-1]
+final_E = trajectory["E"].iloc[-1]
+final_I = trajectory["I"].iloc[-1]
+final_R = trajectory["R"].iloc[-1]
+
+peak_E = trajectory["E"].max()
+peak_E_time = trajectory.loc[
+    trajectory["E"].idxmax(), "time"
+]
+peak_I = trajectory["I"].max()
+peak_I_time = trajectory.loc[
+    trajectory["I"].idxmax(), "time"
+]
+
+new_transmission_infections = initial_S - final_S
+people_infected_so_far = (
+    initial_E + initial_I + new_transmission_infections
+)
+
+if final_E == 0 and final_I == 0:
+    stopping_reason = "infection became extinct"
+    final_epidemic_size = people_infected_so_far
+    attack_proportion = final_epidemic_size / N
+else:
+    stopping_reason = "the time horizon was reached"
+    final_epidemic_size = "not complete"
+    attack_proportion = "not complete"
+
+event_counts = (
+    trajectory["event"]
+    .value_counts()
+    .reindex(
+        ["infection", "progression", "recovery", "no change"],
+        fill_value=0
+    )
+)
+
+summary = pd.DataFrame({
+    "outcome": [
+        "Peak exposed count",
+        "First exposed peak time",
+        "Peak infectious count",
+        "First infectious peak time",
+        "Final susceptible",
+        "Final exposed",
+        "Final infectious",
+        "Final removed",
+        "New transmission infections",
+        "Completed final epidemic size",
+        "Attack proportion"
+    ],
+    "value": [
+        peak_E,
+        round(peak_E_time, 2),
+        peak_I,
+        round(peak_I_time, 2),
+        final_S,
+        final_E,
+        final_I,
+        final_R,
+        new_transmission_infections,
+        final_epidemic_size,
+        (
+            round(attack_proportion, 4)
+            if final_E == 0 and final_I == 0
+            else "not complete"
+        )
+    ]
+})
+
+print("Whole-state-space sufficient bound")
+print(f"Upper bound on total event probability: "
+      f"{upper_probability_bound:.4f}")
+print()
+print(f"Seed: {seed}")
+print(f"Final time: {final_time:.2f} days")
+print(f"Stopping reason: {stopping_reason}")
+print()
+print("Realised-outcome table")
+print(summary.to_string(index=False))
+print()
+print("Event counts")
+print(event_counts.to_string())
+print()
+print("Last 8 stored states")
+print(trajectory.tail(8).to_string(index=False))
+
+# Figure 1: all compartment trajectories
+plt.figure(figsize=(9, 5.2))
+plt.step(trajectory["time"], trajectory["S"],
+         where="post", label="Susceptible", color="#2563eb")
+plt.step(trajectory["time"], trajectory["E"],
+         where="post", label="Exposed", color="#f59e0b")
+plt.step(trajectory["time"], trajectory["I"],
+         where="post", label="Infectious", color="#dc2626")
+plt.step(trajectory["time"], trajectory["R"],
+         where="post", label="Removed", color="#16a34a")
+plt.xlabel("Time (days)")
+plt.ylabel("Number of people")
+plt.title("One stochastic SEIR trajectory")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+# Figure 2: exposed and infectious delay
+plt.figure(figsize=(9, 4.8))
+plt.step(trajectory["time"], trajectory["E"],
+         where="post", label="Exposed", color="#f59e0b")
+plt.step(trajectory["time"], trajectory["I"],
+         where="post", label="Infectious", color="#dc2626")
+plt.axvline(peak_E_time, color="#f59e0b", linestyle="--",
+            alpha=0.7, label="First exposed peak")
+plt.axvline(peak_I_time, color="#dc2626", linestyle=":",
+            alpha=0.8, label="First infectious peak")
+plt.xlabel("Time (days)")
+plt.ylabel("Number of people")
+plt.title("Exposure precedes infectiousness")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>How the random intervals change</h2>
+<p>With three events, the cumulative selection rule has three boundaries:</p>
+<pre><code>if u &lt; p_infection:
+    event = "infection"
+elif u &lt; p_infection + p_progression:
+    event = "progression"
+elif u &lt; p_infection + p_progression + p_recovery:
+    event = "recovery"
+else:
+    event = "no change"</code></pre>
+<p>The order could be changed if the cumulative boundaries were changed consistently. What matters is that interval lengths equal the corresponding probabilities and that the intervals do not overlap.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret the two peak times</h2>
+<p>The exposed and infectious peaks are different random outcomes. In a typical growing outbreak, the exposed peak may occur before the infectious peak because individuals must progress through &#92;(E&#92;) before joining &#92;(I&#92;).</p>
+<div class="warning-box">
+<p>The code must calculate both times from the trajectory. We should not assume that their difference equals exactly &#92;(1/&#92;sigma&#92;). The mean latent period describes individual waiting, whereas population peaks depend on the entire changing epidemic.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Final epidemic size in SEIR</h2>
+<p>At a completed extinction state, &#92;(E=I=0&#92;). If &#92;(R_0=0&#92;), the final epidemic size is:</p>
+<div class="math-box">
+&#92;[
+Z=R_&#92;infty=N-S_&#92;infty.
+&#92;]
+</div>
+<p>With initially exposed or infectious people, the size of the modelled outbreak includes them:</p>
+<div class="math-box">
+&#92;[
+Z=E_0+I_0+(S_0-S_&#92;infty).
+&#92;]
+</div>
+<p>The expression &#92;(S_0-S_&#92;infty&#92;) counts new transmission infections. Adding &#92;(E_0+I_0&#92;) includes the infections already present at time zero.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the model-specific code</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>p_progression = sigma * E * dt</code></td><td>Calculates the probability of one exposed person becoming infectious.</td></tr>
+<tr><td><code>return S, E - 1, I + 1, R</code></td><td>Applies progression without changing the total population.</td></tr>
+<tr><td><code>if E == 0 and I == 0</code></td><td>Stops only when neither exposed nor infectious people remain.</td></tr>
+<tr><td><code>initial_E + initial_I</code></td><td>Counts infections already present at the beginning.</td></tr>
+<tr><td><code>trajectory["E"].idxmax()</code></td><td>Locates the first stored row attaining the exposed peak.</td></tr>
+<tr><td><code>.reindex([...], fill_value=0)</code></td><td>Displays every event category even if one event never occurred in this realisation.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Change the seed and compare the exposed peak, infectious peak and extinction time.</li>
+<li>Set <code>S, E, I, R = 197, 3, 0, 0</code>. Confirm that progression can create infectious people even though &#92;(I_0=0&#92;).</li>
+<li>Increase <code>sigma</code> to 0.5. Interpret the shorter mean latent period and changed peak timing.</li>
+<li>Decrease <code>sigma</code> to 0.1. Compare the separation between exposed and infectious curves.</li>
+<li>Increase <code>dt</code> until the conservative whole-state-space check rejects it.</li>
+<li>Set <code>max_days = 20</code>. Explain why final epidemic size is reported as incomplete when &#92;(E&gt;0&#92;) or &#92;(I&gt;0&#92;).</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>The exposed compartment delays the appearance of infectious individuals after transmission. This delay can shift the infectious peak and allows hidden infected individuals to remain even when no infectious person is currently observed.</p>
+<p>The SEIR model is appropriate only when a distinct latent stage is biologically meaningful. If exposed individuals can also transmit, the infection probability must be modified rather than silently using the basic SEIR assumption.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has added</h2>
+<div class="summary-box">
+<ul>
+<li>Infection moves people from &#92;(S&#92;) to &#92;(E&#92;), not directly to &#92;(I&#92;).</li>
+<li>Progression is a third event with probability &#92;(&#92;sigma E&#92;Delta t&#92;).</li>
+<li>The latent period separates infection from infectiousness.</li>
+<li>&#92;(I=0&#92;) is not absorbing when exposed people remain.</li>
+<li>Extinction requires both &#92;(E=0&#92;) and &#92;(I=0&#92;).</li>
+<li>Time-step validity must include infection, progression and recovery probabilities.</li>
+<li>Exposed and infectious peaks are distinct stochastic outcomes.</li>
+</ul>
+<p>Lesson 10 changes viewpoint completely: instead of selecting one random path, it represents and updates the probability distribution over all states using a transition matrix.</p>
+</div>
+</section>
+
+<nav class="lesson-nav">
+<a href="../dtmc-sir-model/">← Previous lesson</a>
+<a href="../transition-matrices-probability-vectors/">Next lesson →</a>
+</nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
