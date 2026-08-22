@@ -1,1 +1,80 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Part 3: Continuous-Time Markov Chains taught through intuitive, fully explained and workable Python programs."><title>Part 3: Continuous-Time Markov Chains | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Python Programming</a><h1 class="section-title">Part 3: Continuous-Time Markov Chains</h1><div class="topic-grid"><a class="topic-card" href="events-transition-rates/"><span class="topic-number">01</span><strong class="topic-name">Events and transition rates in continuous time</strong></a><a class="topic-card" href="rates-small-interval-probabilities/"><span class="topic-number">02</span><strong class="topic-name">From rates to small-interval probabilities</strong></a><a class="topic-card" href="total-rate-exponential-waiting-time/"><span class="topic-number">03</span><strong class="topic-name">Total event rate and exponential waiting time</strong></a><a class="topic-card" href="selecting-events/"><span class="topic-number">04</span><strong class="topic-name">Selecting infection, progression or recovery events</strong></a><a class="topic-card" href="one-ctmc-event/"><span class="topic-number">05</span><strong class="topic-name">Programming one CTMC event</strong></a><a class="topic-card" href="gillespie-direct-algorithm/"><span class="topic-number">06</span><strong class="topic-name">Gillespie’s direct algorithm step by step</strong></a><a class="topic-card" href="ctmc-sis-model/"><span class="topic-number">07</span><strong class="topic-name">Programming a CTMC SIS model</strong></a><a class="topic-card" href="ctmc-sir-model/"><span class="topic-number">08</span><strong class="topic-name">Programming a CTMC SIR model</strong></a><a class="topic-card" href="ctmc-seir-model/"><span class="topic-number">09</span><strong class="topic-name">Programming a CTMC SEIR model</strong></a><a class="topic-card" href="generator-matrices/"><span class="topic-number">10</span><strong class="topic-name">Generator matrices and transition structure</strong></a><a class="topic-card" href="many-ctmc-trajectories/"><span class="topic-number">11</span><strong class="topic-name">Simulating many continuous-time trajectories</strong></a><a class="topic-card" href="ctmc-extinction-outbreak-probability/"><span class="topic-number">12</span><strong class="topic-name">Extinction probability and outbreak probability</strong></a><a class="topic-card" href="outbreak-outcomes/"><span class="topic-number">13</span><strong class="topic-name">Outbreak size, duration, peak size and peak time</strong></a><a class="topic-card" href="ctmc-plots-tables/"><span class="topic-number">14</span><strong class="topic-name">Event-path plots, step plots, distributions and tables</strong></a></div></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A progressive Python pathway for continuous-time Markov-chain epidemic models, Gillespie simulation, generators and outbreak probabilities.">
+<title>Part 3: Continuous-Time Markov Chains | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Python Programming</a>
+<h1 class="section-title">Part 3: Continuous-Time Markov Chains</h1>
+<p class="path-intro">A CTMC changes state at random event times. This pathway first separates rates from probabilities, then builds the waiting-time and event-selection mechanism, applies it to SIS, SIR and SEIR models, introduces generator matrices, and finally studies many trajectories and biological outcomes.</p>
+
+<section class="path-stage">
+<p class="stage-label">Stage 1 · Define continuous-time transitions</p>
+<h2>Events, rates and short intervals</h2>
+<p class="stage-intro">Describe biological jumps and their instantaneous rates before connecting those rates to probabilities over a sufficiently small interval.</p>
+<div class="topic-grid">
+<a class="topic-card" href="events-transition-rates/"><span class="topic-number">01</span><span class="lesson-card-copy"><strong>Events and transition rates in continuous time</strong><small>Define CTMC states, biological jump events, instantaneous rates, units and boundary conditions—without simulating waiting times.</small></span></a>
+<a class="topic-card" href="rates-small-interval-probabilities/"><span class="topic-number">02</span><span class="lesson-card-copy"><strong>From rates to small-interval probabilities</strong><small>Interpret rate × short interval, derive no-event and multiple-event orders, and state when the approximation is valid.</small></span></a>
+</div>
+</section>
+
+<section class="path-stage">
+<p class="stage-label">Stage 2 · Generate continuous-time events</p>
+<h2>Waiting times and the Gillespie mechanism</h2>
+<p class="stage-intro">Separate the question “when does the next event occur?” from “which event occurs?”, then combine them into one complete CTMC simulation algorithm.</p>
+<div class="topic-grid">
+<a class="topic-card" href="total-rate-exponential-waiting-time/"><span class="topic-number">03</span><span class="lesson-card-copy"><strong>Total event rate and exponential waiting time</strong><small>Add competing event rates and generate the random time to the next event from an exponential distribution.</small></span></a>
+<a class="topic-card" href="selecting-events/"><span class="topic-number">04</span><span class="lesson-card-copy"><strong>Selecting infection, progression or recovery events</strong><small>Normalise event rates by the total rate and select the event conditional on a jump occurring.</small></span></a>
+<a class="topic-card" href="one-ctmc-event/"><span class="topic-number">05</span><span class="lesson-card-copy"><strong>Programming one CTMC event</strong><small>Combine one exponential waiting time, one event choice and one biologically valid state update.</small></span></a>
+<a class="topic-card" href="gillespie-direct-algorithm/"><span class="topic-number">06</span><span class="lesson-card-copy"><strong>Gillespie’s direct algorithm step by step</strong><small>Repeat CTMC events, advance by unequal random times, store the jump path and stop under stated conditions.</small></span></a>
+</div>
+</section>
+
+<section class="path-stage">
+<p class="stage-label">Stage 3 · Apply the mechanism</p>
+<h2>SIS, SIR and SEIR CTMC models</h2>
+<p class="stage-intro">Reuse the Gillespie mechanism while changing the biological compartments, events, boundaries and outcome definitions.</p>
+<div class="topic-grid">
+<a class="topic-card" href="ctmc-sis-model/"><span class="topic-number">07</span><span class="lesson-card-copy"><strong>Programming a CTMC SIS model</strong><small>Model reinfection, birth–death rates, extinction and possible persistence before absorption.</small></span></a>
+<a class="topic-card" href="ctmc-sir-model/"><span class="topic-number">08</span><span class="lesson-card-copy"><strong>Programming a CTMC SIR model</strong><small>Model irreversible recovery, final epidemic size, peak outcomes and the absorbing disease-free boundary.</small></span></a>
+<a class="topic-card" href="ctmc-seir-model/"><span class="topic-number">09</span><span class="lesson-card-copy"><strong>Programming a CTMC SEIR model</strong><small>Add exposure, latent progression, three competing rates and the correct extinction condition.</small></span></a>
+</div>
+</section>
+
+<section class="path-stage">
+<p class="stage-label">Stage 4 · Represent the transition structure</p>
+<h2>Generator matrices</h2>
+<p class="stage-intro">Move from trajectory simulation to the matrix that records all instantaneous transition rates and their conservation structure.</p>
+<div class="topic-grid">
+<a class="topic-card" href="generator-matrices/"><span class="topic-number">10</span><span class="lesson-card-copy"><strong>Generator matrices and transition structure</strong><small>Construct off-diagonal rates, negative diagonal entries, row sums and the connection between a generator and short-time transitions.</small></span></a>
+</div>
+</section>
+
+<section class="path-stage">
+<p class="stage-label">Stage 5 · Estimate and communicate outcomes</p>
+<h2>Monte Carlo probabilities and epidemic summaries</h2>
+<p class="stage-intro">Simulate independent continuous-time paths, define outcomes before counting them, quantify uncertainty and choose appropriate displays.</p>
+<div class="topic-grid">
+<a class="topic-card" href="many-ctmc-trajectories/"><span class="topic-number">11</span><span class="lesson-card-copy"><strong>Simulating many continuous-time trajectories</strong><small>Run independent Gillespie paths, align jump processes on observation grids and form empirical distributions.</small></span></a>
+<a class="topic-card" href="ctmc-extinction-outbreak-probability/"><span class="topic-number">12</span><span class="lesson-card-copy"><strong>Extinction probability and outbreak probability</strong><small>Define early fade-out, major outbreak and time-specific events before estimating probabilities and Monte Carlo uncertainty.</small></span></a>
+<a class="topic-card" href="outbreak-outcomes/"><span class="topic-number">13</span><span class="lesson-card-copy"><strong>Outbreak size, duration, peak size and peak time</strong><small>Calculate trajectory-level outcomes, empirical distributions, dependence between summaries and conditional statistics.</small></span></a>
+<a class="topic-card" href="ctmc-plots-tables/"><span class="topic-number">14</span><span class="lesson-card-copy"><strong>Event-path plots, step plots, distributions and tables</strong><small>Communicate irregular jump times, sample-path variability, outcome distributions and biological conclusions correctly.</small></span></a>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Coverage rule</h2>
+<p>Lessons 1–6 teach the generic CTMC simulation mechanism once. Lessons 7–9 apply it to different epidemic structures. Lesson 10 introduces the generator viewpoint. Lessons 11–14 estimate and communicate stochastic outcomes. Each lesson may reuse earlier code, but its explanation should focus on genuinely new mathematics, biology or Python.</p>
+</section>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
