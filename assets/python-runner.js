@@ -97,6 +97,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const imageArea = lab.querySelector(".python-output-images");
         const originalCode = editor.value;
 
+        editor.setAttribute("aria-label", "Editable Python code");
+        output.setAttribute("role", "status");
+        output.setAttribute("aria-live", "polite");
+        output.setAttribute("aria-atomic", "true");
+        if (imageArea) {
+            imageArea.setAttribute("aria-live", "polite");
+            imageArea.setAttribute("aria-label", "Python-generated graphs");
+        }
+
         runButton.addEventListener("click", async () => {
             runButton.disabled = true;
             runButton.textContent = "Loading Python…";
