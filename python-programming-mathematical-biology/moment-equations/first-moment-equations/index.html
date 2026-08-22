@@ -1,1 +1,89 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Deriving first-moment equations in Python for mathematical biology."><title>Deriving first-moment equations | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">05</p><h1 class="section-title">Deriving first-moment equations</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Derive the first-moment equation of a stochastic epidemic birth–death process."><title>Deriving first-moment equations | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">05</p><h1 class="section-title">Deriving first-moment equations</h1><p class="lesson-intro">A moment equation follows from stochastic event changes and rates; it is not obtained by averaging a deterministic equation informally.</p>
+<section class="lesson-section"><h2>A linear infection–removal process</h2><p>Let &#92;(I(t)&#92;) change through</p><table><thead><tr><th>Event</th><th>Change</th><th>Rate in state &#92;(i&#92;)</th></tr></thead><tbody><tr><td>New infectious individual</td><td>+1</td><td>&#92;(&#92;lambda i&#92;)</td></tr><tr><td>Removal</td><td>−1</td><td>&#92;(&#92;mu i&#92;)</td></tr></tbody></table>
+<p>This early-outbreak branching model ignores susceptible depletion so that the rates are linear.</p></section>
+<section class="lesson-section"><h2>Conditional expected change</h2><p>Given &#92;(I(t)=i&#92;), over a short interval &#92;(h&#92;),</p>
+<div class="math-box">&#92;[
+&#92;mathbb E[&#92;Delta I&#92;mid I(t)=i]
+=
+(+1)&#92;lambda i h+(-1)&#92;mu i h+o(h).
+&#92;]</div>
+<p>Divide by &#92;(h&#92;) and let &#92;(h&#92;) tend to zero:</p>
+<div class="math-box">&#92;[
+&#92;frac{d}{dt}&#92;mathbb E[I(t)]
+=
+&#92;mathbb E[(&#92;lambda-&#92;mu)I(t)].
+&#92;]</div></section>
+<section class="lesson-section"><h2>Use linearity of expectation</h2>
+<div class="math-box">&#92;[
+&#92;frac{dm_1}{dt}=(&#92;lambda-&#92;mu)m_1,
+&#92;qquad m_1(t)=&#92;mathbb E[I(t)].
+&#92;]</div>
+<p>Because the rate is linear in &#92;(I&#92;), the right-hand side contains only the first moment. The equation is closed.</p></section>
+<section class="lesson-section"><h2>Solution and interpretation</h2>
+<div class="math-box">&#92;[m_1(t)=I_0e^{(&#92;lambda-&#92;mu)t}.&#92;]</div>
+<p>If &#92;(&#92;lambda&gt;&#92;mu&#92;), the expected infectious population grows; if &#92;(&#92;lambda&lt;&#92;mu&#92;), it declines. Positive expected growth does not rule out extinction in individual stochastic paths.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>First moment versus simulations</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def branching_path_on_grid(rng, I0, birth, death, grid):
+    I = I0
+    time = 0.0
+    event_times = [0.0]
+    values = [I]
+
+    while I > 0 and time < grid[-1]:
+        total_rate = (birth + death) * I
+        wait = rng.exponential(1 / total_rate)
+        if time + wait > grid[-1]:
+            break
+        time += wait
+        I += 1 if rng.random() < birth / (birth + death) else -1
+        event_times.append(time)
+        values.append(I)
+
+    positions = np.searchsorted(
+        event_times, grid, side="right"
+    ) - 1
+    return np.array(values)[positions]
+
+I0 = 5
+birth = 0.18
+death = 0.12
+grid = np.linspace(0, 20, 81)
+M = 3000
+rng = np.random.default_rng(250)
+
+paths = np.array([
+    branching_path_on_grid(rng, I0, birth, death, grid)
+    for _ in range(M)
+])
+
+monte_carlo_mean = paths.mean(axis=0)
+moment_solution = I0 * np.exp((birth - death) * grid)
+
+selected = [0, 5, 10, 15, 20]
+indices = [np.argmin(np.abs(grid - t)) for t in selected]
+comparison = pd.DataFrame({
+    "time": selected,
+    "moment equation": moment_solution[indices],
+    "simulation mean": monte_carlo_mean[indices]
+})
+
+print(comparison.round(4).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.1))
+plt.plot(grid, moment_solution, color="#174c34",
+         linewidth=2.2, label="First-moment equation")
+plt.plot(grid, monte_carlo_mean, color="#b42318",
+         linestyle="--", label="Monte Carlo mean")
+plt.xlabel("Time")
+plt.ylabel("Expected infectious population")
+plt.title("Derived first moment agrees with simulation")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>What was—and was not—assumed</h2><p>The equation describes the exact first moment of this linear birth–death model. It is not a deterministic approximation to one trajectory. Its derivation used the stochastic transition rates and expectation. Nonlinear epidemic rates will introduce higher moments; lesson 07 explains that problem.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now derive a first-moment differential equation from event changes and rates, use conditional expectation and linearity, solve the closed linear equation and compare it with Monte Carlo evidence.</p></div></section><nav class="lesson-nav"><a href="../monte-carlo-moments/">← Previous lesson</a><a href="../second-moment-equations/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
