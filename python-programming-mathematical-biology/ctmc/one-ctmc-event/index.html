@@ -1,1 +1,369 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Programming one CTMC event in Python for mathematical biology."><title>Programming one CTMC event | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">05</p><h1 class="section-title">Programming one CTMC event</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Program one complete CTMC epidemic event by generating an exponential waiting time, selecting an event and updating an SEIR state.">
+<title>Programming one CTMC event | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.event-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0}.flow-card{padding:18px;background:#eaf4ee;border-radius:10px}.flow-card strong{display:block;color:#174c34;margin-bottom:6px}.draw-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.draw-card{padding:21px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.draw-card h3{margin-top:0;color:#174c34}.update-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.update-card{padding:19px;background:#eaf4ee;border-radius:10px}.update-card h3{margin-top:0;color:#174c34}.zero-box{padding:22px;background:#f1f8f4;border:2px solid #9fc8b1;border-radius:11px}.validation-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.validation-card{padding:18px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.validation-card strong{display:block;color:#174c34;margin-bottom:6px}@media(max-width:800px){.event-flow,.draw-grid,.update-grid,.validation-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Continuous-Time Markov Chains</a>
+<p class="section-number">05</p>
+<h1 class="section-title">Programming one CTMC event</h1>
+<p class="lesson-intro">We now combine the total rate, exponential waiting time, conditional event selection and biological state change to produce exactly one complete continuous-time transition.</p>
+
+<section class="lesson-section">
+<h2>The unique purpose of this lesson</h2>
+<div class="event-flow">
+<div class="flow-card"><strong>1. Calculate rates</strong>Use the current state only.</div>
+<div class="flow-card"><strong>2. Generate waiting time</strong>Determine when the jump occurs.</div>
+<div class="flow-card"><strong>3. Select event</strong>Determine which jump occurs.</div>
+<div class="flow-card"><strong>4. Update state</strong>Apply one integer compartment change.</div>
+</div>
+<p>This page completes this mechanism once. It does not repeat the mechanism into a trajectory; that loop is the unique purpose of Lesson 6.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Scenario</h2>
+<p>At current time &#92;(t=12&#92;) days, use:</p>
+<div class="math-box">
+&#92;[
+(S,E,I,R)=(990,5,5,0),
+&#92;qquad N=1000,
+&#92;]
+<div>
+&#92;[
+&#92;beta=0.3,&#92;qquad
+&#92;sigma=0.2,&#92;qquad
+&#92;gamma=0.1&#92;text{ per day}.
+&#92;]
+</div>
+</div>
+<p>The current event rates are:</p>
+<div class="math-box">
+&#92;[
+a_1=1.485,&#92;qquad
+a_2=1.000,&#92;qquad
+a_3=0.500,
+&#92;]
+<p>for infection, progression and recovery, respectively. The total rate is &#92;(a_0=2.985&#92;) events/day.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Use two independent random numbers</h2>
+<div class="draw-grid">
+<div class="draw-card"><h3>Waiting-time draw</h3><div class="math-box">&#92;[&#92;tau=-&#92;frac{&#92;log U_1}{a_0}.&#92;]</div><p>&#92;(U_1&#92;) determines when the event occurs.</p></div>
+<div class="draw-card"><h3>Event-selection draw</h3><div class="math-box">&#92;[U_2&#92;sim&#92;operatorname{Uniform}(0,1).&#92;]</div><p>&#92;(U_2&#92;) determines which event occurs.</p></div>
+</div>
+<div class="warning-box">
+<p>Use separate independent draws. Reusing the same uniform number would create an artificial relationship between waiting time and event type that is not part of the CTMC model.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Advance continuous time</h2>
+<p>The current state remains unchanged throughout the waiting period. At its end, the selected event occurs instantaneously:</p>
+<div class="math-box">
+&#92;[
+t_{&#92;mathrm{next}}=t+&#92;tau.
+&#92;]
+</div>
+<p>Unlike a DTMC, this increment is not a fixed &#92;(&#92;Delta t&#92;). Every CTMC event generally produces a different positive waiting time.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Select the event from rate ratios</h2>
+<p>The cumulative conditional boundaries are:</p>
+<div class="math-box">
+&#92;[
+c_1=&#92;frac{a_1}{a_0},
+&#92;qquad
+c_2=&#92;frac{a_1+a_2}{a_0}.
+&#92;]
+</div>
+<ul>
+<li>If &#92;(U_2&lt;c_1&#92;), select infection.</li>
+<li>If &#92;(c_1&#92;le U_2&lt;c_2&#92;), select progression.</li>
+<li>Otherwise, select recovery.</li>
+</ul>
+<p>There is no no-change choice because waiting has already been represented by &#92;(&#92;tau&#92;).</p>
+</section>
+
+<section class="lesson-section">
+<h2>Apply exactly one state update</h2>
+<div class="update-grid">
+<div class="update-card"><h3>Infection</h3><div class="math-box">&#92;[(S,E,I,R)&#92;to(S-1,E+1,I,R).&#92;]</div></div>
+<div class="update-card"><h3>Progression</h3><div class="math-box">&#92;[(S,E,I,R)&#92;to(S,E-1,I+1,R).&#92;]</div></div>
+<div class="update-card"><h3>Recovery</h3><div class="math-box">&#92;[(S,E,I,R)&#92;to(S,E,I-1,R+1).&#92;]</div></div>
+</div>
+<p>The event rate controls selection, but the selected event controls the integer-valued compartment changes.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Do not update while calculating rates</h2>
+<p>All rates must be calculated from the same current state. Only after both random decisions have been made should the program form the next state.</p>
+<p>Using <code>next_S</code>, <code>next_E</code>, <code>next_I</code> and <code>next_R</code> keeps the current and next states separate and avoids mixing values from different times.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What if no event is possible?</h2>
+<div class="zero-box">
+<p>If &#92;(a_0=0&#92;), the current state is absorbing:</p>
+<ul>
+<li>there is no finite waiting time;</li>
+<li>no event type can be normalised or selected; and</li>
+<li>the state remains unchanged indefinitely.</li>
+</ul>
+</div>
+<p>A robust function should detect this case before calculating &#92;(-&#92;log(U_1)/a_0&#92;).</p>
+</section>
+
+<section class="lesson-section">
+<h2>Validation after the transition</h2>
+<div class="validation-grid">
+<div class="validation-card"><strong>Non-negative counts</strong>No compartment may fall below zero.</div>
+<div class="validation-card"><strong>Population conservation</strong>The next counts must still sum to &#92;(N&#92;).</div>
+<div class="validation-card"><strong>Increasing time</strong>For &#92;(a_0&gt;0&#92;), the generated event time must not precede the current time.</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>Click <strong>Run code</strong> to perform one complete event. The result shows rates, two random numbers, waiting time, selected event, event time and before/after state.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>One complete SEIR CTMC event</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def one_seir_ctmc_event(
+    time, S, E, I, R, beta, sigma, gamma, rng
+):
+    N = S + E + I + R
+
+    # All rates use the same current state
+    infection_rate = beta * S * I / N
+    progression_rate = sigma * E
+    recovery_rate = gamma * I
+
+    rates = np.array([
+        infection_rate,
+        progression_rate,
+        recovery_rate
+    ])
+
+    if (rates &lt; 0).any():
+        raise ValueError("Event rates cannot be negative.")
+
+    total_rate = rates.sum()
+
+    if total_rate == 0:
+        return {
+            "absorbing": True,
+            "time": time,
+            "waiting_time": float("inf"),
+            "event": "no possible event",
+            "rates": rates,
+            "probabilities": np.zeros(3),
+            "u_time": None,
+            "u_event": None,
+            "next_state": (S, E, I, R)
+        }
+
+    probabilities = rates / total_rate
+
+    # Independent random draw 1: waiting time
+    u_time = 1.0 - rng.random()
+    waiting_time = -np.log(u_time) / total_rate
+    next_time = time + waiting_time
+
+    # Independent random draw 2: event type
+    u_event = rng.random()
+    infection_end = probabilities[0]
+    progression_end = probabilities[0] + probabilities[1]
+
+    if u_event &lt; infection_end:
+        event = "infection"
+        next_S, next_E, next_I, next_R = (
+            S - 1, E + 1, I, R
+        )
+    elif u_event &lt; progression_end:
+        event = "progression"
+        next_S, next_E, next_I, next_R = (
+            S, E - 1, I + 1, R
+        )
+    else:
+        event = "recovery"
+        next_S, next_E, next_I, next_R = (
+            S, E, I - 1, R + 1
+        )
+
+    # Validate the next state
+    if min(next_S, next_E, next_I, next_R) &lt; 0:
+        raise ValueError("A compartment became negative.")
+
+    if next_S + next_E + next_I + next_R != N:
+        raise ValueError("Population conservation failed.")
+
+    if next_time &lt; time:
+        raise ValueError("Event time moved backwards.")
+
+    return {
+        "absorbing": False,
+        "time": next_time,
+        "waiting_time": waiting_time,
+        "event": event,
+        "rates": rates,
+        "probabilities": probabilities,
+        "u_time": u_time,
+        "u_event": u_event,
+        "next_state": (next_S, next_E, next_I, next_R)
+    }
+
+# Current time, state and parameters
+time = 12.0
+S, E, I, R = 990, 5, 5, 0
+beta = 0.30
+sigma = 0.20
+gamma = 0.10
+
+seed = 7
+rng = np.random.default_rng(seed)
+
+result = one_seir_ctmc_event(
+    time, S, E, I, R, beta, sigma, gamma, rng
+)
+
+event_names = ["infection", "progression", "recovery"]
+
+rate_table = pd.DataFrame({
+    "event": event_names,
+    "rate (events/day)": result["rates"],
+    "conditional probability": result["probabilities"]
+})
+
+print("Current-event calculations")
+print(rate_table.round(6).to_string(index=False))
+print()
+print(f"Waiting-time uniform U1: {result['u_time']:.6f}")
+print(f"Event-choice uniform U2: {result['u_event']:.6f}")
+print(f"Waiting time: {result['waiting_time']:.6f} days")
+print(f"Current time: {time:.6f} days")
+print(f"Next event time: {result['time']:.6f} days")
+print(f"Selected event: {result['event']}")
+print()
+
+next_S, next_E, next_I, next_R = result["next_state"]
+
+state_table = pd.DataFrame({
+    "compartment": ["Susceptible", "Exposed", "Infectious", "Removed", "Total"],
+    "before": [S, E, I, R, S + E + I + R],
+    "after": [
+        next_S, next_E, next_I, next_R,
+        next_S + next_E + next_I + next_R
+    ],
+    "change": [
+        next_S - S,
+        next_E - E,
+        next_I - I,
+        next_R - R,
+        (next_S + next_E + next_I + next_R)
+        - (S + E + I + R)
+    ]
+})
+
+print("State update")
+print(state_table.to_string(index=False))
+
+labels = ["Susceptible", "Exposed", "Infectious", "Removed"]
+changes = [
+    next_S - S,
+    next_E - E,
+    next_I - I,
+    next_R - R
+]
+colours = [
+    "#dc2626" if value &lt; 0
+    else "#39815e" if value &gt; 0
+    else "#9ca3af"
+    for value in changes
+]
+
+plt.figure(figsize=(8.5, 4.8))
+bars = plt.bar(labels, changes, color=colours)
+plt.axhline(0, color="black", linewidth=1)
+plt.bar_label(bars, fmt="%+g")
+plt.ylabel("Change caused by one event")
+plt.ylim(-1.4, 1.4)
+plt.title(
+    f"One CTMC state update: {result['event']} "
+    f"at t={result['time']:.3f} days"
+)
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the combined code</h2>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>rates.sum()</code></td><td>Calculates the current total rate.</td></tr>
+<tr><td><code>u_time = 1.0 - rng.random()</code></td><td>Generates a positive uniform value for the logarithm.</td></tr>
+<tr><td><code>u_event = rng.random()</code></td><td>Uses a separate random draw for event selection.</td></tr>
+<tr><td><code>next_time = time + waiting_time</code></td><td>Advances continuous time by the generated waiting duration.</td></tr>
+<tr><td><code>next_S, next_E, next_I, next_R = ...</code></td><td>Assigns the complete next state in the selected branch.</td></tr>
+<tr><td><code>float("inf")</code></td><td>Represents indefinite waiting when no transition rate is positive.</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="lesson-section">
+<h2>Read the result correctly</h2>
+<p>The generated waiting time tells how long the process remains in the current state. At the reported next-event time, the selected event changes the state by one allowed transition.</p>
+<p>Running the code with another seed can change both the waiting time and event type. Neither result alone is an average prediction; each is one valid random CTMC event.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Change the seed and observe that the two random draws and resulting event change.</li>
+<li>Set &#92;(E=0&#92;) while keeping &#92;(I&gt;0&#92;). Confirm that progression probability becomes zero.</li>
+<li>Use &#92;((S,E,I,R)=(990,10,0,0)&#92;). Progression remains possible even when infection and recovery rates are zero.</li>
+<li>Use &#92;((S,E,I,R)=(990,0,0,10)&#92;). Confirm that the function reports an absorbing state rather than dividing by zero.</li>
+<li>Temporarily reuse <code>u_time</code> as <code>u_event</code>, then restore the independent draw and explain why coupling them is inappropriate.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has—and has not—done</h2>
+<div class="summary-box"><p><strong>You can now:</strong></p><ul>
+<li>calculate all rates from one current state;</li>
+<li>generate one exponential waiting time;</li>
+<li>select one event using an independent uniform draw;</li>
+<li>advance continuous time and update the state;</li>
+<li>handle absorbing states; and</li>
+<li>validate population counts and time direction.</li>
+</ul><p><strong>Not yet:</strong> the mechanism has been executed only once. Lesson 6 repeats it, recalculates rates after every jump and stores a complete Gillespie trajectory.</p></div>
+</section>
+
+<nav class="lesson-nav"><a href="../selecting-events/">← Previous lesson</a><a href="../gillespie-direct-algorithm/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
