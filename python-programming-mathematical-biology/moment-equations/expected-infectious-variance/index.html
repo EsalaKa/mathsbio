@@ -46,8 +46,8 @@ cv_I = np.divide(
 peak_mean_index = np.argmax(mean_I)
 peak_variance_index = np.argmax(variance_I)
 
-print(f"Peak mean: {mean_I[peak_mean_index]:.3f}")
-print(f"Time of peak mean: {times[peak_mean_index]:.3f}")
+print(f"Maximum mean in window: {mean_I[peak_mean_index]:.3f}")
+print(f"Time of maximum mean in window: {times[peak_mean_index]:.3f}")
 print(f"Peak variance: {variance_I[peak_variance_index]:.3f}")
 print(f"Time of peak variance: {times[peak_variance_index]:.3f}")
 print()
@@ -96,4 +96,4 @@ plt.grid(alpha=0.25)
 plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
 <section class="lesson-section"><h2>Mean ± SD is not automatically a probability interval</h2><p>For a normal distribution, approximately 68% lies within one standard deviation of the mean. Epidemic distributions may be skewed, bounded or contain extinction mass, so this interpretation must not be assumed from moments alone.</p></section>
 <section class="lesson-section"><h2>Biological meaning</h2><p>A high expected infectious population suggests high average burden. A high variance means scenarios with the same parameters can differ substantially. The timing of maximum uncertainty can be different from the timing of maximum expected burden.</p></section>
-<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now interpret expected prevalence, variance, standard deviation and relative variability, identify their peak times and avoid presenting a mean–SD display as an exact probability band.</p></div></section><nav class="lesson-nav"><a href="../solving-moment-equations/">← Previous lesson</a><a href="../moments-versus-simulations/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now interpret expected prevalence, variance, standard deviation and relative variability, identify maxima within a stated observation window and avoid presenting a mean–SD display as an exact probability band.</p></div></section><nav class="lesson-nav"><a href="../solving-moment-equations/">← Previous lesson</a><a href="../moments-versus-simulations/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
