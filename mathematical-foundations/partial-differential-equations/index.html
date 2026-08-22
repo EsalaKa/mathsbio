@@ -1,1 +1,44 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Partial differential equations | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Mathematical Foundations</a><h1 class="section-title">Partial differential equations</h1></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Learn how partial differential equations represent biological change through both time and space.">
+<link rel="canonical" href="https://mathsbio.com/mathematical-foundations/partial-differential-equations/">
+<title>Partial differential equations | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a><a href="../">Foundations</a></nav></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Mathematical Foundations</a>
+<p class="section-number">01 · Lesson 04</p>
+<h1 class="section-title">Partial differential equations</h1>
+<p class="lesson-intro">An ordinary differential equation follows change through one independent variable, usually time. A partial differential equation, or PDE, can follow a biological quantity through time and space simultaneously.</p>
+
+<section class="lesson-section"><h2>Scenario: a chemical signal spreads through tissue</h2><div class="scenario-box"><p>Cells release a signalling molecule near the centre of a tissue. At first, its concentration is high near the source and low farther away. Molecules move randomly, so the concentration spreads outward while degradation may remove some signal.</p></div><p>Let &#92;(u(x,t)&#92;) be concentration at position &#92;(x&#92;) and time &#92;(t&#92;). Unlike &#92;(A(t)&#92;) in the ODE lesson, this state depends on two independent variables.</p></section>
+
+<section class="lesson-section"><h2>Partial derivatives</h2><p>The time derivative</p><div class="math-box formula-line">&#92;[&#92;frac{&#92;partial u}{&#92;partial t}&#92;]</div><p>measures how concentration changes with time at a fixed position. The spatial derivative</p><div class="math-box formula-line">&#92;[&#92;frac{&#92;partial u}{&#92;partial x}&#92;]</div><p>measures how concentration changes with position at a fixed time. The symbol &#92;(&#92;partial&#92;) indicates that the function has more than one independent variable.</p><p>The second spatial derivative, &#92;(&#92;partial^2u/&#92;partial x^2&#92;), measures spatial curvature. It compares the local concentration with neighbouring concentrations and is central to diffusion.</p></section>
+
+<section class="lesson-section"><h2>The diffusion equation</h2><p>A basic one-dimensional diffusion model is</p><div class="math-box formula-line">&#92;[&#92;frac{&#92;partial u}{&#92;partial t}=D&#92;frac{&#92;partial^2u}{&#92;partial x^2},&#92;]</div><p>where &#92;(D&gt;0&#92;) is the diffusion coefficient. If distance is measured in millimetres and time in hours, &#92;(D&#92;) has units mm&#92;(^2&#92;) per hour.</p><div class="interpretation-box"><p>Diffusion moves material down concentration gradients. Peaks tend to flatten and the distribution tends to spread. Diffusion redistributes material; it does not create directed movement toward a biological target.</p></div></section>
+
+<section class="lesson-section"><h2>Flux and conservation</h2><p>Flux describes the amount crossing a unit boundary per unit time. Fick’s law gives</p><div class="math-box formula-line">&#92;[J=-D&#92;frac{&#92;partial u}{&#92;partial x}.&#92;]</div><p>The minus sign means movement is from higher concentration toward lower concentration. Local conservation states that concentration changes when flux enters or leaves:</p><div class="math-box formula-line">&#92;[&#92;frac{&#92;partial u}{&#92;partial t}=-&#92;frac{&#92;partial J}{&#92;partial x}.&#92;]</div><p>Substituting Fick’s law produces the diffusion equation when &#92;(D&#92;) is constant.</p></section>
+
+<section class="lesson-section"><h2>Initial and boundary conditions</h2><p>A PDE needs more information than the equation alone. An initial condition specifies the starting spatial profile:</p><div class="math-box formula-line">&#92;[u(x,0)=u_0(x).&#92;]</div><p>Boundary conditions describe what happens at the edges of the spatial domain.</p><table class="result-table"><thead><tr><th>Boundary condition</th><th>Example</th><th>Possible meaning</th></tr></thead><tbody><tr><td>Fixed value</td><td>&#92;(u(0,t)=c&#92;)</td><td>Concentration maintained at an edge</td></tr><tr><td>No flux</td><td>&#92;(&#92;partial u/&#92;partial x=0&#92;)</td><td>Reflecting or impermeable boundary</td></tr><tr><td>Periodic</td><td>&#92;(u(0,t)=u(L,t)&#92;)</td><td>Opposite edges are treated as connected</td></tr></tbody></table><p>The same PDE can produce different solutions under different initial or boundary conditions.</p></section>
+
+<section class="lesson-section"><h2>Reaction–diffusion equations</h2><p>Biological quantities may also be produced, removed or transformed locally. Adding a reaction term gives</p><div class="math-box formula-line">&#92;[&#92;frac{&#92;partial u}{&#92;partial t}=D&#92;frac{&#92;partial^2u}{&#92;partial x^2}+f(u).&#92;]</div><p>For signal degradation at rate &#92;(k&#92;), &#92;(f(u)=-ku&#92;). For local logistic population growth, &#92;(f(u)=ru(1-u/K)&#92;). Diffusion represents spatial redistribution; &#92;(f(u)&#92;) represents local biological change.</p><p>Multiple interacting species produce coupled reaction–diffusion systems. These can describe invasion fronts, spatial epidemics and biological pattern formation, topics developed later in Spatial Mathematical Biology.</p></section>
+
+<section class="lesson-section"><h2>Higher-dimensional space</h2><p>In two or three spatial dimensions, diffusion uses the Laplacian:</p><div class="math-box formula-line">&#92;[&#92;frac{&#92;partial u}{&#92;partial t}=D&#92;nabla^2u+f(u).&#92;]</div><p>In Cartesian coordinates, &#92;(&#92;nabla^2u&#92;) is the sum of the second derivatives in each spatial direction. The domain may represent a rectangular habitat, a tissue image or a three-dimensional organ, but its geometry and boundaries must be declared.</p></section>
+
+<section class="lesson-section"><h2>How PDE solutions are represented</h2><p>A PDE solution is a function of space and time. It may be displayed as:</p><ul><li>spatial profiles at selected times;</li><li>a colour map with position and time on the axes;</li><li>a surface plot;</li><li>an animation of spatial change; or</li><li>summary quantities such as front position or total mass.</li></ul><p>Most realistic biological PDEs require numerical approximation. The spatial domain is divided into grid cells or finite elements, and the resulting discrete equations are advanced through time.</p></section>
+
+<section class="lesson-section"><h2>Conditions and limitations</h2><ul><li>The state, spatial domain, geometry, units and time interval must be defined.</li><li>Initial and boundary conditions are part of the model, not optional numerical details.</li><li>Diffusion assumes movement can be approximated as continuous random spreading.</li><li>A constant diffusion coefficient assumes spatially uniform mobility.</li><li>Numerical accuracy depends on spatial resolution, time-step choice and method.</li><li>Continuum concentration or density may be unsuitable when very small numbers of individuals or molecules dominate behaviour.</li></ul></section>
+
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now distinguish ODEs from PDEs, interpret partial derivatives, diffusion and flux, explain why initial and boundary conditions are required, and separate spatial redistribution from local biological reactions.</p></div></section>
+<nav class="lesson-nav"><a href="../ordinary-differential-equations/">← Previous lesson</a><a href="../difference-equations/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
