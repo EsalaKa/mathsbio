@@ -1,1 +1,100 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Second moments, variance and covariance in Python for mathematical biology."><title>Second moments, variance and covariance | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">03</p><h1 class="section-title">Second moments, variance and covariance</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Understand epidemic second moments, variance and covariance with simulations in Python."><title>Second moments, variance and covariance | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">03</p><h1 class="section-title">Second moments, variance and covariance</h1><p class="lesson-intro">The mean describes centre; second moments describe spread and joint variation between biological quantities.</p>
+<section class="lesson-section"><h2>Why the mean is insufficient</h2><p>Two epidemic distributions can have the same mean infectious count but very different spreads. The second raw moment is &#92;(&#92;mathbb E[X^2]&#92;), while variance is</p>
+<div class="math-box">&#92;[&#92;operatorname{Var}(X)=&#92;mathbb E[X^2]-(&#92;mathbb E[X])^2.&#92;]</div>
+<p>Variance is measured in squared units; standard deviation is its square root and uses the original units.</p></section>
+<section class="lesson-section"><h2>Covariance connects two variables</h2>
+<div class="math-box">&#92;[&#92;operatorname{Cov}(X,Y)=&#92;mathbb E[XY]-&#92;mathbb E[X]&#92;mathbb E[Y].&#92;]</div>
+<p>Positive covariance means above-average values tend to occur together. Negative covariance means one tends to be above average when the other is below average. Zero covariance does not generally prove independence.</p></section>
+<section class="lesson-section"><h2>Biological scenario</h2><p>For an SIR epidemic, record susceptible and infectious populations on day 25. Infection transfers people from &#92;(S&#92;) to &#92;(I&#92;), so the two quantities may be negatively associated across epidemic histories.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Second moments and covariance</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def sir_state_at_time(rng, N, I0, beta, gamma, T):
+    S, I, R = N - I0, I0, 0
+    time = 0.0
+
+    while I > 0 and time < T:
+        infection_rate = beta * S * I / N
+        recovery_rate = gamma * I
+        total_rate = infection_rate + recovery_rate
+        wait = rng.exponential(1 / total_rate)
+
+        if time + wait > T:
+            break
+
+        time += wait
+        if rng.random() < infection_rate / total_rate:
+            S -= 1
+            I += 1
+        else:
+            I -= 1
+            R += 1
+
+    return S, I
+
+M = 4000
+rng = np.random.default_rng(230)
+sample = np.array([
+    sir_state_at_time(rng, 200, 3, 0.25, 0.10, 25)
+    for _ in range(M)
+])
+S_sample = sample[:, 0]
+I_sample = sample[:, 1]
+
+mean_S = S_sample.mean()
+mean_I = I_sample.mean()
+second_S = np.mean(S_sample ** 2)
+second_I = np.mean(I_sample ** 2)
+variance_S = S_sample.var(ddof=1)
+variance_I = I_sample.var(ddof=1)
+covariance_SI = np.cov(S_sample, I_sample, ddof=1)[0, 1]
+correlation_SI = np.corrcoef(S_sample, I_sample)[0, 1]
+
+summary = pd.DataFrame({
+    "quantity": [
+        "Mean S", "Mean I",
+        "Second raw moment of S",
+        "Second raw moment of I",
+        "Sample variance of S",
+        "Sample variance of I",
+        "Sample covariance Cov(S,I)",
+        "Sample correlation Corr(S,I)"
+    ],
+    "value": [
+        mean_S, mean_I, second_S, second_I,
+        variance_S, variance_I,
+        covariance_SI, correlation_SI
+    ]
+})
+
+print(summary.round(4).to_string(index=False))
+
+plt.figure(figsize=(7.5, 5.5))
+plt.scatter(S_sample, I_sample,
+            s=10, alpha=0.22, color="#2563eb")
+plt.axvline(mean_S, color="#174c34", linestyle="--")
+plt.axhline(mean_I, color="#b42318", linestyle="--")
+plt.xlabel("Susceptible population on day 25")
+plt.ylabel("Infectious population on day 25")
+plt.title("Joint sample reveals dependence between S and I")
+plt.grid(alpha=0.2)
+plt.tight_layout()
+
+covariance_matrix = np.cov(sample.T, ddof=1)
+plt.figure(figsize=(5.8, 4.8))
+image = plt.imshow(covariance_matrix, cmap="RdBu_r")
+plt.colorbar(image, label="Sample covariance")
+plt.xticks([0, 1], ["S", "I"])
+plt.yticks([0, 1], ["S", "I"])
+for row in range(2):
+    for column in range(2):
+        plt.text(column, row,
+                 f"{covariance_matrix[row, column]:.1f}",
+                 ha="center", va="center")
+plt.title("Covariance matrix on day 25")
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Raw moment versus central moment</h2><table><thead><tr><th>Quantity</th><th>Centred?</th><th>Purpose</th></tr></thead><tbody><tr><td>&#92;(&#92;mathbb E[X^2]&#92;)</td><td>No</td><td>Second raw moment used in moment equations.</td></tr><tr><td>&#92;(&#92;operatorname{Var}(X)&#92;)</td><td>Yes</td><td>Spread around the mean.</td></tr><tr><td>&#92;(&#92;mathbb E[XY]&#92;)</td><td>No</td><td>Mixed raw moment.</td></tr><tr><td>&#92;(&#92;operatorname{Cov}(X,Y)&#92;)</td><td>Yes</td><td>Joint variation around both means.</td></tr></tbody></table></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now distinguish second raw moments from variance, calculate covariance and correlation from paired epidemic samples, and interpret their biological signs without claiming that covariance proves causation.</p></div></section><nav class="lesson-nav"><a href="../expectation-sample-mean/">← Previous lesson</a><a href="../monte-carlo-moments/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
