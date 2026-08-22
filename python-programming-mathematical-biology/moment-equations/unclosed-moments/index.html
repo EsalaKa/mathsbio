@@ -1,1 +1,95 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Why nonlinear models produce unclosed moments in Python for mathematical biology."><title>Why nonlinear models produce unclosed moments | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">07</p><h1 class="section-title">Why nonlinear models produce unclosed moments</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Understand why nonlinear stochastic SIS models generate an unclosed hierarchy of moments."><title>Why nonlinear models produce unclosed moments | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">07</p><h1 class="section-title">Why nonlinear models produce unclosed moments</h1><p class="lesson-intro">Nonlinear biological interactions make lower-moment equations depend on higher moments, creating an infinite hierarchy.</p>
+<section class="lesson-section"><h2>Nonlinear SIS infection rate</h2><div class="math-box">&#92;[b(I)=&#92;beta&#92;frac{(N-I)I}{N}=&#92;beta I-&#92;frac{&#92;beta}{N}I^2,&#92;qquad d(I)=&#92;gamma I.&#92;]</div>
+<p>The product &#92;((N-I)I&#92;) represents susceptible–infectious contact and makes the rate nonlinear.</p></section>
+<section class="lesson-section"><h2>First moment requires the second moment</h2>
+<div class="math-box">&#92;[
+&#92;frac{dm_1}{dt}
+=
+(&#92;beta-&#92;gamma)m_1-&#92;frac{&#92;beta}{N}m_2.
+&#92;]</div>
+<p>The first-moment equation is not closed because knowing &#92;(m_1&#92;) alone does not determine &#92;(m_2&#92;).</p></section>
+<section class="lesson-section"><h2>Second moment requires the third moment</h2>
+<div class="math-box">&#92;[
+&#92;frac{dm_2}{dt}
+=
+&#92;left[2(&#92;beta-&#92;gamma)-&#92;frac{&#92;beta}{N}&#92;right]m_2
+-&#92;frac{2&#92;beta}{N}m_3
++(&#92;beta+&#92;gamma)m_1.
+&#92;]</div>
+<p>Deriving &#92;(m_3'&#92;) introduces &#92;(m_4&#92;), and so on. This is the moment hierarchy.</p></section>
+<section class="lesson-section"><h2>Why replacing &#92;(&#92;mathbb E[I^2]&#92;) by &#92;(&#92;mathbb E[I]^2&#92;) is an assumption</h2>
+<div class="math-box">&#92;[&#92;mathbb E[I^2]=&#92;operatorname{Var}(I)+&#92;mathbb E[I]^2.&#92;]</div>
+<p>Therefore &#92;(&#92;mathbb E[I^2]=&#92;mathbb E[I]^2&#92;) holds only when variance is zero. Using it in a stochastic epidemic discards distributional spread.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Demonstrating the closure gap</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+N, I0 = 100, 5
+beta, gamma = 0.25, 0.15
+grid = np.linspace(0, 30, 61)
+M = 4000
+rng = np.random.default_rng(270)
+
+def path_on_grid():
+    I = I0
+    time = 0.0
+    event_times = [0.0]
+    values = [I]
+    while I > 0 and time < grid[-1]:
+        b = beta * (N - I) * I / N
+        d = gamma * I
+        wait = rng.exponential(1 / (b + d))
+        if time + wait > grid[-1]:
+            break
+        time += wait
+        I += 1 if rng.random() < b / (b + d) else -1
+        event_times.append(time)
+        values.append(I)
+    positions = np.searchsorted(
+        event_times, grid, side="right"
+    ) - 1
+    return np.array(values)[positions]
+
+paths = np.array([path_on_grid() for _ in range(M)])
+m1 = paths.mean(axis=0)
+m2 = np.mean(paths ** 2, axis=0)
+variance = paths.var(axis=0, ddof=0)
+
+exact_first_derivative = (
+    (beta - gamma) * m1 - beta * m2 / N
+)
+mean_field_derivative = (
+    (beta - gamma) * m1 - beta * m1 ** 2 / N
+)
+
+selected = [0, 10, 20, 30]
+idx = [np.argmin(np.abs(grid - t)) for t in selected]
+table = pd.DataFrame({
+    "time": selected,
+    "m1": m1[idx],
+    "m2": m2[idx],
+    "m1 squared": (m1 ** 2)[idx],
+    "variance": variance[idx],
+    "exact moment drift": exact_first_derivative[idx],
+    "mean-field drift": mean_field_derivative[idx]
+})
+print(table.round(3).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.1))
+plt.plot(grid, m2, label="m2 = E[I²]",
+         color="#b42318")
+plt.plot(grid, m1 ** 2, "--",
+         label="m1² = E[I]²", color="#174c34")
+plt.fill_between(grid, m1 ** 2, m2,
+                 color="#f2c7c2", alpha=0.55,
+                 label="Difference = variance")
+plt.xlabel("Time")
+plt.ylabel("Moment value")
+plt.title("Non-zero variance creates a closure gap")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Exact hierarchy versus approximation</h2><p>The unclosed equations are exact statements about the CTMC moments. The difficulty is that a finite ODE system cannot contain infinitely many moments. Closing the system requires an additional distributional or factorisation assumption, introduced next.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now identify how nonlinear rates raise moment order, write the first two SIS moment equations, recognise the infinite hierarchy and explain why factorising a higher moment is an approximation.</p></div></section><nav class="lesson-nav"><a href="../second-moment-equations/">← Previous lesson</a><a href="../moment-closure/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
