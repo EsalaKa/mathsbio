@@ -1,1 +1,79 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Moment-closure approximations and assumptions in Python for mathematical biology."><title>Moment-closure approximations and assumptions | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">08</p><h1 class="section-title">Moment-closure approximations and assumptions</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Understand and test moment-closure approximations for nonlinear epidemic models."><title>Moment-closure approximations and assumptions | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">08</p><h1 class="section-title">Moment-closure approximations and assumptions</h1><p class="lesson-intro">Moment closure replaces an unknown higher moment with an explicit approximation based on retained lower moments.</p>
+<section class="lesson-section"><h2>What closure does</h2><p>A closure replaces an unknown higher moment by a function of retained lower moments:</p>
+<div class="math-box">&#92;[m_3&#92;approx C(m_1,m_2).&#92;]</div>
+<p>This converts an infinite hierarchy into a finite ODE system. The resulting equations are approximate even when the original moment identities were exact.</p></section>
+<section class="lesson-section"><h2>Common second-order closures</h2>
+<table><thead><tr><th>Closure</th><th>Approximation</th><th>Underlying idea</th></tr></thead><tbody>
+<tr><td>Zero-variance or mean-field</td><td>&#92;(m_2&#92;approx m_1^2&#92;)</td><td>Distribution concentrated at its mean.</td></tr>
+<tr><td>Normal third-moment closure</td><td>&#92;(m_3&#92;approx3m_1m_2-2m_1^3&#92;)</td><td>Third central moment is zero.</td></tr>
+<tr><td>Lognormal closure</td><td>&#92;(m_3&#92;approx m_2^3/m_1^3&#92;)</td><td>Positive state approximated by a lognormal distribution.</td></tr>
+</tbody></table>
+<p>The lognormal expression requires &#92;(m_1&gt;0&#92;). None is universally accurate.</p></section>
+<section class="lesson-section"><h2>Assumptions must match biology</h2><p>Near extinction, epidemic distributions can have a point mass at zero and a separate group of large outbreaks. Such a distribution is neither normal nor well represented by a single narrow peak. Closure accuracy can therefore change through time.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2><p>Use CTMC samples to compare normal and lognormal approximations with the empirical third moment.</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Testing moment closures</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+N, I0 = 100, 5
+beta, gamma = 0.25, 0.15
+grid = np.linspace(0, 30, 31)
+M = 6000
+rng = np.random.default_rng(280)
+
+def path_on_grid():
+    I, time = I0, 0.0
+    event_times, values = [0.0], [I]
+    while I > 0 and time < grid[-1]:
+        b = beta * (N - I) * I / N
+        d = gamma * I
+        wait = rng.exponential(1 / (b + d))
+        if time + wait > grid[-1]:
+            break
+        time += wait
+        I += 1 if rng.random() < b / (b + d) else -1
+        event_times.append(time)
+        values.append(I)
+    pos = np.searchsorted(event_times, grid, side="right") - 1
+    return np.array(values)[pos]
+
+paths = np.array([path_on_grid() for _ in range(M)])
+m1 = np.mean(paths, axis=0)
+m2 = np.mean(paths ** 2, axis=0)
+m3 = np.mean(paths ** 3, axis=0)
+
+normal_m3 = 3 * m1 * m2 - 2 * m1 ** 3
+lognormal_m3 = np.where(
+    m1 > 0, m2 ** 3 / m1 ** 3, np.nan
+)
+
+normal_relative_error = np.abs(normal_m3 - m3) / m3
+lognormal_relative_error = np.abs(lognormal_m3 - m3) / m3
+
+selected = [0, 5, 10, 20, 30]
+table = pd.DataFrame({
+    "time": selected,
+    "empirical m3": m3[selected],
+    "normal closure": normal_m3[selected],
+    "lognormal closure": lognormal_m3[selected],
+    "normal relative error": normal_relative_error[selected],
+    "lognormal relative error": lognormal_relative_error[selected]
+})
+print(table.round(4).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.1))
+plt.plot(grid, m3, color="black",
+         linewidth=2, label="Empirical m3")
+plt.plot(grid, normal_m3, "--",
+         label="Normal closure")
+plt.plot(grid, lognormal_m3, ":",
+         linewidth=2, label="Lognormal closure")
+plt.xlabel("Time")
+plt.ylabel("Third raw moment")
+plt.title("Closure accuracy changes through time")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>How to justify a closure</h2><ol><li>State the formula and distributional assumption.</li><li>Check whether it preserves biologically necessary quantities.</li><li>Compare closed-moment solutions with simulation moments.</li><li>Test several parameter regimes and initial states.</li><li>Report where the approximation fails.</li></ol></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now explain why closure is needed, distinguish common closures, identify their assumptions and evaluate them against simulated higher moments rather than treating closure as an exact identity.</p></div></section><nav class="lesson-nav"><a href="../unclosed-moments/">← Previous lesson</a><a href="../programming-moment-odes/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
