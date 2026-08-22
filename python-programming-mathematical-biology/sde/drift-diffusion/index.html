@@ -1,1 +1,81 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Drift, diffusion and biological meaning in Python for mathematical biology."><title>Drift, diffusion and biological meaning | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">02</p><h1 class="section-title">Drift, diffusion and biological meaning</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Interpret SDE drift and diffusion biologically and numerically."><title>Drift, diffusion and biological meaning | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">02</p><h1 class="section-title">Drift, diffusion and biological meaning</h1><p class="lesson-intro">Every SDE step combines a predictable local tendency with a random fluctuation. These two contributions have different mathematical and biological roles.</p>
+<section class="lesson-section"><h2>The general SDE</h2><div class="math-box">&#92;[dX(t)=&#92;underbrace{f(X(t))dt}_{&#92;text{drift change}}+&#92;underbrace{g(X(t))dW(t)}_{&#92;text{diffusion change}}.&#92;]</div>
+<p>The drift coefficient &#92;(f&#92;) gives the local expected rate of change. The diffusion coefficient &#92;(g&#92;) controls the size of random fluctuations; it is not itself the random number.</p></section>
+<section class="lesson-section"><h2>Biological derivation from infection and recovery</h2>
+<p>For an SIS infectious count, let infection and recovery event rates be &#92;(a_1&#92;) and &#92;(a_2&#92;). Infection changes &#92;(I&#92;) by +1 and recovery by −1.</p>
+<div class="math-box">&#92;[f(I)=a_1(I)-a_2(I),&#92;qquad g(I)=&#92;sqrt{a_1(I)+a_2(I)}.&#92;]</div>
+<p>The rates subtract in the drift because the events move &#92;(I&#92;) in opposite directions. Their variances add in the diffusion because both random event streams contribute uncertainty.</p></section>
+<section class="lesson-section"><h2>Direction and magnitude are different</h2>
+<table><thead><tr><th>Quantity</th><th>Can be negative?</th><th>Interpretation</th></tr></thead><tbody><tr><td>&#92;(f(I)&#92;)</td><td>Yes</td><td>Expected direction: positive upward, negative downward.</td></tr><tr><td>&#92;(g(I)&#92;)</td><td>Usually chosen non-negative</td><td>Scale of fluctuations.</td></tr><tr><td>&#92;(g(I)dW&#92;)</td><td>Yes</td><td>Realised random change can be positive or negative.</td></tr></tbody></table>
+</section>
+<section class="lesson-section"><h2>Units check</h2><p>If &#92;(I&#92;) is measured in people and time in days, &#92;(f&#92;) has units people/day. Because &#92;(dW&#92;) has units &#92;(&#92;sqrt{&#92;text{day}}&#92;), &#92;(g&#92;) has units people/&#92;(&#92;sqrt{&#92;text{day}}&#92;). Both complete terms have units people.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2><p>At one epidemic state, the drift contribution is fixed while repeated diffusion contributions vary around zero.</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Drift and diffusion at one SIS state</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+N = 1000
+I = 100
+S = N - I
+beta = 0.30
+gamma = 0.10
+dt = 0.10
+repetitions = 10000
+seed = 9
+rng = np.random.default_rng(seed)
+
+infection_rate = beta * S * I / N
+recovery_rate = gamma * I
+
+drift = infection_rate - recovery_rate
+diffusion = np.sqrt(
+    infection_rate + recovery_rate
+)
+
+drift_change = drift * dt
+dW = np.sqrt(dt) * rng.normal(
+    0, 1, size=repetitions
+)
+diffusion_changes = diffusion * dW
+total_changes = drift_change + diffusion_changes
+
+summary = pd.DataFrame({
+    "quantity": [
+        "Drift coefficient f(I)",
+        "Diffusion coefficient g(I)",
+        "Fixed drift change f(I)dt",
+        "Mean diffusion change",
+        "SD diffusion change",
+        "Mean total SDE change"
+    ],
+    "value": [
+        drift,
+        diffusion,
+        drift_change,
+        diffusion_changes.mean(),
+        diffusion_changes.std(ddof=1),
+        total_changes.mean()
+    ]
+})
+
+print(summary.round(4).to_string(index=False))
+
+plt.figure(figsize=(9, 5))
+plt.hist(
+    total_changes, bins=40,
+    color="#79ae90", edgecolor="white"
+)
+plt.axvline(
+    drift_change, color="#b42318",
+    linestyle="--", linewidth=2,
+    label=f"Drift change = {drift_change:.2f}"
+)
+plt.xlabel("SDE change over one interval")
+plt.ylabel("Number of repetitions")
+plt.title("Diffusion spreads changes around the drift")
+plt.legend()
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Conditions and limitations</h2><ul><li>The square-root expression requires non-negative event rates.</li><li>At an absorbing state where all rates vanish, both drift and diffusion vanish.</li><li>A diffusion approximation treats the state as continuous and can produce non-integer values.</li><li>Near small populations or boundaries, a CTMC may represent discrete extinction more faithfully.</li></ul></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now identify drift as expected direction, diffusion as fluctuation scale, derive both from opposing biological event rates, and check their units. The next lesson explains the Brownian increment that supplies the random sign and magnitude.</p></div></section><nav class="lesson-nav"><a href="../deterministic-to-stochastic-change/">← Previous lesson</a><a href="../brownian-motion-increments/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
