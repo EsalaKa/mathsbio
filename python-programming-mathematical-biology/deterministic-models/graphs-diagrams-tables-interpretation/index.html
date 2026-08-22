@@ -1,1 +1,450 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Graphs, flow diagrams, tables and interpretation in Python for mathematical biology."><title>Graphs, flow diagrams, tables and interpretation | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Deterministic Models</a><p class="section-number">14</p><h1 class="section-title">Graphs, flow diagrams, tables and interpretation</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Communicate deterministic epidemic-model structure and results using diagrams, tables, graphs and biological interpretation.">
+<title>Graphs, flow diagrams, tables and interpretation | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.communication-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0}.communication-card{padding:19px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.communication-card span{display:block;margin-bottom:6px;font-size:.77rem;font-weight:700;color:#39815e}.model-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:14px;margin:28px auto;max-width:900px}.flow-compartment{padding:23px 16px;text-align:center;background:#fff;border:2px solid #87b99c;border-radius:12px}.flow-compartment strong{display:block;font-size:1.6rem;color:#174c34}.flow-compartment small{display:block;color:#596a60}.flow-link{text-align:center;color:#176b45;font-weight:700}.flow-link .arrow{display:block;font-size:2rem;line-height:1}.flow-link small{display:block}.purpose-table{width:100%;border-collapse:collapse;background:#fff}.purpose-table th,.purpose-table td{padding:12px 14px;border:1px solid #d6e3db;text-align:left;vertical-align:top}.purpose-table th{background:#eaf4ee;color:#174c34}.interpretation-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0}.interpretation-step{padding:19px;background:#eaf4ee;border-radius:10px}.interpretation-step span{display:block;color:#39815e;font-size:.77rem;font-weight:700}.bad-good{display:grid;grid-template-columns:1fr 1fr;gap:18px}.bad-panel,.good-panel{padding:20px;background:#fff;border-radius:10px}.bad-panel{border:2px solid #d18a8a}.good-panel{border:2px solid #79ad8d}.bad-panel h3{color:#923b3b}.good-panel h3{color:#176b45}.caption-box{padding:20px;background:#f1f8f4;border-left:5px solid #39815e;border-radius:9px}.checklist{columns:2;column-gap:36px}.checklist li{break-inside:avoid;margin-bottom:8px}@media(max-width:800px){.communication-grid,.interpretation-steps,.bad-good{grid-template-columns:1fr}.model-flow{grid-template-columns:1fr}.flow-link .arrow{transform:rotate(90deg)}.checklist{columns:1}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Deterministic Models</a>
+<p class="section-number">14</p>
+<h1 class="section-title">Graphs, flow diagrams, tables and interpretation</h1>
+<p class="lesson-intro">A numerical result is not a complete scientific explanation. A good presentation connects model structure, calculated outcomes, visual patterns, biological meaning and limitations without asking one figure or table to do every job.</p>
+
+<section class="lesson-section">
+<h2>Communication scenario</h2>
+<div class="scenario-box">
+<p>We compare a baseline SIR epidemic with an intervention that reduces &#92;(&#92;beta&#92;) from 0.30 to 0.12 on day 30.</p>
+<p>The task is to communicate the model and results to a reader who needs to understand what was assumed, what changed, what the program calculated and what conclusions are justified.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Four complementary forms of communication</h2>
+<div class="communication-grid">
+<div class="communication-card"><span>STRUCTURE</span><strong>Flow diagram</strong><p>Shows compartments and permitted movements.</p></div>
+<div class="communication-card"><span>EXACT VALUES</span><strong>Table</strong><p>Reports outcomes for direct comparison.</p></div>
+<div class="communication-card"><span>PATTERN</span><strong>Graph</strong><p>Shows change, timing and relationships.</p></div>
+<div class="communication-card"><span>MEANING</span><strong>Interpretation</strong><p>Connects evidence to biology and assumptions.</p></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>1. Draw the model structure</h2>
+<div class="model-flow" role="img" aria-label="Susceptible people become infectious through infection, and infectious people become recovered through recovery">
+<div class="flow-compartment"><strong>S</strong><small>Susceptible</small></div>
+<div class="flow-link"><span class="arrow">→</span><small>infection<br>&#92;(&#92;beta SI/N&#92;)</small></div>
+<div class="flow-compartment"><strong>I</strong><small>Infectious</small></div>
+<div class="flow-link"><span class="arrow">→</span><small>recovery<br>&#92;(&#92;gamma I&#92;)</small></div>
+<div class="flow-compartment"><strong>R</strong><small>Recovered/removed</small></div>
+</div>
+<div class="technical-box">
+<ul>
+<li>Boxes represent model states or compartments.</li>
+<li>Arrows represent permitted flows and show their direction.</li>
+<li>Arrow labels state the biological process and mathematical rate.</li>
+<li>A flow diagram shows model structure; it does not show the numerical size of an epidemic.</li>
+<li>Processes omitted from the diagram—such as births or waning immunity—are not present in this model.</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>2. Choose the right graph for the question</h2>
+<table class="purpose-table">
+<thead><tr><th>Question</th><th>Useful graph</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>How do all compartments change?</td><td>One time-series panel containing &#92;(S(t),I(t),R(t)&#92;)</td><td>Shows population movement and epidemic phases.</td></tr>
+<tr><td>How does intervention alter infectious burden?</td><td>Baseline and intervention &#92;(I(t)&#92;) curves on the same axes</td><td>Supports direct comparison using a common scale.</td></tr>
+<tr><td>How do peak and final outcomes differ?</td><td>Grouped bar chart or exact table</td><td>Summarises selected quantities rather than full trajectories.</td></tr>
+<tr><td>When does the intervention begin?</td><td>Vertical reference line at the intervention time</td><td>Connects a parameter change to the trajectory timeline.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Graph-design rules</h2>
+<div class="bad-good">
+<div class="bad-panel">
+<h3>A difficult graph</h3>
+<ul>
+<li>Missing axis labels or units</li>
+<li>Unexplained colours</li>
+<li>Different scales used for a visual comparison</li>
+<li>Too many overlapping curves</li>
+<li>Title merely says “Graph”</li>
+<li>Interpretation based on visual impression alone</li>
+</ul>
+</div>
+<div class="good-panel">
+<h3>A useful graph</h3>
+<ul>
+<li>Specific title</li>
+<li>Named axes with units</li>
+<li>Readable legend</li>
+<li>Consistent scales</li>
+<li>Reference lines explained</li>
+<li>Exact outcomes also available in a table</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>3. Design an outcome table</h2>
+<p>A table should state the quantity, unit and precision. It should not display unnecessary decimal places.</p>
+<table class="purpose-table">
+<thead><tr><th>Scenario</th><th>Peak infectious (people)</th><th>Peak time (days)</th><th>Outbreak infections (people)</th></tr></thead>
+<tbody>
+<tr><td>Baseline</td><td>Calculated by code</td><td>Calculated by code</td><td>Calculated by code</td></tr>
+<tr><td>Day-30 intervention</td><td>Calculated by code</td><td>Calculated by code</td><td>Calculated by code</td></tr>
+</tbody>
+</table>
+<div class="technical-box">
+<p>Round values only for presentation. Retain the unrounded arrays and outcome values for later calculations.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Run the complete communication example</h2>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Table and multi-panel figure</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+
+def sir_timed_rhs(
+    t,
+    y,
+    beta_before,
+    beta_after,
+    intervention_day,
+    gamma
+):
+    """Return SIR derivatives with a timed beta change."""
+    
+    S, I, R = y
+    N = S + I + R
+    
+    if t &lt; intervention_day:
+        beta = beta_before
+    else:
+        beta = beta_after
+    
+    infection_flow = beta * S * I / N
+    recovery_flow = gamma * I
+    
+    return [
+        -infection_flow,
+        infection_flow - recovery_flow,
+        recovery_flow
+    ]
+
+
+def run_scenario(
+    name,
+    beta_before,
+    beta_after,
+    intervention_day
+):
+    """Solve one scenario and return trajectory and outcomes."""
+    
+    reporting_times = np.linspace(0, 200, 2001)
+    
+    solution = solve_ivp(
+        sir_timed_rhs,
+        t_span=(0, 200),
+        y0=[990, 10, 0],
+        t_eval=reporting_times,
+        args=(
+            beta_before,
+            beta_after,
+            intervention_day,
+            0.1
+        ),
+        rtol=1e-8,
+        atol=1e-10,
+        max_step=0.5
+    )
+    
+    if not solution.success:
+        raise RuntimeError(solution.message)
+    
+    S, I, R = solution.y
+    peak_index = np.argmax(I)
+    
+    return {
+        "name": name,
+        "time": solution.t,
+        "S": S,
+        "I": I,
+        "R": R,
+        "peak_I": I[peak_index],
+        "peak_time": solution.t[peak_index],
+        "outbreak_infections": 10 + 990 - S[-1]
+    }
+
+
+# Baseline keeps beta constant
+baseline = run_scenario(
+    name="Baseline",
+    beta_before=0.30,
+    beta_after=0.30,
+    intervention_day=30
+)
+
+# Intervention changes beta on day 30
+intervention = run_scenario(
+    name="Day-30 intervention",
+    beta_before=0.30,
+    beta_after=0.12,
+    intervention_day=30
+)
+
+scenarios = [baseline, intervention]
+
+# Create an exact outcome table
+results_table = pd.DataFrame({
+    "Scenario": [
+        result["name"]
+        for result in scenarios
+    ],
+    "Peak infectious": [
+        result["peak_I"]
+        for result in scenarios
+    ],
+    "Peak time (days)": [
+        result["peak_time"]
+        for result in scenarios
+    ],
+    "Outbreak infections": [
+        result["outbreak_infections"]
+        for result in scenarios
+    ]
+})
+
+# Add differences relative to baseline
+results_table["Peak reduction"] = (
+    baseline["peak_I"]
+    - results_table["Peak infectious"]
+)
+
+results_table["Infections prevented"] = (
+    baseline["outbreak_infections"]
+    - results_table["Outbreak infections"]
+)
+
+print("Model outcome table")
+print("------------------------------------------------")
+print(
+    results_table.round(2).to_string(index=False)
+)
+
+# Prepare bar-chart data
+peak_values = results_table["Peak infectious"].to_numpy()
+final_values = results_table["Outbreak infections"].to_numpy()
+labels = results_table["Scenario"].tolist()
+x_positions = np.arange(len(labels))
+bar_width = 0.36
+
+# Create three purposeful panels
+fig, axes = plt.subplots(1, 3, figsize=(15, 4.7))
+
+# Panel A: baseline compartments
+axes[0].plot(
+    baseline["time"],
+    baseline["S"],
+    label="Susceptible"
+)
+axes[0].plot(
+    baseline["time"],
+    baseline["I"],
+    label="Infectious"
+)
+axes[0].plot(
+    baseline["time"],
+    baseline["R"],
+    label="Recovered"
+)
+axes[0].set_title("A. Baseline SIR trajectory")
+axes[0].set_xlabel("Time (days)")
+axes[0].set_ylabel("Number of people")
+axes[0].grid(alpha=0.25)
+axes[0].legend(fontsize=8)
+
+# Panel B: infectious comparison
+axes[1].plot(
+    baseline["time"],
+    baseline["I"],
+    label="Baseline",
+    linestyle="-"
+)
+axes[1].plot(
+    intervention["time"],
+    intervention["I"],
+    label="Day-30 intervention",
+    linestyle="--"
+)
+axes[1].axvline(
+    30,
+    color="grey",
+    linestyle=":",
+    label="Intervention begins"
+)
+axes[1].set_title("B. Infectious burden comparison")
+axes[1].set_xlabel("Time (days)")
+axes[1].set_ylabel("Infectious people")
+axes[1].grid(alpha=0.25)
+axes[1].legend(fontsize=8)
+
+# Panel C: selected outcomes
+axes[2].bar(
+    x_positions - bar_width / 2,
+    peak_values,
+    width=bar_width,
+    label="Peak infectious"
+)
+axes[2].bar(
+    x_positions + bar_width / 2,
+    final_values,
+    width=bar_width,
+    label="Outbreak infections"
+)
+axes[2].set_xticks(x_positions)
+axes[2].set_xticklabels(
+    ["Baseline", "Intervention"],
+    rotation=15
+)
+axes[2].set_title("C. Outcome comparison")
+axes[2].set_ylabel("People")
+axes[2].grid(axis="y", alpha=0.25)
+axes[2].legend(fontsize=8)
+
+fig.suptitle(
+    "Deterministic SIR model: baseline and intervention"
+)
+fig.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the table code</h2>
+<table class="purpose-table">
+<thead><tr><th>Code</th><th>Technical meaning</th></tr></thead>
+<tbody>
+<tr><td><code>pd.DataFrame({...})</code></td><td>Creates a labelled rectangular table from columns of equal length.</td></tr>
+<tr><td><code>table["column"]</code></td><td>Selects one named table column.</td></tr>
+<tr><td><code>.round(2)</code></td><td>Creates a displayed version rounded to two decimal places.</td></tr>
+<tr><td><code>.to_string(index=False)</code></td><td>Formats the table as text and hides the automatic row index.</td></tr>
+<tr><td><code>.to_numpy()</code></td><td>Converts a table column into a NumPy array for plotting.</td></tr>
+<tr><td><code>.tolist()</code></td><td>Converts values into an ordinary Python list.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the multi-panel figure</h2>
+<table class="purpose-table">
+<thead><tr><th>Code</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>fig, axes = plt.subplots(1, 3)</code></td><td>Creates one figure containing one row of three plotting areas.</td></tr>
+<tr><td><code>axes[0]</code></td><td>Selects the first plotting area; indexing begins at zero.</td></tr>
+<tr><td><code>linestyle="--"</code></td><td>Uses a dashed line, allowing curves to differ by more than colour.</td></tr>
+<tr><td><code>axvline(30)</code></td><td>Adds a vertical reference line at day 30.</td></tr>
+<tr><td><code>bar(...)</code></td><td>Displays exact outcome categories as rectangular bars.</td></tr>
+<tr><td><code>fig.suptitle(...)</code></td><td>Adds a title applying to the whole figure.</td></tr>
+<tr><td><code>fig.tight_layout()</code></td><td>Adjusts spacing to reduce overlap among labels and panels.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>4. Interpret the evidence systematically</h2>
+<div class="interpretation-steps">
+<div class="interpretation-step"><span>1 STATE</span><strong>What changed?</strong><p>Identify the direction and magnitude using the table.</p></div>
+<div class="interpretation-step"><span>2 LOCATE</span><strong>Where and when?</strong><p>Describe the relevant curve and timing.</p></div>
+<div class="interpretation-step"><span>3 EXPLAIN</span><strong>Why in the model?</strong><p>Connect the pattern to flows and parameters.</p></div>
+<div class="interpretation-step"><span>4 QUALIFY</span><strong>Under what assumptions?</strong><p>State limitations and avoid causal overclaiming.</p></div>
+</div>
+<div class="caption-box">
+<p><strong>Example interpretation structure:</strong> “Under the stated SIR assumptions, reducing &#92;(&#92;beta&#92;) on day 30 lowers the modelled infectious peak and cumulative outbreak infections relative to the baseline. The reduction occurs because the infection flow &#92;(&#92;beta SI/N&#92;) becomes smaller after the intervention. The magnitude depends on the assumed parameter change, timing, homogeneous mixing and fixed recovery rate.”</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Description is not interpretation</h2>
+<div class="bad-good">
+<div class="bad-panel">
+<h3>Description only</h3>
+<p>“The blue line goes up and then comes down. The dashed line is lower.”</p>
+<p>This reports appearance without identifying quantities, numerical evidence, mechanism or assumptions.</p>
+</div>
+<div class="good-panel">
+<h3>Biological interpretation</h3>
+<p>“The infectious population first increases because infection exceeds recovery. After susceptible depletion weakens infection, recovery dominates and the curve declines. The day-30 reduction in &#92;(&#92;beta&#92;) lowers subsequent infection flow, producing a smaller modelled burden.”</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Accessibility and reproducibility</h2>
+<div class="technical-box">
+<ul class="checklist">
+<li>Label every axis and include units.</li>
+<li>Use readable font sizes.</li>
+<li>Do not rely only on colour; use line styles or markers.</li>
+<li>Use the same axis scale for direct comparisons.</li>
+<li>Explain reference lines and shaded regions.</li>
+<li>Provide exact values in a table when precision matters.</li>
+<li>State parameter values and initial conditions.</li>
+<li>Keep the code and model version used to create the figure.</li>
+<li>Give figures and tables informative captions.</li>
+<li>Do not crop axes in ways that exaggerate differences.</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>What must not be concluded</h2>
+<div class="warning-box">
+<p>A deterministic scenario graph does not prove that an intervention caused a real-world reduction. It shows what the specified model predicts under its equations, parameters, initial conditions and intervention assumptions.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try redesigning the communication</h2>
+<div class="experiment-box">
+<p>Change the intervention day from 30 to 50 in the intervention scenario and update the vertical reference line.</p>
+<ol>
+<li>Run the model and inspect the outcome table.</li>
+<li>Decide whether the intervention begins before or after the baseline peak.</li>
+<li>Rewrite the example interpretation using the new evidence.</li>
+<li>Give the figure a new informative overall title.</li>
+<li>Check that the diagram, table, graph and written interpretation remain mutually consistent.</li>
+</ol>
+</div>
+</section>
+</main>
+</body>
+</html>
