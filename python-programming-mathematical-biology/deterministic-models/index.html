@@ -1,1 +1,56 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Part 1: Deterministic Models taught through intuitive, fully explained and workable Python programs."><title>Part 1: Deterministic Models | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Python Programming</a><h1 class="section-title">Part 1: Deterministic Models</h1><div class="topic-grid"><a class="topic-card" href="python-quantities-variables-parameters/"><span class="topic-number">01</span><strong class="topic-name">Python quantities, variables and parameters</strong></a><a class="topic-card" href="sir-compartments-biological-flows/"><span class="topic-number">02</span><strong class="topic-name">SIR compartments and biological flows</strong></a><a class="topic-card" href="deterministic-sir-equations/"><span class="topic-number">03</span><strong class="topic-name">Writing the deterministic SIR equations</strong></a><a class="topic-card" href="initial-conditions-population-conservation/"><span class="topic-number">04</span><strong class="topic-name">Initial conditions and population conservation</strong></a><a class="topic-card" href="time-grids-lists-numpy-arrays/"><span class="topic-number">05</span><strong class="topic-name">Time grids, lists and NumPy arrays</strong></a><a class="topic-card" href="forward-euler-method/"><span class="topic-number">06</span><strong class="topic-name">Forward Euler method from scratch</strong></a><a class="topic-card" href="sir-euler-method/"><span class="topic-number">07</span><strong class="topic-name">Programming the SIR model with Euler’s method</strong></a><a class="topic-card" href="seir-euler-method/"><span class="topic-number">08</span><strong class="topic-name">Programming the SEIR model with Euler’s method</strong></a><a class="topic-card" href="sir-seir-solve-ivp/"><span class="topic-number">09</span><strong class="topic-name">Solving SIR and SEIR with solve_ivp</strong></a><a class="topic-card" href="reusable-epidemic-model-functions/"><span class="topic-number">10</span><strong class="topic-name">Functions for reusable epidemic models</strong></a><a class="topic-card" href="peak-time-final-size/"><span class="topic-number">11</span><strong class="topic-name">Peak size, peak time and final epidemic size</strong></a><a class="topic-card" href="vaccination-time-dependent-interventions/"><span class="topic-number">12</span><strong class="topic-name">Vaccination and time-dependent interventions</strong></a><a class="topic-card" href="parameter-comparisons-sensitivity/"><span class="topic-number">13</span><strong class="topic-name">Parameter comparisons and sensitivity experiments</strong></a><a class="topic-card" href="graphs-diagrams-tables-interpretation/"><span class="topic-number">14</span><strong class="topic-name">Graphs, flow diagrams, tables and interpretation</strong></a></div></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A progressive Python pathway from deterministic epidemic-model meaning to numerical solution, analysis and communication.">
+<title>Part 1: Deterministic Models | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<style>
+.path-intro{max-width:850px;margin-bottom:34px;color:#42564a}.stage{margin:42px 0}.stage:first-of-type{margin-top:24px}.stage-heading{margin:0 0 6px;color:#174c34}.stage-intro{margin:0 0 20px;color:#596a60}.lesson-card-copy{display:flex;flex-direction:column;gap:4px}.lesson-card-copy small{color:#637269;font-weight:400;line-height:1.35}.topic-card{align-items:flex-start}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Python Programming</a>
+<h1 class="section-title">Part 1: Deterministic Models</h1>
+<p class="path-intro">This pathway gives every lesson one main purpose. Begin with biological meaning, then learn numerical solution, and finish with reusable analysis and scientific communication.</p>
+
+<section class="stage">
+<h2 class="stage-heading">Stage A: Represent the biological model</h2>
+<p class="stage-intro">Learn what the compartments mean, how people transfer between them, how flows become equations and how a valid starting state is defined.</p>
+<div class="topic-grid">
+<a class="topic-card" href="python-quantities-variables-parameters/"><span class="topic-number">01</span><span class="lesson-card-copy"><strong>Python quantities, variables and parameters</strong><small>Store biological counts and model parameters in Python.</small></span></a>
+<a class="topic-card" href="sir-compartments-biological-flows/"><span class="topic-number">02</span><span class="lesson-card-copy"><strong>SIR compartments and biological transfers</strong><small>Represent infection and recovery as coordinated integer movements, without rates or differential equations.</small></span></a>
+<a class="topic-card" href="deterministic-sir-equations/"><span class="topic-number">03</span><span class="lesson-card-copy"><strong>Writing the deterministic SIR equations</strong><small>Turn flows in and out into differential equations and Python expressions.</small></span></a>
+<a class="topic-card" href="initial-conditions-population-conservation/"><span class="topic-number">04</span><span class="lesson-card-copy"><strong>Initial conditions and population conservation</strong><small>Validate starting states, counts, proportions and invariants.</small></span></a>
+</div>
+</section>
+
+<section class="stage">
+<h2 class="stage-heading">Stage B: Construct numerical solutions</h2>
+<p class="stage-intro">Prepare numerical storage, learn Euler’s method carefully, apply it to SIR and SEIR, then use an adaptive scientific solver.</p>
+<div class="topic-grid">
+<a class="topic-card" href="time-grids-lists-numpy-arrays/"><span class="topic-number">05</span><span class="lesson-card-copy"><strong>Time grids, lists and NumPy arrays</strong><small>Prepare matched time points and compartment storage.</small></span></a>
+<a class="topic-card" href="forward-euler-method/"><span class="topic-number">06</span><span class="lesson-card-copy"><strong>Forward Euler method from scratch</strong><small>Understand one numerical method using a recovery-only equation.</small></span></a>
+<a class="topic-card" href="sir-euler-method/"><span class="topic-number">07</span><span class="lesson-card-copy"><strong>Programming the SIR model with Euler’s method</strong><small>Combine three coupled equations into one complete trajectory.</small></span></a>
+<a class="topic-card" href="seir-euler-method/"><span class="topic-number">08</span><span class="lesson-card-copy"><strong>Programming the SEIR model with Euler’s method</strong><small>Add exposure, progression and a fourth simultaneous update.</small></span></a>
+<a class="topic-card" href="sir-seir-solve-ivp/"><span class="topic-number">09</span><span class="lesson-card-copy"><strong>Solving SIR and SEIR with solve_ivp</strong><small>Use adaptive library solvers, tolerances and returned solution objects.</small></span></a>
+</div>
+</section>
+
+<section class="stage">
+<h2 class="stage-heading">Stage C: Analyse and communicate results</h2>
+<p class="stage-intro">Organise reusable code, define outcomes precisely, represent interventions, test parameter response and communicate evidence responsibly.</p>
+<div class="topic-grid">
+<a class="topic-card" href="reusable-epidemic-model-functions/"><span class="topic-number">10</span><span class="lesson-card-copy"><strong>Functions for reusable epidemic models</strong><small>Separate equations, simulation and summary responsibilities.</small></span></a>
+<a class="topic-card" href="peak-time-final-size/"><span class="topic-number">11</span><span class="lesson-card-copy"><strong>Peak size, peak time and final epidemic size</strong><small>Define and calculate epidemiological outcomes without confusing related quantities.</small></span></a>
+<a class="topic-card" href="vaccination-time-dependent-interventions/"><span class="topic-number">12</span><span class="lesson-card-copy"><strong>Vaccination and time-dependent interventions</strong><small>Change initial immunity and program a piecewise transmission parameter.</small></span></a>
+<a class="topic-card" href="parameter-comparisons-sensitivity/"><span class="topic-number">13</span><span class="lesson-card-copy"><strong>Parameter comparisons and sensitivity experiments</strong><small>Study exact, local, range-based, interaction and timing sensitivity.</small></span></a>
+<a class="topic-card" href="graphs-diagrams-tables-interpretation/"><span class="topic-number">14</span><span class="lesson-card-copy"><strong>Graphs, flow diagrams, tables and interpretation</strong><small>Choose evidence displays and write biologically meaningful, qualified conclusions.</small></span></a>
+</div>
+</section>
+</main>
+</body>
+</html>

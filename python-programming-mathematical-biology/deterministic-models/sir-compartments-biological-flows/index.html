@@ -3,17 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Learn SIR compartments and biological flows through an interactive Python epidemic example.">
+<meta name="description" content="Learn SIR compartments through simple infection and recovery transfers before introducing rates or equations.">
 <title>SIR compartments and biological flows | MathsBio</title>
 <link rel="stylesheet" href="../../../style.css">
-<script>
-window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};
-</script>
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
 <script defer src="../../../assets/python-runner.js"></script>
 <style>
-.flow-diagram{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:14px;margin:28px auto;max-width:900px}.compartment{padding:22px 16px;text-align:center;background:#fff;border:2px solid #87b99c;border-radius:12px}.compartment strong{display:block;font-size:1.55rem;color:#174c34}.compartment small{display:block;color:#596a60}.flow-arrow{text-align:center;color:#176b45;font-weight:700}.flow-arrow .arrow{display:block;font-size:2rem;line-height:1}.flow-arrow small{display:block;max-width:140px}.equation-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin:20px 0}.equation-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px;text-align:center}.change-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}.change-card{padding:18px;background:#f1f8f4;border-radius:9px;text-align:center}@media(max-width:800px){.flow-diagram{grid-template-columns:1fr}.flow-arrow .arrow{transform:rotate(90deg)}.equation-grid,.change-grid{grid-template-columns:1fr}}
+.flow-diagram{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:14px;margin:28px auto;max-width:900px}.compartment{padding:22px 16px;text-align:center;background:#fff;border:2px solid #87b99c;border-radius:12px}.compartment strong{display:block;font-size:1.55rem;color:#174c34}.compartment small{display:block;color:#596a60}.flow-arrow{text-align:center;color:#176b45;font-weight:700}.flow-arrow .arrow{display:block;font-size:2rem;line-height:1}.transfer-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin:22px 0}.transfer-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.balance-table{width:100%;border-collapse:collapse;background:#fff}.balance-table th,.balance-table td{padding:12px 14px;border:1px solid #d6e3db;text-align:left}.balance-table th{background:#eaf4ee;color:#174c34}.conservation-strip{padding:22px;text-align:center;background:#eaf4ee;border-radius:11px;font-size:1.08rem}.boundary-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}@media(max-width:800px){.flow-diagram,.transfer-grid{grid-template-columns:1fr}.flow-arrow .arrow{transform:rotate(90deg)}}
 </style>
 </head>
 <body>
@@ -21,20 +19,32 @@ window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};
 <main class="section container">
 <a class="back-link" href="../">← Deterministic Models</a>
 <p class="section-number">02</p>
-<h1 class="section-title">SIR compartments and biological flows</h1>
-<p class="lesson-intro">An SIR model does more than store three populations. It describes how people move between the susceptible, infectious and recovered compartments. In this lesson, Python calculates these flows and updates the compartments over one short time step.</p>
+<h1 class="section-title">SIR compartments and biological transfers</h1>
+<p class="lesson-intro">This lesson focuses only on compartments and transfers. We use whole observed infection and recovery events to understand how one biological movement changes two compartment counts. Rates, differential equations and Euler’s method begin in later lessons.</p>
 
 <section class="lesson-section">
 <h2>Biological scenario</h2>
 <div class="scenario-box">
-<p>A closed population contains 990 susceptible people, 10 infectious people and no recovered people. During the epidemic, susceptible people can become infectious and infectious people can recover.</p>
-<p>We want to calculate both flows at the initial state and determine how the three compartments begin to change.</p>
+<p>At the beginning of a short reporting interval, a closed population contains 990 susceptible, 10 infectious and no recovered people.</p>
+<p>During the interval, 3 susceptible people become infectious and 1 infectious person recovers. What are the new compartment counts?</p>
 </div>
 </section>
 
 <section class="lesson-section">
-<h2>The SIR flow diagram</h2>
-<div class="flow-diagram" role="img" aria-label="Susceptible people become infectious, and infectious people recover">
+<h2>The three compartments</h2>
+<table class="balance-table">
+<thead><tr><th>Symbol</th><th>Compartment</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>&#92;(S&#92;)</td><td>Susceptible</td><td>Can become infected.</td></tr>
+<tr><td>&#92;(I&#92;)</td><td>Infectious</td><td>Currently infectious and able to transmit under the model assumptions.</td></tr>
+<tr><td>&#92;(R&#92;)</td><td>Recovered or removed</td><td>No longer participates in transmission in the basic SIR model.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>The permitted biological transfers</h2>
+<div class="flow-diagram" role="img" aria-label="Susceptible people can become infectious, and infectious people can recover">
 <div class="compartment"><strong>S</strong><small>Susceptible</small></div>
 <div class="flow-arrow"><span class="arrow">→</span><small>infection</small></div>
 <div class="compartment"><strong>I</strong><small>Infectious</small></div>
@@ -42,183 +52,167 @@ window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};
 <div class="compartment"><strong>R</strong><small>Recovered</small></div>
 </div>
 <div class="technical-box">
-<ul>
-<li>Infection moves a person from &#92;(S&#92;) to &#92;(I&#92;).</li>
-<li>Recovery moves a person from &#92;(I&#92;) to &#92;(R&#92;).</li>
-<li>No person enters or leaves the population.</li>
-<li>The arrows show biological movement, not movement through physical space.</li>
-</ul>
+<p>The arrows show changes of biological state, not physical movement. This basic model permits only &#92;(S&#92;to I&#92;) through infection and &#92;(I&#92;to R&#92;) through recovery.</p>
 </div>
 </section>
 
 <section class="lesson-section">
-<h2>Mathematical-biology context</h2>
-<p>The infection flow depends on susceptible and infectious people being present. The recovery flow depends on the infectious population.</p>
-<div class="equation-grid">
-<div class="equation-card"><strong>Infection flow</strong>&#92;[&#92;mathcal{F}_{&#92;mathrm{inf}}=&#92;beta&#92;frac{SI}{N}&#92;]</div>
-<div class="equation-card"><strong>Recovery flow</strong>&#92;[&#92;mathcal{F}_{&#92;mathrm{rec}}=&#92;gamma I&#92;]</div>
+<h2>One event changes two compartments</h2>
+<div class="transfer-grid">
+<div class="transfer-card">
+<h3>One infection</h3>
+<p class="formula-line">&#92;[S&#92;to S-1,&#92;qquad I&#92;to I+1.&#92;]</p>
+<p>The same person leaves &#92;(S&#92;) and enters &#92;(I&#92;).</p>
 </div>
-<p>These flows determine the rates of change:</p>
-<div class="change-grid">
-<div class="change-card">&#92;[&#92;frac{dS}{dt}=-&#92;mathcal{F}_{&#92;mathrm{inf}}&#92;]</div>
-<div class="change-card">&#92;[&#92;frac{dI}{dt}=&#92;mathcal{F}_{&#92;mathrm{inf}}-&#92;mathcal{F}_{&#92;mathrm{rec}}&#92;]</div>
-<div class="change-card">&#92;[&#92;frac{dR}{dt}=&#92;mathcal{F}_{&#92;mathrm{rec}}&#92;]</div>
+<div class="transfer-card">
+<h3>One recovery</h3>
+<p class="formula-line">&#92;[I&#92;to I-1,&#92;qquad R&#92;to R+1.&#92;]</p>
+<p>The same person leaves &#92;(I&#92;) and enters &#92;(R&#92;).</p>
 </div>
-<p>The same infection flow is subtracted from &#92;(S&#92;) and added to &#92;(I&#92;). The same recovery flow is subtracted from &#92;(I&#92;) and added to &#92;(R&#92;). Therefore, people are transferred rather than created or destroyed.</p>
+</div>
+<p>This coordinated change is the foundation of compartment modelling.</p>
 </section>
 
 <section class="lesson-section">
-<h2>Programming objective</h2>
-<p>We will calculate the infection and recovery flows, use them to obtain the changes in &#92;(S&#92;), &#92;(I&#92;) and &#92;(R&#92;), and update the population through one time step of length &#92;(&#92;Delta t&#92;).</p>
-</section>
-
-<section class="lesson-section">
-<h2>Build the code step by step</h2>
-
-<div class="step-card">
-<h3>Step 1: Calculate the two biological flows</h3>
-<pre><code>infection_flow = beta * S * I / N
-recovery_flow = gamma * I</code></pre>
-<p class="code-explain">These statements translate the two mathematical flow formulas directly into Python. Descriptive variable names make the biological meaning visible in the program.</p>
-</div>
-
-<div class="step-card">
-<h3>Step 2: Calculate the compartment rates of change</h3>
-<pre><code>dS_dt = -infection_flow
-dI_dt = infection_flow - recovery_flow
-dR_dt = recovery_flow</code></pre>
-<p class="code-explain">The minus sign means that a compartment loses people. A positive contribution means that people enter the compartment.</p>
-</div>
-
-<div class="step-card">
-<h3>Step 3: Convert rates into changes over a short time</h3>
-<pre><code>change_S = dS_dt * dt
-change_I = dI_dt * dt
-change_R = dR_dt * dt</code></pre>
-<p class="code-explain">A rate is multiplied by the time-step length <span class="inline-code">dt</span>. This gives the approximate change during that interval.</p>
-</div>
-
-<div class="step-card">
-<h3>Step 4: Update the compartments</h3>
-<pre><code>S_new = S + change_S
-I_new = I + change_I
-R_new = R + change_R</code></pre>
-<p class="code-explain">The updated value equals the current value plus its approximate change. This is one forward Euler update; the method will be studied carefully in Lesson 6.</p>
-</div>
-</section>
-
-<section class="lesson-section">
-<h2>Run the complete program</h2>
-<p>Change the values if you wish, then select <strong>Run code</strong>. Use a small value such as <span class="inline-code">dt = 0.1</span> because this update approximates continuous change over a short interval.</p>
-
-<div class="python-lab">
-<div class="python-lab-header"><span>Interactive Python</span><span>One SIR flow update</span></div>
-<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code"># Current compartment sizes
-S = 990
-I = 10
-R = 0
-
-# Parameters and time step
-beta = 0.3
-gamma = 0.1
-dt = 0.1
-
-# Total population
-N = S + I + R
-
-# Biological flows at the current state
-infection_flow = beta * S * I / N
-recovery_flow = gamma * I
-
-# Rates of change
-dS_dt = -infection_flow
-dI_dt = infection_flow - recovery_flow
-dR_dt = recovery_flow
-
-# Approximate changes during dt
-change_S = dS_dt * dt
-change_I = dI_dt * dt
-change_R = dR_dt * dt
-
-# Updated compartments
-S_new = S + change_S
-I_new = I + change_I
-R_new = R + change_R
-N_new = S_new + I_new + R_new
-
-# Check population conservation
-assert abs(N_new - N) < 1e-10
-
-# Display the flows
-print("Initial biological flows")
-print("------------------------")
-print(f"Infection flow: {infection_flow:.3f} people/day")
-print(f"Recovery flow:  {recovery_flow:.3f} people/day")
-
-# Display a before-and-after table
-print("\nCompartment   Before     Change      After")
-print("------------------------------------------------")
-print(f"Susceptible  {S:8.3f}  {change_S:9.3f}  {S_new:9.3f}")
-print(f"Infectious   {I:8.3f}  {change_I:9.3f}  {I_new:9.3f}")
-print(f"Recovered    {R:8.3f}  {change_R:9.3f}  {R_new:9.3f}")
-print("------------------------------------------------")
-print(f"Total        {N:8.3f}              {N_new:9.3f}")</textarea>
-<div class="code-controls">
-<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
-<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
-<button class="code-button" type="button" data-action="copy">Copy code</button>
-</div>
-<div class="output-wrap">
-<p class="output-label">Output</p>
-<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
-</div>
-</div>
-</section>
-
-<section class="lesson-section">
-<h2>Expected outcome</h2>
-<table class="result-table">
-<thead><tr><th>Compartment</th><th>Before</th><th>Change over 0.1 day</th><th>After</th></tr></thead>
+<h2>Calculate the interval by hand</h2>
+<p>With 3 infections and 1 recovery:</p>
+<table class="balance-table">
+<thead><tr><th>Compartment</th><th>Before</th><th>Change</th><th>After</th></tr></thead>
 <tbody>
-<tr><td>Susceptible</td><td>990.000</td><td>−0.297</td><td>989.703</td></tr>
-<tr><td>Infectious</td><td>10.000</td><td>+0.197</td><td>10.197</td></tr>
-<tr><td>Recovered</td><td>0.000</td><td>+0.100</td><td>0.100</td></tr>
-<tr><td>Total</td><td>1,000.000</td><td>0</td><td>1,000.000</td></tr>
+<tr><td>Susceptible</td><td>990</td><td>−3</td><td>987</td></tr>
+<tr><td>Infectious</td><td>10</td><td>+3−1</td><td>12</td></tr>
+<tr><td>Recovered</td><td>0</td><td>+1</td><td>1</td></tr>
+<tr><td>Total</td><td>1,000</td><td>0</td><td>1,000</td></tr>
 </tbody>
 </table>
 </section>
 
 <section class="lesson-section">
-<h2>Biological interpretation</h2>
-<div class="interpretation-box">
-<p>At the initial state, the infection flow is 2.97 people per day and the recovery flow is 1 person per day. Over 0.1 day, the model therefore transfers approximately 0.297 people from &#92;(S&#92;) to &#92;(I&#92;) and 0.100 people from &#92;(I&#92;) to &#92;(R&#92;).</p>
-<p>The infectious compartment increases by approximately &#92;(0.297-0.100=0.197&#92;). The total remains 1,000 because each loss from one compartment is an equal gain to another.</p>
-<p>Decimal compartment values are expected in a deterministic model. They represent continuous approximations to population-level behaviour, not literal fractions of an individual event.</p>
+<h2>Translate the transfers into Python</h2>
+<div class="step-card">
+<h3>Step 1: Preserve the before-state</h3>
+<pre><code>S_before = 990
+I_before = 10
+R_before = 0</code></pre>
+<p class="code-explain">The suffix <span class="inline-code">_before</span> makes the time meaning explicit.</p>
+</div>
+<div class="step-card">
+<h3>Step 2: Store the observed transfers</h3>
+<pre><code>new_infections = 3
+new_recoveries = 1</code></pre>
+<p class="code-explain">These are whole event counts supplied for this interval. This lesson does not yet calculate them from rates.</p>
+</div>
+<div class="step-card">
+<h3>Step 3: Calculate all after-values from the same before-state</h3>
+<pre><code>S_after = S_before - new_infections
+I_after = I_before + new_infections - new_recoveries
+R_after = R_before + new_recoveries</code></pre>
+<p class="code-explain">Separate before- and after-names prevent an updated value from being accidentally reused in another calculation.</p>
 </div>
 </section>
 
 <section class="lesson-section">
-<h2>Important model and programming conditions</h2>
-<div class="technical-box">
-<ul>
-<li>&#92;(S&#92;), &#92;(I&#92;) and &#92;(R&#92;) must remain non-negative.</li>
-<li>&#92;(N=S+I+R&#92;) must be conserved in this closed-population model.</li>
-<li>(etageq0), &#92;(&#92;gamma&#92;geq 0&#92;) and &#92;(&#92;Delta t&gt;0&#92;).</li>
-<li>The time step should be sufficiently small for the Euler update to be accurate.</li>
-<li><span class="inline-code">abs(N_new - N) &lt; 1e-10</span> allows for very small floating-point rounding differences.</li>
-</ul>
+<h2>Run the transfer program</h2>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Compartment transfers</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code"># Compartment counts before the interval
+S_before = 990
+I_before = 10
+R_before = 0
+
+# Observed events during the interval
+new_infections = 3
+new_recoveries = 1
+
+# Check whether the transfers are possible
+if new_infections &lt; 0 or new_recoveries &lt; 0:
+    raise ValueError("Event counts cannot be negative.")
+
+if new_infections &gt; S_before:
+    raise ValueError("Infections cannot exceed susceptible people.")
+
+if new_recoveries &gt; I_before:
+    raise ValueError("Recoveries cannot exceed infectious people.")
+
+# Calculate every after-value from the before-state
+S_after = S_before - new_infections
+I_after = (
+    I_before
+    + new_infections
+    - new_recoveries
+)
+R_after = R_before + new_recoveries
+
+# Totals before and after
+N_before = S_before + I_before + R_before
+N_after = S_after + I_after + R_after
+
+# Exact conservation check for integer transfers
+assert N_after == N_before
+
+# Display a before-change-after table
+print("Compartment   Before   Change   After")
+print("--------------------------------------")
+print(
+    f"Susceptible  {S_before:6d} "
+    f"{-new_infections:8d} {S_after:7d}"
+)
+print(
+    f"Infectious   {I_before:6d} "
+    f"{new_infections - new_recoveries:8d} "
+    f"{I_after:7d}"
+)
+print(
+    f"Recovered    {R_before:6d} "
+    f"{new_recoveries:8d} {R_after:7d}"
+)
+print("--------------------------------------")
+print(f"Total        {N_before:6d} {0:8d} {N_after:7d}")</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre></div>
 </div>
 </section>
 
 <section class="lesson-section">
-<h2>Try it yourself</h2>
+<h2>Why the total is conserved</h2>
+<div class="conservation-strip">&#92;[(-3)+(+3-1)+(+1)=0.&#92;]</div>
+<p>Every loss from one compartment is a matching gain to another. Therefore, internal transfers change the distribution of people but not the closed population total.</p>
+</section>
+
+<section class="lesson-section">
+<h2>New programming conditions</h2>
+<table class="balance-table">
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>or</code></td><td>The combined condition is true when at least one connected condition is true.</td></tr>
+<tr><td><code>&gt;</code></td><td>Tests whether the value on the left is greater than the value on the right.</td></tr>
+<tr><td><code>raise ValueError(...)</code></td><td>Stops the program and explains why the supplied transfer is invalid.</td></tr>
+<tr><td><code>assert N_after == N_before</code></td><td>Checks exact conservation because all values here are integer counts.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Boundary of this lesson</h2>
+<div class="boundary-box">
+<p>The values <span class="inline-code">new_infections = 3</span> and <span class="inline-code">new_recoveries = 1</span> are supplied observations. We have not yet asked how a deterministic model calculates flows per unit time.</p>
+<p>Lesson 3 introduces rate formulas and differential equations. Lesson 6 introduces numerical updating through time.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try another interval</h2>
 <div class="experiment-box">
-<p>Change <span class="inline-code">gamma = 0.1</span> to <span class="inline-code">gamma = 0.4</span>.</p>
+<p>Change the event counts to 6 infections and 4 recoveries.</p>
 <ol>
-<li>Predict how the recovery flow will change.</li>
-<li>Predict whether &#92;(I&#92;) will initially increase or decrease.</li>
-<li>Run the program and inspect the before-and-after table.</li>
-<li>Explain why changing recovery affects both &#92;(I&#92;) and &#92;(R&#92;), but not the infection flow at the current state.</li>
+<li>Predict all three after-values.</li>
+<li>Run the code.</li>
+<li>Check that the total remains 1,000.</li>
+<li>Explain why the infectious change is &#92;(+6-4=+2&#92;), not simply +6.</li>
 </ol>
 </div>
 </section>
