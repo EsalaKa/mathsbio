@@ -1,1 +1,113 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Approximate extinction and outbreak probabilities in Python for mathematical biology."><title>Approximate extinction and outbreak probabilities | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">13</p><h1 class="section-title">Approximate extinction and outbreak probabilities</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Approximate epidemic extinction and outbreak probabilities from moments and validate them."><title>Approximate extinction and outbreak probabilities | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">13</p><h1 class="section-title">Approximate extinction and outbreak probabilities</h1><p class="lesson-intro">Mean and variance support probability calculations only after an additional distributional assumption is stated and tested.</p>
+<section class="lesson-section"><h2>Moments do not determine a distribution</h2><p>Knowing only mean and variance is generally insufficient to determine &#92;(&#92;Pr(I=0)&#92;) or &#92;(&#92;Pr(I&#92;ge K)&#92;). A probability calculation requires an additional distributional assumption or a rigorous bound.</p></section>
+<section class="lesson-section"><h2>Normal approximation with continuity correction</h2><p>If &#92;(I(t)&#92;) is approximated by &#92;(N(&#92;mu(t),&#92;sigma^2(t))&#92;), then</p>
+<div class="math-box">&#92;[
+&#92;Pr(I(t)=0)&#92;approx
+&#92;Phi&#92;left(&#92;frac{0.5-&#92;mu(t)}{&#92;sigma(t)}&#92;right),
+&#92;]</div>
+<div class="math-box">&#92;[
+&#92;Pr(I(t)&#92;ge K)&#92;approx
+1-&#92;Phi&#92;left(&#92;frac{K-0.5-&#92;mu(t)}{&#92;sigma(t)}&#92;right).
+&#92;]</div>
+<p>The 0.5 correction maps integer thresholds to intervals on a continuous approximation.</p></section>
+<section class="lesson-section"><h2>Why extinction is particularly difficult</h2><p>An epidemic distribution may have a point mass at zero and a separate continuous-looking group of surviving outbreaks. A single normal distribution has no point mass and permits negative values, so its extinction approximation can be poor.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Moment-based probability approximations</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+from scipy.stats import norm
+
+N, I0 = 100, 5
+beta, gamma = 0.25, 0.15
+outbreak_threshold = 20
+times = np.linspace(0, 30, 61)
+
+def rhs(t, y):
+    m1, m2 = y
+    m3 = 3 * m1 * m2 - 2 * m1 ** 3
+    return [
+        (beta - gamma) * m1 - beta * m2 / N,
+        (2 * (beta - gamma) - beta / N) * m2
+        - 2 * beta * m3 / N
+        + (beta + gamma) * m1
+    ]
+
+sol = solve_ivp(
+    rhs, (0, 30), [I0, I0 ** 2],
+    t_eval=times, rtol=1e-9, atol=1e-11
+)
+mean, second = sol.y
+variance = np.maximum(second - mean ** 2, 0)
+sd = np.sqrt(variance)
+
+normal_extinction = np.zeros_like(mean)
+normal_outbreak = np.zeros_like(mean)
+positive_sd = sd > 0
+
+normal_extinction[positive_sd] = norm.cdf(
+    (0.5 - mean[positive_sd]) / sd[positive_sd]
+)
+normal_outbreak[positive_sd] = 1 - norm.cdf(
+    (outbreak_threshold - 0.5 - mean[positive_sd])
+    / sd[positive_sd]
+)
+normal_extinction[0] = float(I0 == 0)
+normal_outbreak[0] = float(I0 >= outbreak_threshold)
+
+# CTMC benchmark
+rng = np.random.default_rng(300)
+M = 8000
+
+def path():
+    I, time = I0, 0.0
+    event_times, values = [0.0], [I]
+    while I > 0 and time < times[-1]:
+        b = beta * (N - I) * I / N
+        d = gamma * I
+        wait = rng.exponential(1 / (b + d))
+        if time + wait > times[-1]:
+            break
+        time += wait
+        I += 1 if rng.random() < b / (b + d) else -1
+        event_times.append(time)
+        values.append(I)
+    pos = np.searchsorted(event_times, times, side="right") - 1
+    return np.array(values)[pos]
+
+paths = np.array([path() for _ in range(M)])
+empirical_extinction = (paths == 0).mean(axis=0)
+empirical_outbreak = (
+    paths >= outbreak_threshold
+).mean(axis=0)
+
+selected = [5, 10, 20, 30]
+idx = [int(t * 2) for t in selected]
+table = pd.DataFrame({
+    "time": selected,
+    "normal P(extinct)": normal_extinction[idx],
+    "CTMC P(extinct)": empirical_extinction[idx],
+    "normal P(I>=20)": normal_outbreak[idx],
+    "CTMC P(I>=20)": empirical_outbreak[idx]
+})
+print(table.round(4).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.2))
+plt.plot(times, empirical_extinction,
+         color="#2563eb", label="CTMC extinction")
+plt.plot(times, normal_extinction, "--",
+         color="#6b8fc8", label="Normal approximation")
+plt.plot(times, empirical_outbreak,
+         color="#b42318", label="CTMC I ≥ 20")
+plt.plot(times, normal_outbreak, "--",
+         color="#d97706", label="Normal approximation")
+plt.xlabel("Time")
+plt.ylabel("Probability")
+plt.title("Moment-based probabilities require validation")
+plt.ylim(0, 1)
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Time-specific versus ever crossing</h2><p>&#92;(&#92;Pr(I(t)&#92;ge20)&#92;) asks whether prevalence is at least 20 at a particular time. It is not the probability that the path has ever reached 20 by that time. Ever-crossing probabilities depend on the whole path and cannot be recovered from marginal moments alone.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now convert mean and variance into explicitly assumption-dependent probability approximations, apply a continuity correction, validate against CTMC frequencies and distinguish time-specific events from pathwise outbreak events.</p></div></section><nav class="lesson-nav"><a href="../moments-versus-simulations/">← Previous lesson</a><a href="../hospital-capacity-probability/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
