@@ -1,1 +1,300 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Generator matrices and transition structure in Python for mathematical biology."><title>Generator matrices and transition structure | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">10</p><h1 class="section-title">Generator matrices and transition structure</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Build, validate and interpret the generator matrix of a continuous-time Markov-chain SIS epidemic in Python.">
+<title>Generator matrices and transition structure | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.structure{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:22px 0}.structure-card{padding:20px;background:#eaf4ee;border-radius:10px}.structure-card strong{display:block;color:#174c34;margin-bottom:7px}.convention{padding:22px;background:#f1f8f4;border:2px solid #9fc8b1;border-radius:11px}.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{padding:20px;background:#eaf4ee;border-radius:10px}@media(max-width:780px){.structure,.two{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Continuous-Time Markov Chains</a>
+<p class="section-number">10</p>
+<h1 class="section-title">Generator matrices and transition structure</h1>
+<p class="lesson-intro">A generator matrix collects every possible CTMC transition rate into one table. It shows where the process can jump, how quickly it leaves each state, and which states are absorbing.</p>
+
+<section class="lesson-section">
+<h2>From one current state to all possible destinations</h2>
+<p>The preceding lessons generated one random event at a time. A generator matrix gives a global description of the same CTMC: every row represents a current state and every column represents a possible next state.</p>
+<div class="convention">
+<p><strong>Convention used throughout this lesson</strong></p>
+<div class="math-box">&#92;[q_{ij}=&#92;text{rate of moving from current state }i&#92;text{ to destination state }j.&#92;]</div>
+<p>Therefore, rows are origins and columns are destinations. Other books may use the transpose convention, so always check the definition before interpreting a matrix.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>A small SIS example</h2>
+<p>Use a closed SIS population of &#92;(N=5&#92;). The state is the infectious count:</p>
+<div class="math-box">&#92;[I&#92;in&#92;{0,1,2,3,4,5&#92;}.&#92;]</div>
+<p>From state &#92;(i&#92;), infection moves to &#92;(i+1&#92;) and recovery moves to &#92;(i-1&#92;), with rates</p>
+<div class="math-box">&#92;[b(i)=&#92;beta&#92;frac{(N-i)i}{N},&#92;qquad d(i)=&#92;gamma i.&#92;]</div>
+<p>Only neighbouring states communicate in one jump. The process cannot jump directly from &#92;(i=1&#92;) to &#92;(i=4&#92;).</p>
+</section>
+
+<section class="lesson-section">
+<h2>Three rules for constructing the generator</h2>
+<div class="structure">
+<div class="structure-card"><strong>Off-diagonal entries</strong>For &#92;(i&#92;ne j&#92;), place the non-negative rate from state &#92;(i&#92;) to state &#92;(j&#92;).</div>
+<div class="structure-card"><strong>Diagonal entry</strong>Set &#92;(q_{ii}&#92;) to the negative total rate of leaving state &#92;(i&#92;).</div>
+<div class="structure-card"><strong>Impossible jumps</strong>Use zero when the CTMC cannot move from &#92;(i&#92;) to &#92;(j&#92;) in one event.</div>
+</div>
+<div class="math-box">&#92;[q_{ii}=-&#92;sum_{j&#92;ne i}q_{ij}.&#92;]</div>
+<p>Consequently every row sums to zero. The diagonal is not an event rate and is not a negative probability; it balances the outward rates.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The SIS generator pattern</h2>
+<p>For interior states &#92;(1&#92;le i&#92;le N-1&#92;):</p>
+<div class="math-box">
+&#92;[
+q_{i,i+1}=b(i),&#92;qquad
+q_{i,i-1}=d(i),&#92;qquad
+q_{ii}=-[b(i)+d(i)].
+&#92;]
+</div>
+<p>At &#92;(i=N&#92;), infection is impossible but recovery remains possible. At &#92;(i=0&#92;), both rates are zero, so the complete row is zero.</p>
+<div class="two">
+<div class="card"><h3>Interior row</h3><p>Contains one recovery rate, one negative diagonal entry and one infection rate.</p></div>
+<div class="card"><h3>Absorbing row</h3><p>A zero row means the state has no outward transition. Here, &#92;(I=0&#92;) is disease-free and absorbing.</p></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why a zero row does not mean zero probability</h2>
+<p>The generator &#92;(Q&#92;) contains rates, not one-step probabilities. For a sufficiently short interval &#92;(h&#92;), the transition-probability matrix is approximated by</p>
+<div class="math-box">&#92;[P(h)&#92;approx I+hQ.&#92;]</div>
+<p>For the absorbing state, row 0 of &#92;(Q&#92;) is zero, but row 0 of &#92;(P(h)&#92;) has a 1 on its diagonal. Thus, once the process reaches state 0, it remains there with probability 1.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Necessary generator conditions</h2>
+<div class="table-wrap"><table><thead><tr><th>Condition</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>&#92;(q_{ij}&#92;ge0&#92;) for &#92;(i&#92;ne j&#92;)</td><td>Transition rates cannot be negative.</td></tr>
+<tr><td>&#92;(q_{ii}&#92;le0&#92;)</td><td>The diagonal is the negative exit rate.</td></tr>
+<tr><td>&#92;(&#92;sum_j q_{ij}=0&#92;)</td><td>Each row balances its outward rates.</td></tr>
+<tr><td>Zero off-diagonal entry</td><td>No direct one-event transition between those two states.</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>Run the code to build &#92;(Q&#92;) from the biological events rather than typing the matrix manually. It prints the generator, verifies its conditions, forms a valid small-interval approximation, and draws both the matrix structure and the state-transition diagram.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>SIS generator matrix</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Small SIS population: states are I = 0, 1, ..., N
+N = 5
+beta = 0.30
+gamma = 0.10
+
+states = np.arange(N + 1)
+Q = np.zeros((N + 1, N + 1))
+
+for i in states:
+    S = N - i
+    infection_rate = beta * S * i / N
+    recovery_rate = gamma * i
+
+    # Off-diagonal entry: i -> i + 1
+    if i < N:
+        Q[i, i + 1] = infection_rate
+
+    # Off-diagonal entry: i -> i - 1
+    if i > 0:
+        Q[i, i - 1] = recovery_rate
+
+    # Diagonal = negative total outward rate
+    Q[i, i] = -(infection_rate + recovery_rate)
+
+labels = [f"I={i}" for i in states]
+Q_table = pd.DataFrame(Q, index=labels, columns=labels)
+
+print("Generator matrix Q")
+print("Rows = current states; columns = destination states")
+print(Q_table.round(3).to_string())
+
+# Check the defining conditions
+off_diagonal = Q.copy()
+np.fill_diagonal(off_diagonal, 0.0)
+
+print()
+print("Generator checks")
+print(
+    "All off-diagonal entries are non-negative:",
+    bool((off_diagonal >= 0).all())
+)
+print(
+    "All diagonal entries are non-positive:",
+    bool((np.diag(Q) <= 0).all())
+)
+print(
+    "Every row sums to zero:",
+    bool(np.allclose(Q.sum(axis=1), 0))
+)
+print(
+    "State I=0 is absorbing:",
+    bool(np.allclose(Q[0], 0))
+)
+
+# Short-interval probability approximation P(h) = Identity + hQ
+positive_exit_rates = -np.diag(Q)
+largest_exit_rate = positive_exit_rates.max()
+h = 0.5 / largest_exit_rate
+
+P_small = np.eye(N + 1) + h * Q
+P_table = pd.DataFrame(
+    P_small, index=labels, columns=labels
+)
+
+print()
+print(f"Chosen short interval h = {h:.4f} days")
+print("Approximate transition matrix I + hQ")
+print(P_table.round(3).to_string())
+print(
+    "Rows of I + hQ sum to one:",
+    bool(np.allclose(P_small.sum(axis=1), 1))
+)
+print(
+    "All entries of I + hQ are non-negative:",
+    bool((P_small >= -1e-12).all())
+)
+
+# Figure 1: generator matrix values
+plt.figure(figsize=(7.2, 6))
+image = plt.imshow(Q, cmap="RdBu_r")
+plt.colorbar(image, label="Transition rate")
+plt.xticks(states, labels)
+plt.yticks(states, labels)
+plt.xlabel("Destination state")
+plt.ylabel("Current state")
+plt.title("SIS generator matrix Q")
+
+for i in states:
+    for j in states:
+        plt.text(j, i, f"{Q[i, j]:.2f}",
+                 ha="center", va="center", fontsize=8)
+
+plt.tight_layout()
+
+# Figure 2: state-transition structure
+plt.figure(figsize=(10, 3.8))
+x = states.astype(float)
+y = np.zeros_like(x)
+
+plt.scatter(x, y, s=900, color="#eaf4ee",
+            edgecolor="#39815e", linewidth=2, zorder=3)
+
+for i in states:
+    plt.text(i, 0, str(i), ha="center", va="center",
+             fontsize=11, fontweight="bold", zorder=4)
+
+for i in range(N):
+    infection_rate = Q[i, i + 1]
+    if infection_rate > 0:
+        plt.annotate(
+            "", xy=(i + 0.82, 0.10), xytext=(i + 0.18, 0.10),
+            arrowprops=dict(arrowstyle="->", color="#b42318")
+        )
+        plt.text(i + 0.5, 0.19, f"{infection_rate:.2f}",
+                 ha="center", color="#b42318", fontsize=8)
+
+for i in range(1, N + 1):
+    recovery_rate = Q[i, i - 1]
+    plt.annotate(
+        "", xy=(i - 0.82, -0.10), xytext=(i - 0.18, -0.10),
+        arrowprops=dict(arrowstyle="->", color="#2563eb")
+    )
+    plt.text(i - 0.5, -0.19, f"{recovery_rate:.2f}",
+             ha="center", color="#2563eb", fontsize=8)
+
+plt.text(2.5, 0.48,
+         "red: infection   blue: recovery",
+         ha="center")
+plt.xlim(-0.6, N + 0.6)
+plt.ylim(-0.42, 0.6)
+plt.xlabel("Number infectious, I")
+plt.yticks([])
+plt.title("Direct transitions and their rates")
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Read one row biologically</h2>
+<p>With &#92;(N=5&#92;), &#92;(&#92;beta=0.30&#92;) and &#92;(&#92;gamma=0.10&#92;), consider state &#92;(i=2&#92;):</p>
+<div class="math-box">
+&#92;[
+b(2)=0.30&#92;frac{(5-2)2}{5}=0.36,
+&#92;qquad d(2)=0.10(2)=0.20.
+&#92;]
+&#92;[
+(q_{2,1},q_{2,2},q_{2,3})=(0.20,-0.56,0.36).
+&#92;]
+</div>
+<p>The CTMC can recover to state 1 at rate 0.20 or infect to state 3 at rate 0.36. Its total exit rate is 0.56, giving diagonal entry &#92;(-0.56&#92;). Every other entry in row 2 is zero.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the Python construction</h2>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>np.zeros((N + 1, N + 1))</code></td><td>Creates one row and column for each of the &#92;(N+1&#92;) possible infectious counts.</td></tr>
+<tr><td><code>Q[i, i + 1]</code></td><td>Stores the infection rate from state &#92;(i&#92;) to state &#92;(i+1&#92;).</td></tr>
+<tr><td><code>Q[i, i - 1]</code></td><td>Stores the recovery rate from state &#92;(i&#92;) to state &#92;(i-1&#92;).</td></tr>
+<tr><td><code>np.fill_diagonal(...)</code></td><td>Removes diagonal entries from a copy so only off-diagonal rates are tested.</td></tr>
+<tr><td><code>np.allclose(..., 0)</code></td><td>Checks numerical equality while allowing tiny floating-point rounding errors.</td></tr>
+<tr><td><code>np.eye(N + 1)</code></td><td>Creates the identity matrix used in &#92;(I+hQ&#92;).</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="lesson-section">
+<h2>Why the interval restriction matters</h2>
+<p>For &#92;(I+hQ&#92;) to act as a probability matrix, its diagonal entries must remain non-negative:</p>
+<div class="math-box">&#92;[1-h a_0(i)&#92;ge0&#92;quad&#92;text{for every state }i.&#92;]</div>
+<p>The code chooses &#92;(h=0.5/&#92;max_i a_0(i)&#92;), which safely satisfies this condition. This short-interval matrix is an approximation. The exact transition matrix over a general time interval requires the matrix exponential, which belongs to later probability-evolution work.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Generator versus Gillespie simulation</h2>
+<div class="two">
+<div class="card"><h3>Gillespie algorithm</h3><p>Uses the rates in the current row to generate one random waiting time and one random destination.</p></div>
+<div class="card"><h3>Generator matrix</h3><p>Collects the rates for every possible current state and supports equations for the full probability distribution.</p></div>
+</div>
+<p>They describe the same CTMC at different levels. The generator is not an alternative biological model to the event list; it is a matrix representation of that event list.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Common mistakes</h2>
+<ul>
+<li>Putting positive exit rates on the diagonal.</li>
+<li>Making each row sum to 1 as if &#92;(Q&#92;) were a probability matrix.</li>
+<li>Confusing row-origin and column-origin conventions.</li>
+<li>Adding rates for biologically impossible direct jumps.</li>
+<li>Forgetting to modify boundary rows at &#92;(I=0&#92;) and &#92;(I=N&#92;).</li>
+</ul>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson adds</h2>
+<div class="summary-box"><p>You can now translate biological transitions into a generator matrix, interpret off-diagonal and diagonal entries, identify absorbing states, validate the matrix in Python, and connect &#92;(Q&#92;) to short-interval probabilities. The next lesson returns to simulation and uses many independent CTMC trajectories to study variability.</p></div>
+</section>
+
+<nav class="lesson-nav"><a href="../ctmc-seir-model/">← Previous lesson</a><a href="../many-ctmc-trajectories/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body></html>
