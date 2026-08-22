@@ -1,1 +1,188 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Simulating many continuous-time trajectories in Python for mathematical biology."><title>Simulating many continuous-time trajectories | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">11</p><h1 class="section-title">Simulating many continuous-time trajectories</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Simulate many independent continuous-time SIR trajectories, align irregular jump paths and summarize variability in Python.">
+<title>Simulating many continuous-time trajectories | MathsBio</title><link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js"></script>
+<style>.three{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{padding:20px;background:#eaf4ee;border-radius:10px}.gridbox{padding:22px;background:#f1f8f4;border:2px solid #9fc8b1;border-radius:11px}@media(max-width:760px){.three{grid-template-columns:1fr}}</style></head><body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">11</p>
+<h1 class="section-title">Simulating many continuous-time trajectories</h1>
+<p class="lesson-intro">One CTMC path is one possible epidemic history. Repeating the simulation independently reveals the range, frequency and time-dependent variability of possible histories.</p>
+
+<section class="lesson-section"><h2>Scenario and new question</h2>
+<p>Consider an SIR epidemic in a population of 200, starting with one infectious person. Instead of asking “what happened in one run?”, we ask “what patterns occur across many runs under the same biological assumptions?”</p>
+<div class="three"><div class="card"><strong>Same model</strong><p>Every trajectory uses the same initial state and parameters.</p></div><div class="card"><strong>Independent randomness</strong><p>Each trajectory consumes new random draws and represents a different possible epidemic.</p></div><div class="card"><strong>Ensemble</strong><p>The collection of trajectories approximates the model’s distribution of outcomes.</p></div></div>
+</section>
+
+<section class="lesson-section"><h2>Why trajectories cannot be averaged event by event</h2>
+<p>CTMC jump times differ across runs. Event 20 might occur on day 3 in one run and day 18 in another; some paths may already be extinct. Therefore, “the average state at event 20” is not the average state on a common biological date.</p>
+<div class="gridbox"><strong>Solution: observation grid.</strong> Choose common times such as days 0, 1, 2, …, 100. For each trajectory and each grid time, use the state immediately after the most recent jump. This does not change the CTMC; it only observes its piecewise-constant path at common times.</div>
+</section>
+
+<section class="lesson-section"><h2>From irregular paths to a rectangular array</h2>
+<div class="math-box">&#92;[
+&#92;begin{array}{c|cccc}
+& t_0&t_1&&#92;cdots&t_m&#92;&#92;
+&#92;hline
+&#92;text{run }1&I_1(t_0)&I_1(t_1)&&#92;cdots&I_1(t_m)&#92;&#92;
+&#92;text{run }2&I_2(t_0)&I_2(t_1)&&#92;cdots&I_2(t_m)&#92;&#92;
+&#92;vdots&&&&&#92;vdots
+&#92;end{array}
+&#92;]</div>
+<p>Rows represent independent trajectories and columns represent common observation times. Column summaries then answer time-specific questions.</p>
+</section>
+
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<p>Run 200 independent SIR trajectories. The code keeps exact jump paths for selected examples, aligns every path to a daily grid, and displays sample paths together with the ensemble mean and central 90% interval.</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Many CTMC trajectories</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def simulate_sir(rng, N, I0, beta, gamma, max_time):
+    S, I, R = N - I0, I0, 0
+    time = 0.0
+
+    times = [time]
+    I_values = [I]
+
+    while I > 0 and time < max_time:
+        infection_rate = beta * S * I / N
+        recovery_rate = gamma * I
+        total_rate = infection_rate + recovery_rate
+
+        waiting_time = rng.exponential(1 / total_rate)
+
+        if time + waiting_time > max_time:
+            break
+
+        time += waiting_time
+
+        if rng.random() < infection_rate / total_rate:
+            S -= 1
+            I += 1
+        else:
+            I -= 1
+            R += 1
+
+        times.append(time)
+        I_values.append(I)
+
+    return np.array(times), np.array(I_values)
+
+def observe_step_path(event_times, values, grid):
+    # For each grid time, find the latest event at or before it
+    positions = np.searchsorted(
+        event_times, grid, side="right"
+    ) - 1
+    return values[positions]
+
+# Model and experiment settings
+N = 200
+I0 = 1
+beta = 0.25
+gamma = 0.10
+max_time = 100
+number_of_runs = 200
+seed = 2026
+
+rng = np.random.default_rng(seed)
+observation_times = np.arange(0, max_time + 1)
+
+I_on_grid = np.zeros(
+    (number_of_runs, len(observation_times)),
+    dtype=int
+)
+selected_paths = []
+
+for run in range(number_of_runs):
+    event_times, I_values = simulate_sir(
+        rng, N, I0, beta, gamma, max_time
+    )
+
+    I_on_grid[run] = observe_step_path(
+        event_times, I_values, observation_times
+    )
+
+    if run < 12:
+        selected_paths.append((event_times, I_values))
+
+mean_I = I_on_grid.mean(axis=0)
+lower_I = np.quantile(I_on_grid, 0.05, axis=0)
+upper_I = np.quantile(I_on_grid, 0.95, axis=0)
+
+summary = pd.DataFrame({
+    "day": observation_times,
+    "mean I": mean_I,
+    "5th percentile": lower_I,
+    "95th percentile": upper_I,
+    "fraction extinct": (I_on_grid == 0).mean(axis=0)
+})
+
+print("Simulation design")
+print(f"Independent trajectories: {number_of_runs}")
+print(f"Observation times: {len(observation_times)}")
+print(f"Array shape: {I_on_grid.shape}")
+print()
+print("Selected time-specific summaries")
+print(
+    summary.loc[summary["day"].isin([0, 10, 20, 40, 60, 100])]
+    .round(3)
+    .to_string(index=False)
+)
+
+# Figure 1: exact irregular sample paths
+plt.figure(figsize=(9.5, 5.1))
+for event_times, I_values in selected_paths:
+    plt.step(event_times, I_values, where="post",
+             alpha=0.55, linewidth=1)
+
+plt.xlabel("Continuous time (days)")
+plt.ylabel("Infectious people")
+plt.title("Twelve independent CTMC SIR paths")
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+# Figure 2: summaries on a common daily grid
+plt.figure(figsize=(9.5, 5.1))
+plt.fill_between(
+    observation_times, lower_I, upper_I,
+    color="#b9ddc7", alpha=0.7,
+    label="Central 90% of runs"
+)
+plt.plot(observation_times, mean_I,
+         color="#174c34", linewidth=2.2,
+         label="Ensemble mean")
+plt.xlabel("Time (days)")
+plt.ylabel("Infectious people")
+plt.title("Time-specific summary across 200 trajectories")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div></div>
+</section>
+
+<section class="lesson-section"><h2>Understand the new Python</h2>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>def simulate_sir(...)</code></td><td>Packages one complete trajectory into a reusable function.</td></tr>
+<tr><td><code>for run in range(number_of_runs)</code></td><td>Repeats the simulation the requested number of times.</td></tr>
+<tr><td><code>np.searchsorted(...)</code></td><td>Finds the most recent jump at or before each observation time.</td></tr>
+<tr><td><code>axis=0</code></td><td>Summarises down the runs separately at every time column.</td></tr>
+<tr><td><code>np.quantile(..., 0.05)</code></td><td>Finds a value with approximately 5% of simulated values below it.</td></tr>
+</tbody></table></div></section>
+
+<section class="lesson-section"><h2>Mean path is not a typical individual path</h2>
+<p>The ensemble mean may be non-integer and smooth even though every actual CTMC path contains integer jumps. It averages across epidemics at each time. It should not be presented as one simulated epidemic.</p>
+<p>The shaded interval describes the spread of simulated &#92;(I(t)&#92;) values, not uncertainty about the calculated mean itself.</p>
+</section>
+
+<section class="lesson-section"><h2>Reproducibility and independence</h2>
+<p>A fixed seed makes the whole experiment reproducible. The random-number generator is created once, outside the loop. Each run then receives new draws from that generator. Recreating it with the same seed inside the loop would incorrectly reproduce the identical path every time.</p>
+</section>
+
+<section class="lesson-section"><h2>What this lesson adds</h2>
+<div class="summary-box"><p>You can now separate a single path from an ensemble, write a reusable CTMC function, generate independent trajectories, align irregular jump paths on common observation times, and calculate time-specific empirical summaries. The next lesson defines events such as early extinction and major outbreak before estimating their probabilities.</p></div></section>
+<nav class="lesson-nav"><a href="../generator-matrices/">← Previous lesson</a><a href="../ctmc-extinction-outbreak-probability/">Next lesson →</a></nav>
+</main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
