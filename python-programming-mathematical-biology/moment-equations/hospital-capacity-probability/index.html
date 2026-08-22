@@ -1,1 +1,115 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Hospital-capacity exceedance probabilities in Python for mathematical biology."><title>Hospital-capacity exceedance probabilities | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">14</p><h1 class="section-title">Hospital-capacity exceedance probabilities</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Estimate hospital-capacity exceedance probabilities from epidemic moments in Python."><title>Hospital-capacity exceedance probabilities | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">14</p><h1 class="section-title">Hospital-capacity exceedance probabilities</h1><p class="lesson-intro">Moment-based prevalence summaries can inform capacity risk only after a clear model connects infection to healthcare demand.</p>
+<section class="lesson-section"><h2>From infectious prevalence to critical-care demand</h2><p>Let &#92;(C(t)&#92;) be the number of infectious people requiring critical care. Suppose that, conditional on &#92;(I(t)&#92;),</p>
+<div class="math-box">&#92;[C(t)&#92;mid I(t)&#92;sim&#92;operatorname{Binomial}(I(t),p_c),&#92;]</div>
+<p>where &#92;(p_c&#92;) is the critical-care probability. This adds patient-level demand variation to epidemic variation.</p></section>
+<section class="lesson-section"><h2>Transform the moments</h2>
+<div class="math-box">&#92;[&#92;mathbb E[C]=p_c&#92;mathbb E[I],&#92;]</div>
+<div class="math-box">&#92;[
+&#92;operatorname{Var}(C)
+=
+p_c(1-p_c)&#92;mathbb E[I]
++
+p_c^2&#92;operatorname{Var}(I).
+&#92;]</div>
+<p>The first term is conditional binomial variation; the second transfers epidemic prevalence variation into demand.</p></section>
+<section class="lesson-section"><h2>Define the capacity event</h2><p>If capacity is &#92;(L&#92;) beds, exceedance at time &#92;(t&#92;) is</p>
+<div class="math-box">&#92;[&#92;{C(t)&gt;L&#92;}.&#92;]</div>
+<p>This is a time-specific probability. The probability of ever exceeding capacity during a period is a pathwise event and cannot be calculated from separate marginal moments alone.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Hospital-capacity probability</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+from scipy.stats import norm
+
+N, I0 = 100, 5
+beta, gamma = 0.25, 0.15
+critical_probability = 0.20
+capacity = 6
+times = np.linspace(0, 30, 61)
+
+def rhs(t, y):
+    m1, m2 = y
+    m3 = 3 * m1 * m2 - 2 * m1 ** 3
+    return [
+        (beta - gamma) * m1 - beta * m2 / N,
+        (2 * (beta - gamma) - beta / N) * m2
+        - 2 * beta * m3 / N
+        + (beta + gamma) * m1
+    ]
+
+sol = solve_ivp(
+    rhs, (0, 30), [I0, I0 ** 2],
+    t_eval=times, rtol=1e-9, atol=1e-11
+)
+mean_I, second_I = sol.y
+variance_I = np.maximum(second_I - mean_I ** 2, 0)
+
+mean_C = critical_probability * mean_I
+variance_C = (
+    critical_probability * (1 - critical_probability) * mean_I
+    + critical_probability ** 2 * variance_I
+)
+sd_C = np.sqrt(variance_C)
+
+# C > capacity means C >= capacity + 1.
+# Continuity boundary is capacity + 0.5.
+normal_exceedance = 1 - norm.cdf(
+    (capacity + 0.5 - mean_C) / sd_C
+)
+
+# CTMC plus conditional binomial benchmark
+rng = np.random.default_rng(310)
+M = 8000
+
+def ctmc_path():
+    I, time = I0, 0.0
+    event_times, values = [0.0], [I]
+    while I > 0 and time < times[-1]:
+        b = beta * (N - I) * I / N
+        d = gamma * I
+        wait = rng.exponential(1 / (b + d))
+        if time + wait > times[-1]:
+            break
+        time += wait
+        I += 1 if rng.random() < b / (b + d) else -1
+        event_times.append(time)
+        values.append(I)
+    pos = np.searchsorted(event_times, times, side="right") - 1
+    return np.array(values)[pos]
+
+I_paths = np.array([ctmc_path() for _ in range(M)])
+C_samples = rng.binomial(
+    I_paths.astype(int), critical_probability
+)
+empirical_exceedance = (C_samples > capacity).mean(axis=0)
+
+selected = [0, 10, 20, 30]
+idx = [int(t * 2) for t in selected]
+table = pd.DataFrame({
+    "time": selected,
+    "mean critical demand": mean_C[idx],
+    "SD critical demand": sd_C[idx],
+    "normal P(C>6)": normal_exceedance[idx],
+    "simulation P(C>6)": empirical_exceedance[idx]
+})
+print(table.round(4).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.2))
+plt.plot(times, normal_exceedance,
+         color="#b42318", linewidth=2,
+         label="Moment + normal approximation")
+plt.plot(times, empirical_exceedance, "--",
+         color="#174c34",
+         label="CTMC + binomial simulation")
+plt.xlabel("Time")
+plt.ylabel("Probability demand exceeds 6 beds")
+plt.title("Time-specific hospital-capacity exceedance risk")
+plt.ylim(0, 1)
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Assumptions that must be stated</h2><ul><li>Critical-care probability is constant and identical between individuals.</li><li>Demand is contemporaneous with infectious prevalence; no admission delay or length of stay is modelled.</li><li>Capacity is fixed.</li><li>The normal approximation may be poor for small counts or skewed demand.</li><li>Parameter and capacity uncertainty are not included.</li></ul></section>
+<section class="lesson-section"><h2>Decision interpretation</h2><p>A high exceedance probability identifies periods of capacity risk under the stated model. It is not a guarantee that capacity will be exceeded and should be accompanied by sensitivity analysis for &#92;(p_c&#92;), capacity and epidemic parameters.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now transform infectious moments into demand moments, include conditional patient-level variation, define a precise capacity event and validate a moment-based exceedance probability against simulation.</p></div></section><nav class="lesson-nav"><a href="../approximate-outbreak-probabilities/">← Previous lesson</a><a href="../moment-visualisations/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
