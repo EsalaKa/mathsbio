@@ -1,1 +1,113 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Mean, variance, covariance and probability visualisations in Python for mathematical biology."><title>Mean, variance, covariance and probability visualisations | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">15</p><h1 class="section-title">Mean, variance, covariance and probability visualisations</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Visualise epidemic mean, variance, covariance and threshold probabilities accurately in Python."><title>Mean, variance, covariance and probability visualisations | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">15</p><h1 class="section-title">Mean, variance, covariance and probability visualisations</h1><p class="lesson-intro">The final lesson matches each moment or probability to a display with correct units, scale and biological interpretation.</p>
+<section class="lesson-section"><h2>Each quantity needs its own interpretation</h2>
+<table><thead><tr><th>Quantity</th><th>Units</th><th>Suitable display</th></tr></thead><tbody><tr><td>Mean</td><td>Original population units</td><td>Line through time</td></tr><tr><td>Variance</td><td>Squared population units</td><td>Separate line or panel</td></tr><tr><td>Covariance</td><td>Product of two variables’ units</td><td>Signed line, matrix or heatmap</td></tr><tr><td>Probability</td><td>Dimensionless, between 0 and 1</td><td>Probability curve or table</td></tr></tbody></table>
+<p>Putting all four on one vertical axis can conceal scale and meaning. Separate panels preserve honest labels.</p></section>
+<section class="lesson-section"><h2>Scenario</h2><p>Use 3,000 stochastic SIR epidemics and observe &#92;(S(t)&#92;) and &#92;(I(t)&#92;) daily. Report expected infectious prevalence, its variance, susceptible–infectious covariance and &#92;(&#92;Pr(I(t)&#92;ge30)&#92;).</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Moment and probability report</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+N, I0 = 200, 3
+beta, gamma = 0.25, 0.10
+times = np.arange(0, 81)
+M = 3000
+threshold = 30
+rng = np.random.default_rng(320)
+
+def sir_path():
+    S, I, R = N - I0, I0, 0
+    time = 0.0
+    event_times = [0.0]
+    S_values = [S]
+    I_values = [I]
+
+    while I > 0 and time < times[-1]:
+        b = beta * S * I / N
+        d = gamma * I
+        wait = rng.exponential(1 / (b + d))
+        if time + wait > times[-1]:
+            break
+        time += wait
+
+        if rng.random() < b / (b + d):
+            S -= 1
+            I += 1
+        else:
+            I -= 1
+            R += 1
+
+        event_times.append(time)
+        S_values.append(S)
+        I_values.append(I)
+
+    pos = np.searchsorted(
+        event_times, times, side="right"
+    ) - 1
+    return (
+        np.array(S_values)[pos],
+        np.array(I_values)[pos]
+    )
+
+S_paths = np.zeros((M, len(times)))
+I_paths = np.zeros((M, len(times)))
+
+for run in range(M):
+    S_paths[run], I_paths[run] = sir_path()
+
+mean_I = I_paths.mean(axis=0)
+variance_I = I_paths.var(axis=0, ddof=1)
+covariance_SI = np.array([
+    np.cov(S_paths[:, n], I_paths[:, n], ddof=1)[0, 1]
+    for n in range(len(times))
+])
+probability_threshold = (
+    I_paths >= threshold
+).mean(axis=0)
+
+selected = [0, 10, 20, 40, 60, 80]
+table = pd.DataFrame({
+    "day": selected,
+    "mean I": mean_I[selected],
+    "variance I": variance_I[selected],
+    "Cov(S,I)": covariance_SI[selected],
+    "P(I>=30)": probability_threshold[selected]
+})
+
+print("Moment and probability summary")
+print(table.round(3).to_string(index=False))
+
+fig, axes = plt.subplots(2, 2, figsize=(11, 8.2))
+
+axes[0, 0].plot(times, mean_I, color="#174c34")
+axes[0, 0].set_title("A. Expected infectious population")
+axes[0, 0].set_ylabel("People")
+axes[0, 0].grid(alpha=0.2)
+
+axes[0, 1].plot(times, variance_I, color="#b42318")
+axes[0, 1].set_title("B. Variance of infectious population")
+axes[0, 1].set_ylabel("People²")
+axes[0, 1].grid(alpha=0.2)
+
+axes[1, 0].plot(times, covariance_SI, color="#2563eb")
+axes[1, 0].axhline(0, color="black", linewidth=0.8)
+axes[1, 0].set_title("C. Susceptible–infectious covariance")
+axes[1, 0].set_xlabel("Day")
+axes[1, 0].set_ylabel("People²")
+axes[1, 0].grid(alpha=0.2)
+
+axes[1, 1].plot(
+    times, probability_threshold, color="#d97706"
+)
+axes[1, 1].set_title("D. Probability I is at least 30")
+axes[1, 1].set_xlabel("Day")
+axes[1, 1].set_ylabel("Probability")
+axes[1, 1].set_ylim(0, 1)
+axes[1, 1].grid(alpha=0.2)
+
+fig.suptitle("SIR ensemble: moments and a threshold probability")
+fig.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Read the panels together</h2><ol><li>The mean shows expected prevalence burden.</li><li>Variance shows when paths differ most strongly.</li><li>Negative covariance shows that epidemics with fewer susceptible people tend to have more infectious people at that time.</li><li>The threshold probability directly answers a stated risk question and is not interchangeable with the mean.</li></ol></section>
+<section class="lesson-section"><h2>Presentation rules</h2><ul><li>State whether moments are analytical, closed approximations or Monte Carlo estimates.</li><li>Give sample size and seed for simulated moments.</li><li>Use squared units for variance and covariance.</li><li>Keep probability axes between 0 and 1.</li><li>Define thresholds and observation times.</li><li>Accompany plots with a compact exact-value table.</li></ul></section>
+<section class="lesson-section"><h2>Part 5 completion</h2><div class="summary-box"><p>You can now define and estimate moments, derive first- and second-moment equations, identify unclosed nonlinear hierarchies, apply and test closures, solve retained ODEs, validate against simulation, approximate probabilities and communicate mean, variance, covariance and risk accurately.</p></div></section><nav class="lesson-nav"><a href="../hospital-capacity-probability/">← Previous lesson</a><a href="../">Return to moment-equations index →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
