@@ -78,7 +78,7 @@ R_n=N-S_n-I_n.
 &#92;{(s,i):s&#92;ge0,&#92; i&#92;ge0,&#92; s+i&#92;le N&#92;}.
 &#92;]
 </div>
-<p>Not every pair from &#92;(&#92;{0,&#92;ldots,N&#92;&#92;)^2&#92;) is possible. For example, &#92;(S=150,I=100&#92;) is impossible when &#92;(N=200&#92;) because their sum already exceeds the population.</p>
+<p>Not every pair from &#92;(&#92;{0,&#92;ldots,N&#92;}^2&#92;) is possible. For example, &#92;(S=150,I=100&#92;) is impossible when &#92;(N=200&#92;) because their sum already exceeds the population.</p>
 </section>
 
 <section class="lesson-section">
@@ -292,13 +292,17 @@ peak_time = trajectory.loc[
     trajectory["I"].idxmax(), "time"
 ]
 
-new_infections = final_R - initial_R
-if final_I &gt; 0:
-    new_infections = (
-        initial_S - final_S
-    )
+new_transmission_infections = initial_S - final_S
+people_infected_so_far = (
+    initial_I + new_transmission_infections
+)
 
-attack_proportion = new_infections / N
+if final_I == 0:
+    final_epidemic_size = people_infected_so_far
+    attack_proportion = final_epidemic_size / N
+else:
+    final_epidemic_size = "not complete"
+    attack_proportion = "not complete"
 
 if final_I == 0:
     stopping_reason = "infection became extinct"
@@ -312,7 +316,9 @@ summary = pd.DataFrame({
         "Final susceptible",
         "Final infectious",
         "Final removed",
-        "New infections during simulation",
+        "New transmission infections",
+        "People infected so far",
+        "Completed final epidemic size",
         "Attack proportion"
     ],
     "value": [
@@ -321,8 +327,14 @@ summary = pd.DataFrame({
         final_S,
         final_I,
         final_R,
-        new_infections,
-        round(attack_proportion, 4)
+        new_transmission_infections,
+        people_infected_so_far,
+        final_epidemic_size,
+        (
+            round(attack_proportion, 4)
+            if final_I == 0
+            else "not complete"
+        )
     ]
 })
 
@@ -443,8 +455,9 @@ R_{n+1}&#92;ge R_n.
 <tr><td><code>initial_R = R</code></td><td>Retains the starting removed count so infections occurring during the simulation can be separated from earlier removals.</td></tr>
 <tr><td><code>trajectory["S"].diff()</code></td><td>Calculates each susceptible count minus the preceding susceptible count.</td></tr>
 <tr><td><code>.dropna()</code></td><td>Removes the undefined first difference, because the first row has no preceding row.</td></tr>
-<tr><td><code>final_R - initial_R</code></td><td>Counts new removals after a completed outbreak.</td></tr>
-<tr><td><code>new_infections / N</code></td><td>Calculates the realised attack proportion.</td></tr>
+<tr><td><code>initial_S - final_S</code></td><td>Counts new transmission infections, because only infection can reduce &#92;(S&#92;).</td></tr>
+<tr><td><code>initial_I + new_transmission_infections</code></td><td>Counts everyone infected in this outbreak so far, including those infectious initially.</td></tr>
+<tr><td><code>final_epidemic_size / N</code></td><td>Calculates the realised attack proportion only after extinction completes the outbreak.</td></tr>
 <tr><td><code>plt.scatter(...)</code></td><td>Marks the initial and final points on the state-space path.</td></tr>
 </tbody>
 </table>
