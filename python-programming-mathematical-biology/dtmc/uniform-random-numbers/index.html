@@ -11,9 +11,14 @@
 <script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
 <script defer src="../../../assets/python-runner.js"></script>
 <style>
-.lesson-section,.python-lab,.output-wrap,.python-output-images{min-width:0;max-width:100%}
-.python-editor,.python-output{max-width:100%}
-.python-output-images img{max-width:100%;object-fit:contain}
+html,body{max-width:100%;overflow-x:hidden}
+main.section,.lesson-section{min-width:0;max-width:100%;overflow-x:hidden}
+.python-lab,.python-lab-header,.code-controls,.output-wrap,.python-output-images{min-width:0;width:100%;max-width:100%}
+.python-editor{display:block;width:100%;max-width:100%;overflow:auto}
+.python-output{width:100%;max-width:100%;overflow-x:auto;overflow-wrap:anywhere}
+.python-output-images img{display:block;width:100%;max-width:100%;height:auto;object-fit:contain}
+.table-wrap,.math-box,pre{max-width:100%;overflow-x:auto}
+mjx-container[display="true"]{max-width:100%;overflow-x:auto;overflow-y:hidden}
 </style>
 </head>
 <body>
