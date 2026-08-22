@@ -15,7 +15,11 @@
 .danger-card,
 .experiment-box,
 .validity-box,
-.caution-box{
+.caution-box,
+.simultaneous-box,
+.method-box,
+.convention-box,
+.invalid-box{
 background:#f1f8f4!important;
 border-color:#9fc8b1!important;
 color:#17211c;
