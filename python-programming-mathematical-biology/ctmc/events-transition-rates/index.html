@@ -1,1 +1,249 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Events and transition rates in continuous time in Python for mathematical biology."><title>Events and transition rates in continuous time | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">01</p><h1 class="section-title">Events and transition rates in continuous time</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Understand biological jump events, instantaneous transition rates, units and boundaries in a continuous-time Markov chain epidemic model.">
+<title>Events and transition rates in continuous time | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.compare-card{padding:21px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.compare-card h3{margin-top:0;color:#174c34}.event-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin:22px 0}.event-card{padding:20px;background:#eaf4ee;border-radius:10px}.event-card h3{margin-top:0;color:#174c34}.rate-warning{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}.boundary-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin:22px 0}.boundary-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}@media(max-width:800px){.compare-grid,.event-grid,.boundary-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Continuous-Time Markov Chains</a>
+<p class="section-number">01</p>
+<h1 class="section-title">Events and transition rates in continuous time</h1>
+<p class="lesson-intro">A continuous-time Markov chain changes state through discrete biological events, but those events occur at random times rather than on a fixed time grid.</p>
+
+<section class="lesson-section">
+<h2>DTMC time versus CTMC time</h2>
+<div class="compare-grid">
+<div class="compare-card"><h3>DTMC</h3><p>The process is examined at fixed times &#92;(0,&#92;Delta t,2&#92;Delta t,&#92;ldots&#92;). Transition probabilities describe what happens during each fixed step.</p></div>
+<div class="compare-card"><h3>CTMC</h3><p>The process may jump at any continuous time &#92;(t&#92;ge0&#92;). The state remains constant between randomly timed events.</p></div>
+</div>
+<p>A CTMC trajectory therefore consists of horizontal waiting periods separated by instantaneous integer-valued jumps.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Scenario: an SIS infection</h2>
+<p>Let &#92;(I(t)=i&#92;) be the number of infectious people in a closed population &#92;(N&#92;). Then &#92;(S(t)=N-i&#92;).</p>
+<div class="event-grid">
+<div class="event-card"><h3>Infection event</h3><div class="math-box">&#92;[i&#92;longrightarrow i+1.&#92;]</div><p>One susceptible person becomes infectious.</p></div>
+<div class="event-card"><h3>Recovery event</h3><div class="math-box">&#92;[i&#92;longrightarrow i-1.&#92;]</div><p>One infectious person returns to susceptibility.</p></div>
+</div>
+<p>No other one-jump destination is allowed in the basic SIS CTMC.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What is a transition rate?</h2>
+<div class="definition-box">
+<p>A <strong>transition rate</strong> measures the instantaneous tendency for a particular event to occur while the process is in its current state.</p>
+</div>
+<p>For the SIS model:</p>
+<div class="math-box">
+&#92;[
+b(i)=&#92;beta&#92;frac{(N-i)i}{N},
+&#92;qquad
+d(i)=&#92;gamma i.
+&#92;]
+</div>
+<p>&#92;(b(i)&#92;) is the infection rate and &#92;(d(i)&#92;) is the recovery rate at state &#92;(i&#92;). They are also called transition intensities or hazards.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Units are essential</h2>
+<p>If time is measured in days, &#92;(&#92;beta&#92;) and &#92;(&#92;gamma&#92;) have units per day. Because population counts are treated as counts, &#92;(b(i)&#92;) and &#92;(d(i)&#92;) have units of events per day.</p>
+<div class="rate-warning">
+<p><strong>A rate is not a probability.</strong> A rate may exceed 1. For example, an infection rate of 2.97 events per day does not mean a probability of 297%. It describes instantaneous event intensity at the current state.</p>
+</div>
+<p>Lesson 2 will connect a rate to probability over a sufficiently short interval. This page does not yet choose an interval or simulate an event time.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why rates depend on the current state</h2>
+<p>The infection rate needs both susceptible and infectious people:</p>
+<div class="math-box">
+&#92;[
+b(i)=&#92;beta&#92;frac{S I}{N}
+=&#92;beta&#92;frac{(N-i)i}{N}.
+&#92;]
+</div>
+<ul>
+<li>Few infectious people give few opportunities for transmission.</li>
+<li>Few susceptible people also limit transmission.</li>
+<li>The infection rate is largest at an intermediate state.</li>
+<li>The recovery rate &#92;(d(i)=&#92;gamma i&#92;) increases linearly with the infectious count.</li>
+</ul>
+<p>The parameters may be constant while the rates change, because the population state changes.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Formal instantaneous definition</h2>
+<p>For different states &#92;(x&#92;) and &#92;(y&#92;), the transition rate is:</p>
+<div class="math-box">
+&#92;[
+q(x,y)
+=
+&#92;lim_{h&#92;downarrow0}
+&#92;frac{
+&#92;Pr(X(t+h)=y&#92;mid X(t)=x)
+}{h}.
+&#92;]
+</div>
+<p>Intuitively, the probability of the jump is examined over an increasingly short positive interval &#92;(h&#92;), then divided by the interval length. The limiting quantity is probability per unit time.</p>
+<p>This definition describes an instantaneous tendency. It does not claim that &#92;(q(x,y)&#92;) itself is a probability.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Boundary states</h2>
+<div class="boundary-grid">
+<div class="boundary-card"><h3>State (i=0)</h3><div class="math-box">&#92;[b(0)=d(0)=0.&#92;]</div><p>No infectious person remains. In the closed SIS model, state 0 is absorbing.</p></div>
+<div class="boundary-card"><h3>State (i=N)</h3><div class="math-box">&#92;[b(N)=0,&#92;qquad d(N)=&#92;gamma N.&#92;]</div><p>No susceptible person remains, so infection is impossible, but recovery remains possible.</p></div>
+</div>
+<p>When &#92;(&#92;beta&gt;0&#92;), &#92;(&#92;gamma&gt;0&#92;) and &#92;(1&#92;le i&#92;le N-1&#92;), both infection and recovery rates are positive.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Conditions for biologically valid rates</h2>
+<ul>
+<li>&#92;(N&#92;) must be a positive integer.</li>
+<li>&#92;(i&#92;) must be an integer satisfying &#92;(0&#92;le i&#92;le N&#92;).</li>
+<li>&#92;(&#92;beta&#92;ge0&#92;) and &#92;(&#92;gamma&#92;ge0&#92;).</li>
+<li>Every allowed event must lead to a state inside the state space.</li>
+<li>An impossible boundary event must have rate zero.</li>
+</ul>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>The code calculates the event rates at one state, checks their conditions and plots how infection and recovery rates change across the complete SIS state space.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>SIS transition rates</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def sis_rates(i, N, beta, gamma):
+    susceptible = N - i
+    infection_rate = beta * susceptible * i / N
+    recovery_rate = gamma * i
+    return infection_rate, recovery_rate
+
+# Biological state and parameters
+N = 1000
+i = 10
+beta = 0.30
+gamma = 0.10
+
+if not isinstance(N, int) or N &lt;= 0:
+    raise ValueError("N must be a positive integer.")
+
+if not isinstance(i, int) or i &lt; 0 or i &gt; N:
+    raise ValueError("i must be an integer between 0 and N.")
+
+if beta &lt; 0 or gamma &lt; 0:
+    raise ValueError("beta and gamma cannot be negative.")
+
+infection_rate, recovery_rate = sis_rates(
+    i, N, beta, gamma
+)
+
+rate_table = pd.DataFrame({
+    "event": ["infection", "recovery"],
+    "state change": ["i to i + 1", "i to i - 1"],
+    "rate": [infection_rate, recovery_rate],
+    "units": ["events per day", "events per day"]
+})
+
+print(f"Current state: I = {i}, S = {N - i}")
+print(rate_table.round(4).to_string(index=False))
+print()
+print("These numbers are rates, not probabilities.")
+
+# Rates at every possible state
+states = np.arange(N + 1)
+infection_rates = beta * (N - states) * states / N
+recovery_rates = gamma * states
+
+maximum_state = int(infection_rates.argmax())
+maximum_infection_rate = infection_rates[maximum_state]
+
+print()
+print(f"Maximum infection rate: "
+      f"{maximum_infection_rate:.2f} events per day")
+print(f"It occurs at I = {maximum_state}")
+
+plt.figure(figsize=(9, 4.9))
+plt.plot(
+    states,
+    infection_rates,
+    label="Infection rate b(i)",
+    color="#dc2626"
+)
+plt.plot(
+    states,
+    recovery_rates,
+    label="Recovery rate d(i)",
+    color="#2563eb"
+)
+plt.scatter(
+    [i],
+    [infection_rate],
+    color="#7c3aed",
+    s=60,
+    label=f"Current infection rate at I={i}"
+)
+plt.xlabel("Current infectious count i")
+plt.ylabel("Transition rate (events per day)")
+plt.title("SIS transition rates depend on the current state")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the new code</h2>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>def sis_rates(...)</code></td><td>Packages the two state-dependent rate formulas into one reusable function.</td></tr>
+<tr><td><code>isinstance(N, int)</code></td><td>Checks that &#92;(N&#92;) was supplied as a Python integer.</td></tr>
+<tr><td><code>np.arange(N + 1)</code></td><td>Creates all integer states from 0 through &#92;(N&#92;), including both boundaries.</td></tr>
+<tr><td><code>.argmax()</code></td><td>Returns the position at which the infection-rate array is largest.</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>At &#92;(I=10&#92;) and &#92;(S=990&#92;), the infection rate is 2.97 events per day and the recovery rate is 1 event per day. The current state therefore has a stronger instantaneous tendency towards infection than recovery.</p>
+<p>This comparison does not yet tell us the probability of either event during a stated interval, the time of the next event, or which event will occur. Those are separate CTMC calculations developed in Lessons 2–5.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has—and has not—done</h2>
+<div class="summary-box"><p><strong>You can now:</strong></p><ul>
+<li>distinguish continuous-time jumps from fixed DTMC steps;</li>
+<li>define biological events and their state changes;</li>
+<li>calculate state-dependent transition rates with correct units;</li>
+<li>distinguish a rate from a probability; and</li>
+<li>identify boundary rates and absorbing states.</li>
+</ul><p><strong>Not yet:</strong> Lesson 2 converts rates into small-interval probabilities. Exponential waiting times, total rates and random event selection remain for Lessons 3–5.</p></div>
+</section>
+
+<nav class="lesson-nav"><a href="../../dtmc/dtmc-plots-tables/">← Previous section</a><a href="../rates-small-interval-probabilities/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
