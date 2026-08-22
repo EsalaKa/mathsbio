@@ -1,1 +1,120 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Constructing a stochastic SEIR model in Python for mathematical biology."><title>Constructing a stochastic SEIR model | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">08</p><h1 class="section-title">Constructing a stochastic SEIR model</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Construct a stochastic SEIR diffusion from infection, progression and recovery events."><title>Constructing a stochastic SEIR model | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">08</p><h1 class="section-title">Constructing a stochastic SEIR model</h1><p class="lesson-intro">The stochastic SEIR model adds a latent progression channel and shows how event-vector programming scales cleanly to more compartments.</p>
+<section class="lesson-section"><h2>Three biological events</h2>
+<table><thead><tr><th>Event</th><th>Change in &#92;((S,E,I,R)&#92;)</th><th>Rate</th></tr></thead><tbody><tr><td>Infection</td><td>&#92;((-1,+1,0,0)&#92;)</td><td>&#92;(a_1=&#92;beta SI/N&#92;)</td></tr><tr><td>Progression</td><td>&#92;((0,-1,+1,0)&#92;)</td><td>&#92;(a_2=&#92;sigma E&#92;)</td></tr><tr><td>Recovery</td><td>&#92;((0,0,-1,+1)&#92;)</td><td>&#92;(a_3=&#92;gamma I&#92;)</td></tr></tbody></table></section>
+<section class="lesson-section"><h2>Four coupled SDEs</h2>
+<div class="math-box">&#92;[
+dS=-a_1dt-&#92;sqrt{a_1}dW_1,
+&#92;]
+&#92;[
+dE=(a_1-a_2)dt+&#92;sqrt{a_1}dW_1-&#92;sqrt{a_2}dW_2,
+&#92;]
+&#92;[
+dI=(a_2-a_3)dt+&#92;sqrt{a_2}dW_2-&#92;sqrt{a_3}dW_3,
+&#92;]
+&#92;[
+dR=a_3dt+&#92;sqrt{a_3}dW_3.
+&#92;]</div>
+<p>The three Brownian motions are independent event-channel noises. Within a channel, the same increment is used with opposite signs in the source and destination compartments.</p></section>
+<section class="lesson-section"><h2>What the exposed stage changes</h2><p>Infection adds to &#92;(E&#92;), not directly to &#92;(I&#92;). Progression transfers exposed people to infectiousness after a random latent period. Thus infection noise first affects &#92;(S,E&#92;), while progression noise links &#92;(E,I&#92;).</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Stochastic SEIR construction</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+N = 1000
+initial = np.array([985.0, 10.0, 5.0, 0.0])
+beta = 0.30
+sigma = 0.20
+gamma = 0.10
+T = 140
+dt = 0.01
+seed = 63
+
+steps = int(round(T / dt))
+times = np.linspace(0, T, steps + 1)
+rng = np.random.default_rng(seed)
+
+path = np.zeros((steps + 1, 4))
+path[0] = initial
+corrections = 0
+
+# Columns are infection, progression and recovery events
+V = np.array([
+    [-1,  0,  0],
+    [ 1, -1,  0],
+    [ 0,  1, -1],
+    [ 0,  0,  1]
+], dtype=float)
+
+for n in range(steps):
+    S, E, I, R = path[n]
+
+    rates = np.array([
+        beta * S * I / N,
+        sigma * E,
+        gamma * I
+    ])
+    rates = np.maximum(rates, 0)
+
+    dW = np.sqrt(dt) * rng.normal(0, 1, size=3)
+
+    drift_change = V @ rates * dt
+    diffusion_change = V @ (np.sqrt(rates) * dW)
+    proposed = path[n] + drift_change + diffusion_change
+
+    if (proposed < 0).any():
+        corrections += 1
+        proposed = np.maximum(proposed, 0)
+        proposed *= N / proposed.sum()
+
+    path[n + 1] = proposed
+
+S, E, I, R = path.T
+totals = path.sum(axis=1)
+
+summary = pd.DataFrame({
+    "quantity": [
+        "Maximum population error",
+        "Minimum compartment value",
+        "Peak exposed",
+        "Time of exposed peak",
+        "Peak infectious",
+        "Time of infectious peak",
+        "Boundary corrections"
+    ],
+    "value": [
+        np.max(np.abs(totals - N)),
+        path.min(),
+        E.max(),
+        times[np.argmax(E)],
+        I.max(),
+        times[np.argmax(I)],
+        corrections
+    ]
+})
+
+print(summary.round(5).to_string(index=False))
+print()
+print("State-change matrix V")
+print(pd.DataFrame(
+    V,
+    index=["S", "E", "I", "R"],
+    columns=["infection", "progression", "recovery"]
+).to_string())
+
+plt.figure(figsize=(9.5, 5.2))
+plt.plot(times, S, label="Susceptible", color="#2563eb")
+plt.plot(times, E, label="Exposed", color="#d97706")
+plt.plot(times, I, label="Infectious", color="#b42318")
+plt.plot(times, R, label="Removed", color="#39815e")
+plt.xlabel("Time (days)")
+plt.ylabel("Population")
+plt.title("One stochastic SEIR diffusion path")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Understand the matrix code</h2><table><thead><tr><th>Expression</th><th>Meaning</th></tr></thead><tbody><tr><td><code>V @ rates</code></td><td>Adds the mean effect of all event channels to each compartment.</td></tr><tr><td><code>np.sqrt(rates) * dW</code></td><td>Creates one diffusion contribution per event.</td></tr><tr><td><code>V @ (...)</code></td><td>Distributes each event’s random contribution with the correct signs.</td></tr></tbody></table></section>
+<section class="lesson-section"><h2>Population conservation</h2><p>Every column of &#92;(V&#92;) sums to zero. Therefore both &#92;(Va(X)dt&#92;) and &#92;(V&#92;sqrt{&#92;operatorname{diag}(a(X))}dW&#92;) sum to zero. This is the structural reason the uncorrected SDE conserves &#92;(S+E+I+R=N&#92;).</p></section>
+<section class="lesson-section"><h2>Interpretation and conditions</h2><ul><li>The mean latent period is &#92;(1/&#92;sigma&#92;), but the diffusion does not impose a fixed delay.</li><li>Extinction requires both &#92;(E=0&#92;) and &#92;(I=0&#92;).</li><li>Continuous states approximate counts and are most credible away from small-count boundaries.</li><li>The declared projection is a numerical safeguard, not part of the derived SDE.</li></ul></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now construct an SEIR diffusion with three event channels, use a state-change matrix, preserve population structurally, and explain how latent progression separates infection from infectiousness.</p></div></section><nav class="lesson-nav"><a href="../stochastic-sir-model/">← Previous lesson</a><a href="../one-sde-trajectory/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
