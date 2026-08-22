@@ -1,1 +1,127 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Path plots, density plots, bands, histograms and tables in Python for mathematical biology."><title>Path plots, density plots, bands, histograms and tables | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">14</p><h1 class="section-title">Path plots, density plots, bands, histograms and tables</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Communicate epidemic SDE paths, density plots, bands, histograms and tables correctly."><title>Path plots, density plots, bands, histograms and tables | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">14</p><h1 class="section-title">Path plots, density plots, bands, histograms and tables</h1><p class="lesson-intro">The final SDE lesson combines visual and tabular summaries while keeping individual paths, time-specific distributions and numerical uncertainty conceptually separate.</p>
+<section class="lesson-section"><h2>Choose a display from the biological question</h2>
+<table><thead><tr><th>Display</th><th>Question answered</th></tr></thead><tbody><tr><td>Path plot</td><td>What possible histories and fluctuations look like</td></tr><tr><td>Mean with percentile band</td><td>How centre and time-specific spread change</td></tr><tr><td>Density at selected times</td><td>How the shape of the distribution evolves</td></tr><tr><td>Outcome histogram</td><td>How frequently final or trajectory-level outcomes occur</td></tr><tr><td>Table</td><td>What the exact reported summaries are</td></tr></tbody></table></section>
+<section class="lesson-section"><h2>Lines and bands need precise labels</h2><p>A mean path is not one realisation. A percentile band is pointwise unless a simultaneous construction is used. A few displayed sample paths illustrate variation but do not estimate frequencies.</p></section>
+<section class="lesson-section"><h2>Density versus histogram</h2><p>A histogram shows bin counts or frequencies. A density display is scaled so its total area is approximately one, which permits comparison between samples of different sizes. Both depend on bin width, so avoid interpreting small bumps as biological discoveries.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Complete SDE results report</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+N = 500
+I0 = 10
+beta = 0.25
+gamma = 0.15
+T = 80
+dt = 0.02
+M = 500
+seed = 180
+
+steps = int(round(T / dt))
+times = np.linspace(0, T, steps + 1)
+rng = np.random.default_rng(seed)
+
+I = np.zeros((M, steps + 1))
+I[:, 0] = I0
+
+for n in range(steps):
+    current = I[:, n]
+    infection_rate = beta * (N - current) * current / N
+    recovery_rate = gamma * current
+    drift = infection_rate - recovery_rate
+    diffusion = np.sqrt(np.maximum(
+        infection_rate + recovery_rate, 0
+    ))
+    dW = np.sqrt(dt) * rng.normal(0, 1, size=M)
+    I[:, n + 1] = np.clip(
+        current + drift * dt + diffusion * dW,
+        0, N
+    )
+
+mean_I = I.mean(axis=0)
+low_I, high_I = np.quantile(
+    I, [0.05, 0.95], axis=0
+)
+
+selected_days = [0, 10, 20, 40, 60, 80]
+indices = [int(day / dt) for day in selected_days]
+
+summary = pd.DataFrame({
+    "day": selected_days,
+    "mean I": mean_I[indices],
+    "median I": np.median(I[:, indices], axis=0),
+    "SD I": I[:, indices].std(axis=0, ddof=1),
+    "5th percentile": low_I[indices],
+    "95th percentile": high_I[indices],
+    "fraction at zero": (I[:, indices] == 0).mean(axis=0)
+})
+
+print("Time-specific ensemble summary")
+print(summary.round(3).to_string(index=False))
+
+fig, axes = plt.subplots(2, 2, figsize=(11, 8.2))
+
+# A. A readable subset of paths
+for r in range(15):
+    axes[0, 0].plot(times, I[r],
+                    alpha=0.45, linewidth=0.8)
+axes[0, 0].set_title("A. Fifteen possible paths")
+axes[0, 0].set_xlabel("Time (days)")
+axes[0, 0].set_ylabel("Infectious population")
+axes[0, 0].grid(alpha=0.2)
+
+# B. Ensemble mean and pointwise central band
+axes[0, 1].fill_between(
+    times, low_I, high_I,
+    color="#b9ddc7", alpha=0.75,
+    label="5th–95th percentiles"
+)
+axes[0, 1].plot(times, mean_I,
+                color="#174c34", linewidth=2,
+                label="Mean")
+axes[0, 1].set_title("B. Centre and time-specific spread")
+axes[0, 1].set_xlabel("Time (days)")
+axes[0, 1].set_ylabel("Infectious population")
+axes[0, 1].legend()
+axes[0, 1].grid(alpha=0.2)
+
+# C. Density estimates at selected times
+density_days = [10, 40, 80]
+for day in density_days:
+    values = I[:, int(day / dt)]
+    density, edges = np.histogram(
+        values, bins=28, range=(0, N), density=True
+    )
+    centres = (edges[:-1] + edges[1:]) / 2
+    axes[1, 0].plot(
+        centres, density, label=f"Day {day}"
+    )
+axes[1, 0].set_title("C. Distribution changes through time")
+axes[1, 0].set_xlabel("Infectious population")
+axes[1, 0].set_ylabel("Density")
+axes[1, 0].legend()
+axes[1, 0].grid(alpha=0.2)
+
+# D. Final-time frequency histogram
+axes[1, 1].hist(
+    I[:, -1], bins=28,
+    color="#79ae90", edgecolor="white"
+)
+axes[1, 1].axvline(
+    np.median(I[:, -1]),
+    color="#b42318", linestyle="--",
+    label="Median"
+)
+axes[1, 1].set_title("D. Day-80 outcome frequencies")
+axes[1, 1].set_xlabel("Infectious population")
+axes[1, 1].set_ylabel("Number of paths")
+axes[1, 1].legend()
+axes[1, 1].grid(axis="y", alpha=0.2)
+
+fig.suptitle("Stochastic SIS: paths and distributions")
+fig.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>How to interpret the report</h2><ol><li>Panel A shows possible histories but only 15 of 500 paths.</li><li>Panel B uses every path and shows pointwise central spread around the mean.</li><li>Panel C shows that distribution shape can change, so mean and variance alone may be incomplete.</li><li>Panel D reports frequencies at one stated time rather than over the whole trajectory.</li><li>The printed table provides exact summaries supporting the visual claims.</li></ol></section>
+<section class="lesson-section"><h2>Communication checklist</h2><ul><li>State model, initial conditions, parameter values, time step, number of paths and seed.</li><li>Put units and biological quantities on axes.</li><li>Say whether a band is percentile, SD or Monte Carlo error.</li><li>State whether summaries include all paths or only non-extinct paths.</li><li>Report numerical boundary treatment and correction frequency.</li><li>Use enough precision to reproduce results, but not false biological precision.</li></ul></section>
+<section class="lesson-section"><h2>Biological interpretation</h2><p>The ensemble describes intrinsic stochastic variation under fixed assumptions. Wide distributions indicate that the same biology permits substantially different prevalence levels. A mass at zero has direct extinction meaning only when the model and numerical boundary rule justify that interpretation.</p></section>
+<section class="lesson-section"><h2>SDE section completion</h2><div class="summary-box"><p>You can now derive epidemic diffusions from events, generate Brownian increments, program Euler–Maruyama, simulate one or many paths, calculate ensemble summaries, compare model classes, diagnose numerical validity, and communicate stochastic results accurately.</p></div></section><nav class="lesson-nav"><a href="../sde-numerical-conditions/">← Previous lesson</a><a href="../">Return to SDE index →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
