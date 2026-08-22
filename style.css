@@ -24,3 +24,46 @@ background:#f1f8f4!important;
 border-color:#9fc8b1!important;
 color:#17211c;
 }
+
+
+/* Shared accessibility and narrow-screen improvements */
+a:focus-visible,
+button:focus-visible,
+textarea:focus-visible{
+outline:3px solid #176b45;
+outline-offset:3px;
+}
+.lesson-section,
+.technical-box,
+.scenario-box,
+.math-box,
+.interpretation-box{
+overflow-wrap:anywhere;
+}
+@media(max-width:800px){
+.hero h1,
+.hero-subtitle{
+white-space:normal;
+}
+.result-table{
+display:block;
+max-width:100%;
+overflow-x:auto;
+-webkit-overflow-scrolling:touch;
+}
+.lesson-nav{
+align-items:stretch;
+flex-direction:column;
+gap:12px;
+}
+.lesson-nav a{
+display:block;
+}
+}
+@media(prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+.card,
+.topic-card{
+transition:none;
+}
+}
