@@ -1,1 +1,105 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Programming moment equations as an ODE system in Python for mathematical biology."><title>Programming moment equations as an ODE system | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">09</p><h1 class="section-title">Programming moment equations as an ODE system</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Program closed stochastic SIS moment equations as an ODE right-hand side in Python."><title>Programming moment equations as an ODE system | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">09</p><h1 class="section-title">Programming moment equations as an ODE system</h1><p class="lesson-intro">A closed moment model becomes computable when retained moments and their derivatives are placed in a consistent state-vector function.</p>
+<section class="lesson-section"><h2>Choose the retained state vector</h2>
+<div class="math-box">&#92;[y(t)=&#92;begin{pmatrix}m_1(t)&#92;&#92;m_2(t)&#92;end{pmatrix}.&#92;]</div>
+<p>Here &#92;(m_1=&#92;mathbb E[I]&#92;) and &#92;(m_2=&#92;mathbb E[I^2]&#92;). The third moment is supplied by the normal closure.</p></section>
+<section class="lesson-section"><h2>Closed SIS equations</h2>
+<div class="math-box">&#92;[
+m_3&#92;approx3m_1m_2-2m_1^3,
+&#92;]</div>
+<div class="math-box">&#92;[
+m_1'=(&#92;beta-&#92;gamma)m_1-&#92;frac{&#92;beta}{N}m_2,
+&#92;]</div>
+<div class="math-box">&#92;[
+m_2'=
+&#92;left[2(&#92;beta-&#92;gamma)-&#92;frac{&#92;beta}{N}&#92;right]m_2
+-&#92;frac{2&#92;beta}{N}m_3
++(&#92;beta+&#92;gamma)m_1.
+&#92;]</div></section>
+<section class="lesson-section"><h2>Function contract</h2><p>An ODE solver will call a function with current time, current moment vector and parameters. The function must return derivatives in the same order as the state vector.</p>
+<pre><code>def sis_moment_rhs(t, y, N, beta, gamma):
+    m1, m2 = y
+    ...
+    return [dm1, dm2]</code></pre></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2><p>This page evaluates and checks the derivative function at several valid moment states. Numerical integration belongs to lesson 10.</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Programming the moment ODE right-hand side</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def normal_third_moment(m1, m2):
+    return 3 * m1 * m2 - 2 * m1 ** 3
+
+def sis_moment_rhs(t, y, N, beta, gamma):
+    m1, m2 = y
+
+    if N <= 0 or beta < 0 or gamma < 0:
+        raise ValueError("Use biologically valid parameters.")
+
+    m3 = normal_third_moment(m1, m2)
+
+    dm1 = (
+        (beta - gamma) * m1
+        - beta * m2 / N
+    )
+
+    dm2 = (
+        (2 * (beta - gamma) - beta / N) * m2
+        - 2 * beta * m3 / N
+        + (beta + gamma) * m1
+    )
+
+    return np.array([dm1, dm2])
+
+N = 100
+beta = 0.25
+gamma = 0.15
+
+test_states = [
+    (0, 5.0, 25.0),
+    (5, 8.0, 80.0),
+    (10, 15.0, 300.0),
+    (15, 25.0, 800.0)
+]
+
+rows = []
+for time, m1, m2 in test_states:
+    dm1, dm2 = sis_moment_rhs(
+        time, [m1, m2], N, beta, gamma
+    )
+    rows.append({
+        "time": time,
+        "m1": m1,
+        "m2": m2,
+        "variance": m2 - m1 ** 2,
+        "dm1/dt": dm1,
+        "dm2/dt": dm2
+    })
+
+table = pd.DataFrame(rows)
+print(table.round(4).to_string(index=False))
+
+# Show how dm1 depends on both retained moments
+m1_grid = np.linspace(0, 40, 81)
+variance_levels = [0, 25, 100, 225]
+
+plt.figure(figsize=(9.5, 5.1))
+for variance in variance_levels:
+    m2_grid = m1_grid ** 2 + variance
+    dm1_values = np.array([
+        sis_moment_rhs(
+            0, [m1, m2], N, beta, gamma
+        )[0]
+        for m1, m2 in zip(m1_grid, m2_grid)
+    ])
+    plt.plot(m1_grid, dm1_values,
+             label=f"Variance = {variance}")
+
+plt.axhline(0, color="black", linewidth=0.8)
+plt.xlabel("First moment m1")
+plt.ylabel("Derivative dm1/dt")
+plt.title("First-moment change depends on variance through m2")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Programming checks</h2><ul><li>The returned derivative order matches &#92;([m_1,m_2]&#92;).</li><li>Initial moments from deterministic &#92;(I_0&#92;) are &#92;(m_1(0)=I_0&#92;) and &#92;(m_2(0)=I_0^2&#92;).</li><li>A valid moment state requires &#92;(m_2-m_1^2&#92;ge0&#92;).</li><li>The closure formula is isolated in its own function so assumptions are visible.</li></ul></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now organise retained moments into a state vector, implement closure explicitly, return derivatives in solver-compatible order and test the ODE right-hand side before numerical integration.</p></div></section><nav class="lesson-nav"><a href="../moment-closure/">← Previous lesson</a><a href="../solving-moment-equations/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
