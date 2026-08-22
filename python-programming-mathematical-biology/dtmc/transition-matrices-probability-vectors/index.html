@@ -1,1 +1,449 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Transition matrices and probability vectors in Python for mathematical biology."><title>Transition matrices and probability vectors | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">10</p><h1 class="section-title">Transition matrices and probability vectors</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Construct a row-stochastic DTMC transition matrix, represent an epidemic probability vector and calculate one exact distribution update in Python.">
+<title>Transition matrices and probability vectors | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.view-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.view-card{padding:21px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.view-card h3{margin-top:0;color:#174c34}.matrix-guide{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin:24px 0}.guide-card{padding:20px;text-align:center;background:#eaf4ee;border-radius:10px}.guide-arrow{font-size:1.8rem;color:#176b45;font-weight:700}.convention-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}.matrix-table th,.matrix-table td{text-align:center}.matrix-table th:first-child,.matrix-table td:first-child{text-align:left;font-weight:700}.check-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.check-card{padding:18px;background:#eaf4ee;border-radius:10px}.check-card strong{display:block;color:#174c34;margin-bottom:6px}@media(max-width:800px){.view-grid,.matrix-guide,.check-grid{grid-template-columns:1fr}.guide-arrow{transform:rotate(90deg);text-align:center}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+
+<main class="section container">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+<p class="section-number">10</p>
+<h1 class="section-title">Transition matrices and probability vectors</h1>
+<p class="lesson-intro">A simulated trajectory selects one state at each time. The matrix approach instead calculates the probability of being in every possible state after one time step.</p>
+
+<section class="lesson-section">
+<h2>A change of viewpoint</h2>
+<div class="view-grid">
+<div class="view-card">
+<h3>Trajectory viewpoint</h3>
+<p>Start in one state, draw a random number and select one next state.</p>
+<div class="math-box">
+&#92;[
+I_0=1&#92;longrightarrow I_1=2
+&#92;quad&#92;text{in one realisation}.
+&#92;]
+</div>
+</div>
+<div class="view-card">
+<h3>Distribution viewpoint</h3>
+<p>Start with probabilities over the states and calculate all next-state probabilities simultaneously.</p>
+<div class="math-box">
+&#92;[
+&#92;boldsymbol&#92;pi_0
+&#92;longrightarrow
+&#92;boldsymbol&#92;pi_1.
+&#92;]
+</div>
+</div>
+</div>
+<div class="definition-box">
+<p>A <strong>probability distribution</strong> assigns a probability to every possible state. Its entries are non-negative and sum to 1.</p>
+</div>
+<p>The matrix calculation uses no random number. For a finite DTMC with a known transition matrix, the one-step distribution update is exact apart from ordinary computer rounding.</p>
+</section>
+
+<section class="lesson-section">
+<h2>A small SIS example</h2>
+<p>Use a closed population of &#92;(N=3&#92;). The state is the infectious count:</p>
+<div class="math-box">
+&#92;[
+&#92;mathcal S=&#92;{0,1,2,3&#92;}.
+&#92;]
+</div>
+<p>Choose &#92;(&#92;beta=0.6&#92;) per day, &#92;(&#92;gamma=0.2&#92;) per day and &#92;(&#92;Delta t=0.5&#92;) day. From state &#92;(i&#92;):</p>
+<div class="math-box">
+&#92;[
+p_i=&#92;beta&#92;frac{(N-i)i}{N}&#92;Delta t,
+&#92;qquad
+q_i=&#92;gamma i&#92;Delta t,
+&#92;qquad
+r_i=1-p_i-q_i.
+&#92;]
+</div>
+<p>These are infection, recovery and no-change probabilities, as established in the SIS lesson.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Fix the matrix convention before calculating</h2>
+<div class="convention-box">
+<p>This page uses a <strong>row-stochastic matrix</strong>:</p>
+<div class="math-box">
+&#92;[
+P_{ij}
+=
+&#92;Pr(I_{n+1}=j&#92;mid I_n=i).
+&#92;]
+</div>
+<p><strong>Row &#92;(i&#92;) is the current state. Column &#92;(j&#92;) is the next state.</strong> Therefore every row must sum to 1.</p>
+</div>
+<div class="matrix-guide">
+<div class="guide-card"><strong>Choose current state</strong>Read across row &#92;(i&#92;)</div>
+<div class="guide-arrow">→</div>
+<div class="guide-card"><strong>Find next-state probabilities</strong>Columns &#92;(j=0,1,2,3&#92;)</div>
+</div>
+<p>The states are ordered &#92;(0,1,2,3&#92;). Row and column positions must use this same ordering.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Construct each row biologically</h2>
+<p>From an interior state &#92;(i&#92;), only three destinations are possible:</p>
+<div class="math-box">
+&#92;[
+P_{i,i+1}=p_i,&#92;qquad
+P_{i,i-1}=q_i,&#92;qquad
+P_{i,i}=r_i.
+&#92;]
+</div>
+<p>All other entries in that row are zero because a one-event step cannot jump over a neighbouring state.</p>
+
+<div class="table-wrap">
+<table class="matrix-table">
+<thead>
+<tr><th>Current state</th><th>Next 0</th><th>Next 1</th><th>Next 2</th><th>Next 3</th></tr>
+</thead>
+<tbody>
+<tr><td>Current 0</td><td>1.0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>Current 1</td><td>0.1</td><td>0.7</td><td>0.2</td><td>0</td></tr>
+<tr><td>Current 2</td><td>0</td><td>0.2</td><td>0.6</td><td>0.2</td></tr>
+<tr><td>Current 3</td><td>0</td><td>0</td><td>0.3</td><td>0.7</td></tr>
+</tbody>
+</table>
+</div>
+<p>Hence:</p>
+<div class="math-box">
+&#92;[
+P=
+&#92;begin{pmatrix}
+1&0&0&0&#92;&#92;
+0.1&0.7&0.2&0&#92;&#92;
+0&0.2&0.6&0.2&#92;&#92;
+0&0&0.3&0.7
+&#92;end{pmatrix}.
+&#92;]
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret important rows</h2>
+<ul>
+<li><strong>Row 0:</strong> &#92;((1,0,0,0)&#92;). Extinction is absorbing.</li>
+<li><strong>Row 1:</strong> recovery gives state 0, no change gives state 1, and infection gives state 2.</li>
+<li><strong>Row 2:</strong> one step can reach states 1, 2 or 3, but not state 0.</li>
+<li><strong>Row 3:</strong> infection is impossible because no susceptible people remain; recovery can reach state 2.</li>
+</ul>
+<p>The many zero entries encode biologically impossible one-step movements. Because non-zero entries lie only on the main diagonal and its two neighbours, this birth–death transition matrix is <strong>tridiagonal</strong>.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The probability row vector</h2>
+<p>Using the same state order, define:</p>
+<div class="math-box">
+&#92;[
+&#92;boldsymbol&#92;pi_n=
+&#92;big(
+&#92;Pr(I_n=0),
+&#92;Pr(I_n=1),
+&#92;Pr(I_n=2),
+&#92;Pr(I_n=3)
+&#92;big).
+&#92;]
+</div>
+<p>This page writes &#92;(&#92;boldsymbol&#92;pi_n&#92;) as a <strong>row vector</strong>. If the process certainly begins in state 1:</p>
+<div class="math-box">
+&#92;[
+&#92;boldsymbol&#92;pi_0=(0,1,0,0).
+&#92;]
+</div>
+<p>The 1 means 100% probability at state 1. It does not mean the infectious count itself is stored in the vector.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Calculate one distribution update</h2>
+<p>With a row probability vector and row-stochastic matrix:</p>
+<div class="math-box">
+&#92;[
+&#92;boldsymbol&#92;pi_{n+1}
+=
+&#92;boldsymbol&#92;pi_nP.
+&#92;]
+</div>
+<p>For the certain initial state 1:</p>
+<div class="math-box">
+&#92;[
+(0,1,0,0)
+&#92;begin{pmatrix}
+1&0&0&0&#92;&#92;
+0.1&0.7&0.2&0&#92;&#92;
+0&0.2&0.6&0.2&#92;&#92;
+0&0&0.3&0.7
+&#92;end{pmatrix}
+=
+(0.1,0.7,0.2,0).
+&#92;]
+</div>
+<p>Because the initial vector places all probability on state 1, the next vector is simply row 1 of &#92;(P&#92;).</p>
+</section>
+
+<section class="lesson-section">
+<h2>What matrix multiplication is doing</h2>
+<p>For each next state &#92;(j&#92;):</p>
+<div class="math-box">
+&#92;[
+&#92;pi_{n+1,j}
+=
+&#92;sum_{i=0}^{N}
+&#92;pi_{n,i}P_{ij}.
+&#92;]
+</div>
+<p>The calculation adds contributions arriving at state &#92;(j&#92;) from every possible current state &#92;(i&#92;). Each contribution is:</p>
+<div class="math-box">
+&#92;[
+&#92;underbrace{&#92;pi_{n,i}}_{&#92;text{probability currently at }i}
+&#92;times
+&#92;underbrace{P_{ij}}_{&#92;text{probability of }i&#92;to j}.
+&#92;]
+</div>
+<p>For a certain initial state, only one current-state contribution is non-zero. For a mixed initial distribution, several rows contribute.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Row versus column conventions</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Probability representation</th><th>Update using this page's row-stochastic (P)</th></tr></thead>
+<tbody>
+<tr><td>Row vector</td><td>&#92;(&#92;boldsymbol&#92;pi_{n+1}=&#92;boldsymbol&#92;pi_nP&#92;)</td></tr>
+<tr><td>Column vector</td><td>&#92;(&#92;mathbf p_{n+1}=P^{&#92;mathsf T}&#92;mathbf p_n&#92;)</td></tr>
+</tbody>
+</table>
+</div>
+<p>Some books instead define columns as current states. Their transition matrix is the transpose of ours, and they write &#92;(&#92;mathbf p_{n+1}=P&#92;mathbf p_n&#92;). Both conventions are valid.</p>
+<div class="warning-box">
+<p>Never mix conventions. First state whether rows or columns represent the current state, then check the corresponding sums and use the matching multiplication order.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Three essential checks</h2>
+<div class="check-grid">
+<div class="check-card"><strong>Shape</strong>With four states, &#92;(P&#92;) must have shape &#92;(4&#92;times4&#92;).</div>
+<div class="check-card"><strong>Entries</strong>Every matrix entry must lie between 0 and 1.</div>
+<div class="check-card"><strong>Row sums</strong>Every row must sum to 1 under our convention.</div>
+</div>
+<p>The probability vector must also contain four non-negative entries summing to 1.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>The code constructs &#92;(P&#92;) from the SIS formulas, validates it, performs exactly one distribution update and displays the matrix and vectors as tables and graphs.</p>
+
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>One transition-matrix update</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Small SIS model
+N = 3
+beta = 0.6
+gamma = 0.2
+dt = 0.5
+
+states = np.arange(N + 1)
+number_of_states = len(states)
+
+# P[current state, next state]
+P = np.zeros((number_of_states, number_of_states))
+
+for i in states:
+    susceptible = N - i
+
+    p_infection = beta * susceptible * i / N * dt
+    p_recovery = gamma * i * dt
+    p_no_change = 1 - p_infection - p_recovery
+
+    if p_no_change &lt; -1e-12:
+        raise ValueError(f"Invalid probabilities at state {i}.")
+
+    # Stay in the current state
+    P[i, i] = max(0.0, p_no_change)
+
+    # Infection: i to i + 1
+    if i &lt; N:
+        P[i, i + 1] = p_infection
+
+    # Recovery: i to i - 1
+    if i &gt; 0:
+        P[i, i - 1] = p_recovery
+
+# Validate the row-stochastic matrix
+if P.shape != (number_of_states, number_of_states):
+    raise ValueError("P has the wrong shape.")
+
+if (P &lt; -1e-12).any() or (P &gt; 1 + 1e-12).any():
+    raise ValueError("A matrix entry is outside [0, 1].")
+
+row_sums = P.sum(axis=1)
+
+if not np.allclose(row_sums, 1.0):
+    raise ValueError("The rows of P do not sum to 1.")
+
+# Certain initial state: I_0 = 1
+pi_current = np.array([0.0, 1.0, 0.0, 0.0])
+
+if not np.isclose(pi_current.sum(), 1.0):
+    raise ValueError("Initial probabilities do not sum to 1.")
+
+# One distribution update
+pi_next = pi_current @ P
+
+if not np.isclose(pi_next.sum(), 1.0):
+    raise ValueError("Updated probabilities do not sum to 1.")
+
+labels = [f"I={i}" for i in states]
+
+matrix_table = pd.DataFrame(
+    P,
+    index=[f"current {i}" for i in states],
+    columns=[f"next {j}" for j in states]
+)
+
+vector_table = pd.DataFrame({
+    "state": labels,
+    "current probability": pi_current,
+    "next probability": pi_next
+})
+
+print("Transition matrix P")
+print(matrix_table.to_string())
+print()
+print("Row sums")
+print(pd.Series(row_sums, index=matrix_table.index).to_string())
+print()
+print("One probability-vector update")
+print(vector_table.to_string(index=False))
+print()
+print(f"Sum of next probabilities: {pi_next.sum():.6f}")
+
+# Figure 1: transition-matrix heatmap
+plt.figure(figsize=(7, 5.4))
+image = plt.imshow(P, cmap="YlGn", vmin=0, vmax=1)
+plt.colorbar(image, label="Transition probability")
+plt.xticks(states, [f"next {j}" for j in states])
+plt.yticks(states, [f"current {i}" for i in states])
+
+for i in states:
+    for j in states:
+        plt.text(j, i, f"{P[i, j]:.1f}",
+                 ha="center", va="center", color="black")
+
+plt.title("Row-stochastic SIS transition matrix")
+plt.tight_layout()
+
+# Figure 2: distribution before and after one step
+x = np.arange(number_of_states)
+width = 0.36
+
+plt.figure(figsize=(8, 4.8))
+plt.bar(x - width/2, pi_current, width,
+        label="Current distribution", color="#2563eb")
+plt.bar(x + width/2, pi_next, width,
+        label="After one step", color="#f59e0b")
+plt.xticks(x, labels)
+plt.xlabel("Infectious-count state")
+plt.ylabel("Probability")
+plt.ylim(0, 1.05)
+plt.title("One exact probability-distribution update")
+plt.legend()
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the new matrix code</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>np.zeros((4, 4))</code></td><td>Creates a 4-by-4 matrix initially filled with zeros.</td></tr>
+<tr><td><code>P[i, j]</code></td><td>Accesses the entry in current-state row &#92;(i&#92;) and next-state column &#92;(j&#92;).</td></tr>
+<tr><td><code>P.sum(axis=1)</code></td><td>Sums across columns within each row. <code>axis=1</code> therefore checks row sums.</td></tr>
+<tr><td><code>np.allclose(...)</code></td><td>Checks whether all calculated floating-point values are sufficiently close to their targets.</td></tr>
+<tr><td><code>pi_current @ P</code></td><td>Uses <code>@</code> for matrix multiplication to calculate the next distribution.</td></tr>
+<tr><td><code>pi_current * P</code></td><td>Would perform element-by-element multiplication with broadcasting; it is not the required distribution update.</td></tr>
+<tr><td><code>P.shape</code></td><td>Returns the matrix dimensions as a tuple.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret the one-step result</h2>
+<p>Beginning certainly at &#92;(I_0=1&#92;), after one step:</p>
+<ul>
+<li>&#92;(&#92;Pr(I_1=0)=0.1&#92;): recovery causes extinction;</li>
+<li>&#92;(&#92;Pr(I_1=1)=0.7&#92;): no event occurs;</li>
+<li>&#92;(&#92;Pr(I_1=2)=0.2&#92;): infection increases the count; and</li>
+<li>&#92;(&#92;Pr(I_1=3)=0&#92;): reaching state 3 would require two infections in one step and is excluded.</li>
+</ul>
+<p>The vector contains all four possible one-step outcomes and their probabilities. A single simulated trajectory would display only one of these outcomes.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Change the certain initial state to &#92;(I_0=2&#92;) using <code>pi_current = np.array([0, 0, 1, 0])</code>. Which matrix row becomes the next vector?</li>
+<li>Use the mixed distribution <code>[0.2, 0.5, 0.3, 0.0]</code>. Observe how several current-state rows contribute.</li>
+<li>Change one entry of <code>pi_current</code> without preserving its sum. Confirm that the validation reports the problem.</li>
+<li>Increase <code>dt</code>. Find when at least one state's no-change probability becomes invalid.</li>
+<li>Replace <code>axis=1</code> with <code>axis=0</code>. Compare column sums with the required row sums.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has—and has not—done</h2>
+<div class="summary-box">
+<p><strong>You can now:</strong></p>
+<ul>
+<li>construct a transition matrix from biological event probabilities;</li>
+<li>interpret rows as current states and columns as next states;</li>
+<li>check shape, entries and row sums;</li>
+<li>represent certain and mixed state distributions;</li>
+<li>calculate one exact update using <code>pi_current @ P</code>; and</li>
+<li>distinguish a probability distribution from one random trajectory.</li>
+</ul>
+<p><strong>Not yet:</strong> this page performs only one matrix update. Lesson 11 repeatedly multiplies the vector by &#92;(P&#92;), follows the distribution through time and studies probability conservation and extinction probability.</p>
+</div>
+</section>
+
+<nav class="lesson-nav">
+<a href="../dtmc-seir-model/">← Previous lesson</a>
+<a href="../matrix-updating/">Next lesson →</a>
+</nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
