@@ -1,1 +1,216 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Outbreak size, duration, peak size and peak time in Python for mathematical biology."><title>Outbreak size, duration, peak size and peak time | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">13</p><h1 class="section-title">Outbreak size, duration, peak size and peak time</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Calculate and interpret CTMC epidemic final size, duration, peak size and peak time across many SIR trajectories.">
+<title>Outbreak size, duration, peak size and peak time | MathsBio</title><link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js"></script>
+<style>.four{display:grid;grid-template-columns:repeat(2,1fr);gap:17px}.card{padding:20px;background:#eaf4ee;border-radius:10px}.condition{padding:22px;background:#f1f8f4;border:2px solid #9fc8b1;border-radius:11px}@media(max-width:720px){.four{grid-template-columns:1fr}}</style></head><body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container">
+<a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">13</p><h1 class="section-title">Outbreak size, duration, peak size and peak time</h1>
+<p class="lesson-intro">Probability classifies whether an event occurred. Outcome analysis keeps the numerical result from every complete trajectory, revealing how large, long and intense epidemics can be.</p>
+
+<section class="lesson-section"><h2>Define each trajectory-level outcome</h2>
+<div class="four">
+<div class="card"><h3>Final outbreak size</h3><div class="math-box">&#92;[Z=N-S(T).&#92;]</div><p>Total number ever infected, including people infectious initially.</p></div>
+<div class="card"><h3>Duration</h3><div class="math-box">&#92;[T=&#92;inf&#92;{t:I(t)=0&#92;}.&#92;]</div><p>Time from the initial state until the final recovery.</p></div>
+<div class="card"><h3>Peak size</h3><div class="math-box">&#92;[I_{&#92;max}=&#92;max_{0&#92;le t&#92;le T}I(t).&#92;]</div><p>Largest number simultaneously infectious.</p></div>
+<div class="card"><h3>Peak time</h3><div class="math-box">&#92;[T_{&#92;peak}=&#92;min&#92;{t:I(t)=I_{&#92;max}&#92;}.&#92;]</div><p>First time the maximum infectious count is reached.</p></div>
+</div>
+</section>
+
+<section class="lesson-section"><h2>Why definitions need small details</h2>
+<ul>
+<li>State whether initial infectious people are included in final size; this lesson includes them.</li>
+<li>A maximum may be reached more than once; this lesson records its first occurrence.</li>
+<li>Duration requires the full continuous-time clock and cannot be obtained from event types alone.</li>
+<li>All simulations must finish at extinction before their final sizes are compared.</li>
+</ul>
+</section>
+
+<section class="lesson-section"><h2>Mixtures can hide biological structure</h2>
+<p>With few initial infections, outcomes often split into early fade-outs and major epidemics. A single overall mean may fall between these groups and describe neither group well.</p>
+<div class="condition"><strong>Report both when useful:</strong> unconditional summaries describe all possible starts; conditional summaries such as “given final size at least 20” describe the severity of trajectories classified as major outbreaks.</div>
+</section>
+
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<p>Run 1,000 complete SIR epidemics. Each simulation returns exactly one row containing its four outcomes. The program then compares all runs with major-outbreak runs and explores dependence between size and peak.</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>CTMC outbreak outcomes</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def simulate_sir_outcomes(rng, N, I0, beta, gamma):
+    S = N - I0
+    I = I0
+    R = 0
+    time = 0.0
+
+    peak_I = I
+    peak_time = 0.0
+
+    while I > 0:
+        infection_rate = beta * S * I / N
+        recovery_rate = gamma * I
+        total_rate = infection_rate + recovery_rate
+
+        waiting_time = rng.exponential(1 / total_rate)
+        time += waiting_time
+
+        if rng.random() < infection_rate / total_rate:
+            S -= 1
+            I += 1
+        else:
+            I -= 1
+            R += 1
+
+        # Strict > records the first time the maximum is reached
+        if I > peak_I:
+            peak_I = I
+            peak_time = time
+
+    return {
+        "final size": N - S,
+        "duration": time,
+        "peak I": peak_I,
+        "peak time": peak_time
+    }
+
+# Model and Monte Carlo settings
+N = 200
+I0 = 3
+beta = 0.25
+gamma = 0.10
+number_of_runs = 1000
+major_threshold = 20
+seed = 88
+
+rng = np.random.default_rng(seed)
+rows = []
+
+for run in range(number_of_runs):
+    outcome = simulate_sir_outcomes(
+        rng, N, I0, beta, gamma
+    )
+    outcome["run"] = run + 1
+    rows.append(outcome)
+
+outcomes = pd.DataFrame(rows)
+outcomes["major outbreak"] = (
+    outcomes["final size"] >= major_threshold
+)
+
+# Put the run number first
+outcomes = outcomes[[
+    "run", "final size", "duration",
+    "peak I", "peak time", "major outbreak"
+]]
+
+major_outcomes = outcomes[outcomes["major outbreak"]]
+
+summary = pd.DataFrame({
+    "all runs": outcomes[
+        ["final size", "duration", "peak I", "peak time"]
+    ].median(),
+    "major outbreaks": major_outcomes[
+        ["final size", "duration", "peak I", "peak time"]
+    ].median()
+})
+summary.index.name = "median outcome"
+
+quantiles = outcomes[
+    ["final size", "duration", "peak I", "peak time"]
+].quantile([0.05, 0.50, 0.95])
+quantiles.index = ["5th percentile", "median", "95th percentile"]
+
+correlation = outcomes["final size"].corr(
+    outcomes["peak I"]
+)
+
+print("First 10 trajectory outcomes")
+print(outcomes.head(10).round(3).to_string(index=False))
+print()
+print("Unconditional outcome quantiles")
+print(quantiles.round(3).to_string())
+print()
+print("Median: all runs versus major outbreaks")
+print(summary.round(3).to_string())
+print()
+print(
+    f"Major outbreaks: {len(major_outcomes)} "
+    f"of {number_of_runs}"
+)
+print(
+    "Correlation between final size and peak I: "
+    f"{correlation:.3f}"
+)
+
+# Figure 1: distributions of all four outcomes
+fig, axes = plt.subplots(2, 2, figsize=(10, 7.5))
+
+columns = ["final size", "duration", "peak I", "peak time"]
+titles = [
+    "Final outbreak size",
+    "Epidemic duration",
+    "Peak infectious count",
+    "Time of infectious peak"
+]
+xlabels = ["People", "Days", "People", "Days"]
+
+for axis, column, title, xlabel in zip(
+    axes.flat, columns, titles, xlabels
+):
+    axis.hist(outcomes[column], bins=25,
+              color="#79ae90", edgecolor="white")
+    axis.set_title(title)
+    axis.set_xlabel(xlabel)
+    axis.set_ylabel("Number of runs")
+    axis.grid(axis="y", alpha=0.2)
+
+fig.suptitle("Outcome distributions across complete CTMC epidemics")
+fig.tight_layout()
+
+# Figure 2: dependence between two outcomes
+plt.figure(figsize=(8.2, 5.3))
+colours = np.where(
+    outcomes["major outbreak"], "#b42318", "#39815e"
+)
+plt.scatter(
+    outcomes["final size"], outcomes["peak I"],
+    c=colours, alpha=0.45, s=20
+)
+plt.axvline(major_threshold, color="black", linestyle="--",
+            label=f"Major threshold = {major_threshold}")
+plt.xlabel("Final outbreak size")
+plt.ylabel("Peak infectious count")
+plt.title("Large final sizes tend to accompany larger peaks")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div></div>
+</section>
+
+<section class="lesson-section"><h2>Understand the outcome programming</h2>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>if I &gt; peak_I</code></td><td>Updates the peak only for a strictly larger value, preserving the first peak time.</td></tr>
+<tr><td><code>return {...}</code></td><td>Returns one labelled outcome record from one trajectory.</td></tr>
+<tr><td><code>pd.DataFrame(rows)</code></td><td>Creates a table with one row per simulated epidemic.</td></tr>
+<tr><td><code>.quantile([0.05, 0.50, 0.95])</code></td><td>Reports the middle and tails without assuming a normal distribution.</td></tr>
+<tr><td><code>.corr(...)</code></td><td>Measures linear association; it does not prove causation.</td></tr>
+</tbody></table></div></section>
+
+<section class="lesson-section"><h2>Interpret outcomes together</h2>
+<p>Final size measures total burden, while peak size measures maximum simultaneous prevalence and is more directly related to pressure on limited services. Duration measures how long transmission persists. Peak time affects how much preparation time may be available.</p>
+<p>These summaries are related but not interchangeable. Two trajectories can have similar final sizes but different peaks or durations.</p>
+</section>
+
+<section class="lesson-section"><h2>Avoid misleading summaries</h2>
+<ul>
+<li>Do not report only the mean when the distribution separates into fade-outs and large epidemics.</li>
+<li>Do not condition on major outbreaks without saying so.</li>
+<li>Do not treat a 5th–95th percentile range as a confidence interval for the mean.</li>
+<li>Do not calculate duration from a simulation stopped at an arbitrary horizon.</li>
+</ul>
+</section>
+
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now extract well-defined outcomes from each completed trajectory, construct an outcome table, report empirical quantiles, distinguish unconditional and conditional summaries, and examine dependence between epidemic burden and peak pressure. The final CTMC lesson concentrates on choosing and interpreting plots and tables correctly.</p></div></section>
+<nav class="lesson-nav"><a href="../ctmc-extinction-outbreak-probability/">← Previous lesson</a><a href="../ctmc-plots-tables/">Next lesson →</a></nav>
+</main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
