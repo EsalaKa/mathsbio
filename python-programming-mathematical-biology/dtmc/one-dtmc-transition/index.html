@@ -1,1 +1,361 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Programming one DTMC transition in Python for mathematical biology."><title>Programming one DTMC transition | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">05</p><h1 class="section-title">Programming one DTMC transition</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Program exactly one valid DTMC transition by combining an epidemic state, transition probabilities and one uniform random number.">
+<title>Programming one DTMC transition | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.transition-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:center;margin:24px 0}.flow-card{background:#fff;border:1px solid #dce7e0;border-radius:11px;padding:18px;text-align:center}.flow-card strong{display:block;color:#174c34;margin-bottom:6px}.flow-arrow{font-size:1.7rem;color:#176b45;font-weight:700}.change-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:22px 0}.change-card{background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px;padding:18px}.change-card h3{margin-top:0;color:#174c34}.validation-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.validation-card{background:#eaf4ee;border-radius:10px;padding:18px}.validation-card strong{display:block;color:#174c34}@media(max-width:800px){.transition-flow,.change-grid,.validation-grid{grid-template-columns:1fr}.flow-arrow{transform:rotate(90deg);text-align:center}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+
+<main class="section container">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+<p class="section-number">05</p>
+<h1 class="section-title">Programming one DTMC transition</h1>
+<p class="lesson-intro">We now combine the ideas from the previous lessons. Starting from one SIR state, the program calculates valid probabilities, draws one uniform random number, selects one event and returns exactly one next state.</p>
+
+<section class="lesson-section">
+<h2>The unique purpose of this lesson</h2>
+<div class="definition-box">
+<p>A <strong>DTMC transition</strong> is one movement from the current state &#92;(X_n&#92;) to the next state &#92;(X_{n+1}&#92;) during one fixed time step.</p>
+</div>
+<p>This lesson performs the complete mechanism once. It does not use a loop, store a trajectory or simulate an entire epidemic. Those are the new ideas in Lesson 6.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Scenario: one step of an SIR epidemic</h2>
+<p>Consider a closed population of 1,000 people at time step &#92;(n&#92;):</p>
+<div class="math-box">
+&#92;[
+X_n=(S_n,I_n,R_n)=(990,10,0).
+&#92;]
+</div>
+<p>Use &#92;(&#92;beta=0.3&#92;) per day, &#92;(&#92;gamma=0.1&#92;) per day and &#92;(&#92;Delta t=0.1&#92;) day. As derived in Lesson 3:</p>
+<div class="math-box">
+&#92;[
+p_{&#92;mathrm{inf}}=0.297,&#92;qquad
+p_{&#92;mathrm{rec}}=0.100,&#92;qquad
+p_{&#92;mathrm{stay}}=0.603.
+&#92;]
+</div>
+<p>Only one of the three events may be applied during this step.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The one-transition algorithm</h2>
+<div class="transition-flow">
+<div class="flow-card"><strong>1. Current state</strong>&#92;((S,I,R)&#92;)</div>
+<div class="flow-arrow">→</div>
+<div class="flow-card"><strong>2. Random selection</strong>probabilities + one &#92;(U&#92;)</div>
+<div class="flow-arrow">→</div>
+<div class="flow-card"><strong>3. Next state</strong>&#92;((S',I',R')&#92;)</div>
+</div>
+<ol>
+<li>Read the current state and parameter values.</li>
+<li>Calculate infection, recovery and no-change probabilities.</li>
+<li>Check that the probabilities are valid.</li>
+<li>Generate one uniform random number &#92;(U&#92;).</li>
+<li>Use the cumulative intervals to select one event.</li>
+<li>Apply only the compartment changes belonging to that event.</li>
+<li>Check that the next state is biologically valid.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>How each event changes the state</h2>
+<div class="change-grid">
+<div class="change-card">
+<h3>Infection</h3>
+<div class="math-box">&#92;[(S,I,R)&#92;longrightarrow(S-1,I+1,R).&#92;]</div>
+<p>One susceptible person becomes infectious. The total population is unchanged.</p>
+</div>
+<div class="change-card">
+<h3>Recovery</h3>
+<div class="math-box">&#92;[(S,I,R)&#92;longrightarrow(S,I-1,R+1).&#92;]</div>
+<p>One infectious person moves to the removed compartment.</p>
+</div>
+<div class="change-card">
+<h3>No change</h3>
+<div class="math-box">&#92;[(S,I,R)&#92;longrightarrow(S,I,R).&#92;]</div>
+<p>No infection or recovery occurs during this time step.</p>
+</div>
+</div>
+<div class="note-box">
+<p>The random number chooses the event; the event determines the state change. We must not apply the probabilities themselves as fractional changes to the compartment counts.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>From interval selection to state updating</h2>
+<pre><code>if u &lt; p_infection:
+    event = "infection"
+    next_S = S - 1
+    next_I = I + 1
+    next_R = R
+elif u &lt; p_infection + p_recovery:
+    event = "recovery"
+    next_S = S
+    next_I = I - 1
+    next_R = R + 1
+else:
+    event = "no change"
+    next_S = S
+    next_I = I
+    next_R = R</code></pre>
+<p>Each branch assigns all three next-state variables. Therefore, after the conditional block, <code>next_S</code>, <code>next_I</code> and <code>next_R</code> always describe one complete state.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why use new variable names?</h2>
+<p>The names <code>S</code>, <code>I</code> and <code>R</code> retain the current state. The names <code>next_S</code>, <code>next_I</code> and <code>next_R</code> hold the next state.</p>
+<div class="example-box">
+<p>This separation makes the transition easy to inspect:</p>
+<div class="math-box">
+&#92;[
+&#92;underbrace{(S,I,R)}_{&#92;text{before the step}}
+&#92;quad&#92;longrightarrow&#92;quad
+&#92;underbrace{(S',I',R')}_{&#92;text{after the step}}.
+&#92;]
+</div>
+</div>
+<p>It also prevents accidental partial updating. For example, changing <code>S</code> before calculating every quantity could cause later calculations to mix the old and new states.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Conditions for a valid transition</h2>
+<div class="validation-grid">
+<div class="validation-card"><strong>Valid probabilities</strong>Each probability is between 0 and 1, and their sum is 1.</div>
+<div class="validation-card"><strong>Non-negative counts</strong>The next values of &#92;(S&#92;), &#92;(I&#92;) and &#92;(R&#92;) cannot be negative.</div>
+<div class="validation-card"><strong>Population conservation</strong>&#92;(S'+I'+R'=S+I+R=N&#92;).</div>
+</div>
+<p>The biological rates automatically give zero probability to impossible events: if &#92;(S=0&#92;), infection probability is zero; if &#92;(I=0&#92;), both infection and recovery probabilities are zero.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>Click <strong>Run code</strong>. The program will perform one transition and display the random number, probability intervals, selected event, before-and-after table and graph.</p>
+
+<div class="python-cell" data-python-cell>
+<div class="python-toolbar">
+<button class="run-python" type="button">▶ Run code</button>
+<button class="reset-python" type="button">Reset</button>
+<button class="copy-python" type="button">Copy</button>
+</div>
+<textarea class="python-code" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def one_sir_transition(S, I, R, beta, gamma, dt, rng):
+    # Population size before the transition
+    N = S + I + R
+
+    # Transition probabilities from the current state
+    p_infection = beta * S * I / N * dt
+    p_recovery = gamma * I * dt
+    p_no_change = 1 - p_infection - p_recovery
+
+    # A negative no-change probability means dt is too large
+    if p_no_change &lt; -1e-12:
+        raise ValueError("Time step is too large: probabilities exceed 1.")
+
+    # Remove a tiny negative value caused only by rounding
+    p_no_change = max(0.0, p_no_change)
+
+    # One random number selects one event
+    u = rng.random()
+
+    if u &lt; p_infection:
+        event = "infection"
+        next_S = S - 1
+        next_I = I + 1
+        next_R = R
+    elif u &lt; p_infection + p_recovery:
+        event = "recovery"
+        next_S = S
+        next_I = I - 1
+        next_R = R + 1
+    else:
+        event = "no change"
+        next_S = S
+        next_I = I
+        next_R = R
+
+    # Validate the next state
+    if min(next_S, next_I, next_R) &lt; 0:
+        raise ValueError("A compartment became negative.")
+
+    if next_S + next_I + next_R != N:
+        raise ValueError("Population was not conserved.")
+
+    return {
+        "event": event,
+        "u": u,
+        "probabilities": (p_infection, p_recovery, p_no_change),
+        "next_state": (next_S, next_I, next_R)
+    }
+
+# Current state and parameters
+S, I, R = 990, 10, 0
+beta = 0.3
+gamma = 0.1
+dt = 0.1
+
+# Change the seed to obtain another valid transition
+seed = 7
+rng = np.random.default_rng(seed)
+
+result = one_sir_transition(S, I, R, beta, gamma, dt, rng)
+
+p_infection, p_recovery, p_no_change = result["probabilities"]
+next_S, next_I, next_R = result["next_state"]
+
+print(f"Random number u: {result['u']:.6f}")
+print(f"Selected event: {result['event']}")
+print()
+print("Probability intervals")
+print(f"Infection: [0, {p_infection:.3f})")
+print(f"Recovery:  [{p_infection:.3f}, "
+      f"{p_infection + p_recovery:.3f})")
+print(f"No change: [{p_infection + p_recovery:.3f}, 1)")
+print()
+
+state_table = pd.DataFrame({
+    "compartment": ["Susceptible", "Infectious", "Removed", "Total"],
+    "before": [S, I, R, S + I + R],
+    "after": [
+        next_S, next_I, next_R,
+        next_S + next_I + next_R
+    ],
+    "change": [
+        next_S - S,
+        next_I - I,
+        next_R - R,
+        (next_S + next_I + next_R) - (S + I + R)
+    ]
+})
+
+print("State transition")
+print(state_table.to_string(index=False))
+
+labels = ["Susceptible", "Infectious", "Removed"]
+before = [S, I, R]
+after = [next_S, next_I, next_R]
+x = np.arange(3)
+width = 0.36
+
+plt.figure(figsize=(8, 4.6))
+plt.bar(x - width/2, before, width, label="Before",
+        color="#2563eb")
+plt.bar(x + width/2, after, width, label="After",
+        color="#f59e0b")
+plt.xticks(x, labels)
+plt.ylabel("Number of people")
+plt.title(f"One DTMC transition: {result['event']}")
+plt.legend()
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()
+plt.show()</textarea>
+<div class="python-status" aria-live="polite"></div>
+<pre class="python-output" aria-live="polite"></pre>
+<div class="python-output-images"></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Read the result correctly</h2>
+<p>With seed 7, the generator produces one particular random number. The interval containing that number determines the event. The table then shows how that event changes the state.</p>
+<p>If no change is selected, identical before-and-after states are a genuine stochastic outcome—not evidence that the program failed.</p>
+<div class="warning-box">
+<p>One transition is one possible realisation. It does not represent the average epidemic behaviour and cannot tell us what will happen in every simulation.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the function</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Code</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>def one_sir_transition(...):</code></td><td>Packages the entire one-step rule into a reusable function.</td></tr>
+<tr><td><code>rng</code></td><td>Receives the random-number generator instead of creating a new generator inside every call.</td></tr>
+<tr><td><code>raise ValueError(...)</code></td><td>Stops the calculation and reports why the supplied model inputs cannot produce a valid transition.</td></tr>
+<tr><td><code>max(0.0, p_no_change)</code></td><td>Replaces only a tiny negative round-off value with zero after genuinely invalid values have already been rejected.</td></tr>
+<tr><td><code>min(next_S, next_I, next_R)</code></td><td>Finds the smallest next-state count. If it is negative, at least one compartment is invalid.</td></tr>
+<tr><td><code>return {...}</code></td><td>Returns a dictionary containing the event, random number, probabilities and next state.</td></tr>
+<tr><td><code>result["next_state"]</code></td><td>Retrieves the next-state tuple from the returned dictionary.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why compare with <code>-1e-12</code> rather than exactly zero?</h2>
+<p>Decimal quantities are stored approximately by a computer. A calculation that should mathematically give zero may occasionally produce a tiny value such as &#92;(-10^{-16}&#92;).</p>
+<pre><code>if p_no_change &lt; -1e-12:
+    raise ValueError(...)</code></pre>
+<p>Here <code>1e-12</code> means &#92;(10^{-12}&#92;). A value below &#92;(-10^{-12}&#92;) is treated as a real probability error. A much smaller negative value is treated as harmless numerical round-off and replaced by zero.</p>
+<p>This is different from a direct input check such as <code>if dt &lt;= 0</code>. The value of <code>dt</code> is supplied explicitly, so zero and negative values can be rejected directly. The no-change probability is produced by floating-point arithmetic and may contain tiny rounding error.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Boundary state: no infectious people</h2>
+<p>If &#92;(I=0&#92;), then:</p>
+<div class="math-box">
+&#92;[
+p_{&#92;mathrm{infection}}=0,&#92;qquad
+p_{&#92;mathrm{recovery}}=0,&#92;qquad
+p_{&#92;mathrm{stay}}=1.
+&#92;]
+</div>
+<p>Every possible random number therefore selects no change. The disease-free state is absorbing in this closed SIR model: without an infectious person or imported infection, transmission cannot restart.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Change <code>seed = 7</code> to several other integers. Observe different valid one-step outcomes.</li>
+<li>Use <code>S, I, R = 990, 0, 10</code>. Confirm that no change is always selected.</li>
+<li>Set <code>dt = 1.0</code>. Read the error message and explain why the probabilities are invalid for the current state.</li>
+<li>Temporarily replace the infection update with <code>next_S = S</code>. Run the code and observe how the population-conservation check detects the mistake.</li>
+<li>Use a state with more infectious people and examine how the infection interval changes.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>During this one modelled time step, the population can experience one infection, one recovery or no recorded event. The selected transition respects the direction of the biological flows: susceptible people can become infectious, and infectious people can recover.</p>
+<p>The next state remains an integer-valued population state. Unlike a deterministic Euler step, the program does not move fractional people according to average rates.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has—and has not—done</h2>
+<div class="summary-box">
+<p><strong>You can now:</strong></p>
+<ul>
+<li>combine a current state, transition probabilities and one random draw;</li>
+<li>apply infection, recovery or no-change updates;</li>
+<li>return a complete next state from a Python function;</li>
+<li>check non-negativity and population conservation; and</li>
+<li>interpret one transition as one stochastic realisation.</li>
+</ul>
+<p><strong>Not yet:</strong> the function has been called only once. Lesson 6 will introduce a loop that repeatedly feeds each next state into the following step, stores the results and constructs a complete epidemic trajectory.</p>
+</div>
+</section>
+
+<nav class="lesson-nav">
+<a href="../uniform-random-numbers/">← Previous lesson</a>
+<a href="../complete-epidemic-trajectory/">Next lesson →</a>
+</nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
