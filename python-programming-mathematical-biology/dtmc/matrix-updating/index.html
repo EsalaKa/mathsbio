@@ -1,1 +1,478 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Matrix updating through time in Python for mathematical biology."><title>Matrix updating through time | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">11</p><h1 class="section-title">Matrix updating through time</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Repeatedly update a DTMC probability vector, store exact state distributions, calculate matrix powers and follow extinction probability through time.">
+<title>Matrix updating through time | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.update-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0}.update-card{padding:18px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.update-card strong{display:block;color:#174c34;margin-bottom:6px}.method-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.method-card{padding:21px;background:#eaf4ee;border-radius:10px}.method-card h3{margin-top:0;color:#174c34}.probability-flow{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}.comparison-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.comparison-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.comparison-card h3{margin-top:0;color:#174c34}.check-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.check-card{padding:18px;background:#eaf4ee;border-radius:10px}.check-card strong{display:block;color:#174c34;margin-bottom:6px}@media(max-width:800px){.update-flow,.method-grid,.comparison-grid,.check-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+
+<main class="section container">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+<p class="section-number">11</p>
+<h1 class="section-title">Matrix updating through time</h1>
+<p class="lesson-intro">One matrix multiplication gives the distribution after one step. Repeated multiplication follows the entire probability distribution through time without selecting random events.</p>
+
+<section class="lesson-section">
+<h2>The unique purpose of this lesson</h2>
+<p>Lesson 10 constructed a row-stochastic transition matrix &#92;(P&#92;) and calculated:</p>
+<div class="math-box">
+&#92;[
+&#92;boldsymbol&#92;pi_1=&#92;boldsymbol&#92;pi_0P.
+&#92;]
+</div>
+<p>We now repeat that update:</p>
+<div class="math-box">
+&#92;[
+&#92;boldsymbol&#92;pi_0
+&#92;longrightarrow
+&#92;boldsymbol&#92;pi_1
+&#92;longrightarrow
+&#92;boldsymbol&#92;pi_2
+&#92;longrightarrow&#92;cdots.
+&#92;]
+</div>
+<p>The new tasks are to store every distribution, attach it to the correct time, verify probability conservation and interpret how probability flows towards extinction.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Continue with the same small SIS model</h2>
+<p>Use states &#92;(&#92;{0,1,2,3&#92;}&#92;) and the row-stochastic matrix:</p>
+<div class="math-box">
+&#92;[
+P=
+&#92;begin{pmatrix}
+1&0&0&0&#92;&#92;
+0.1&0.7&0.2&0&#92;&#92;
+0&0.2&0.6&0.2&#92;&#92;
+0&0&0.3&0.7
+&#92;end{pmatrix}.
+&#92;]
+</div>
+<p>The initial condition remains certain at &#92;(I_0=1&#92;):</p>
+<div class="math-box">
+&#92;[
+&#92;boldsymbol&#92;pi_0=(0,1,0,0).
+&#92;]
+</div>
+<p>Keeping the model unchanged lets us focus entirely on repeated distribution updating.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Two equivalent calculation methods</h2>
+<div class="method-grid">
+<div class="method-card">
+<h3>Iterative updating</h3>
+<div class="math-box">
+&#92;[
+&#92;boldsymbol&#92;pi_{n+1}
+=&#92;boldsymbol&#92;pi_nP.
+&#92;]
+</div>
+<p>Apply one update inside a loop and store each result. This is convenient when every intermediate distribution is required.</p>
+</div>
+<div class="method-card">
+<h3>Matrix powers</h3>
+<div class="math-box">
+&#92;[
+&#92;boldsymbol&#92;pi_n
+=&#92;boldsymbol&#92;pi_0P^n.
+&#92;]
+</div>
+<p>Calculate the distribution at a particular step directly from the &#92;(n&#92;)-step transition matrix &#92;(P^n&#92;).</p>
+</div>
+</div>
+<p>These methods must agree. For example:</p>
+<div class="math-box">
+&#92;[
+&#92;boldsymbol&#92;pi_2
+=(&#92;boldsymbol&#92;pi_0P)P
+=&#92;boldsymbol&#92;pi_0P^2.
+&#92;]
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>What does (P^n) mean?</h2>
+<div class="definition-box">
+<p>The entry &#92;((P^n)_{ij}&#92;) is the probability of being in state &#92;(j&#92;) after &#92;(n&#92;) steps when the chain begins in state &#92;(i&#92;).</p>
+</div>
+<p>&#92;(P^n&#92;) does not mean raising every entry of &#92;(P&#92;) separately to the power &#92;(n&#92;). It means multiplying the matrix by itself &#92;(n&#92;) times:</p>
+<div class="math-box">
+&#92;[
+P^3=P&#92;cdot P&#92;cdot P.
+&#92;]
+</div>
+<p>In Python, <code>np.linalg.matrix_power(P, n)</code> performs matrix powers.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Store all distributions correctly</h2>
+<pre><code>distributions = [pi_current.copy()]
+
+for step in range(number_of_steps):
+    pi_current = pi_current @ P
+    distributions.append(pi_current.copy())</code></pre>
+<div class="update-flow">
+<div class="update-card"><strong>Initial storage</strong>Store &#92;(&#92;boldsymbol&#92;pi_0&#92;) before updating.</div>
+<div class="update-card"><strong>Multiply</strong>Calculate one new distribution.</div>
+<div class="update-card"><strong>Replace</strong>The result becomes the current distribution.</div>
+<div class="update-card"><strong>Append</strong>Store a separate copy for this time step.</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why use <code>.copy()</code>?</h2>
+<p>A NumPy array is a mutable object: its contents can be changed. <code>pi_current.copy()</code> creates a separate array containing the current values.</p>
+<p>In this particular loop, <code>pi_current @ P</code> creates a new array, so appending without <code>.copy()</code> would also work. We use <code>.copy()</code> to state the intention clearly and to keep storage safe if the code is later changed to update arrays in place.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Attach steps to physical time</h2>
+<p>The matrix advances the process by one fixed interval &#92;(&#92;Delta t&#92;). At step &#92;(n&#92;):</p>
+<div class="math-box">
+&#92;[
+t_n=n&#92;Delta t.
+&#92;]
+</div>
+<p>With &#92;(&#92;Delta t=0.5&#92;) day, step 10 corresponds to day 5. The matrix exponent counts steps, whereas the time axis records biological time.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Probability conservation through time</h2>
+<p>Every stored distribution must satisfy:</p>
+<div class="math-box">
+&#92;[
+&#92;sum_{i=0}^{N}&#92;pi_{n,i}=1.
+&#92;]
+</div>
+<p>For a row-stochastic matrix:</p>
+<div class="math-box">
+&#92;[
+&#92;boldsymbol&#92;pi_{n+1}&#92;mathbf 1
+=
+&#92;boldsymbol&#92;pi_nP&#92;mathbf 1
+=
+&#92;boldsymbol&#92;pi_n&#92;mathbf 1
+=1,
+&#92;]
+</div>
+<p>because &#92;(P&#92;mathbf 1=&#92;mathbf 1&#92;) expresses that every row of &#92;(P&#92;) sums to 1.</p>
+<div class="note-box">
+<p>Computers store decimals approximately, so calculated sums may differ from 1 by a tiny rounding amount. Use <code>np.allclose</code> rather than requiring every floating-point sum to equal exactly 1.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>How probability flows into extinction</h2>
+<div class="probability-flow">
+<p>State 0 is absorbing because row 0 is &#92;((1,0,0,0)&#92;). Once probability reaches state 0, later updates keep it there.</p>
+<div class="math-box">
+&#92;[
+&#92;Pr(I_n=0)=&#92;pi_{n,0}.
+&#92;]
+</div>
+<p>Therefore the probability of being extinct by step &#92;(n&#92;) cannot decrease with &#92;(n&#92;).</p>
+</div>
+<p>The other state probabilities need not change monotonically. Probability can enter and leave transient states 1, 2 and 3 during different updates.</p>
+</section>
+
+<section class="lesson-section">
+<h2>An exact mean from the distribution</h2>
+<p>Once the full distribution is known, the mean infectious count at step &#92;(n&#92;) is:</p>
+<div class="math-box">
+&#92;[
+&#92;mathbb E[I_n]
+=
+&#92;sum_{i=0}^{N}i&#92;pi_{n,i}.
+&#92;]
+</div>
+<p>In Python, the dot product <code>distributions @ states</code> calculates this weighted average at every stored step.</p>
+<div class="warning-box">
+<p>The mean need not be a possible individual state. For example, &#92;(&#92;mathbb E[I_n]=0.8&#92;) does not mean that a trajectory contains 0.8 of a person. It averages over the probabilities of integer-valued states.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Exact distribution versus one trajectory</h2>
+<div class="comparison-grid">
+<div class="comparison-card">
+<h3>Matrix result</h3>
+<p>At every step, it gives probabilities for all four states and the exact mean implied by the finite-state model.</p>
+</div>
+<div class="comparison-card">
+<h3>One sample path</h3>
+<p>At every step, it occupies one integer state. It may differ considerably from the distribution mean.</p>
+</div>
+</div>
+<p>The code generates one illustrative path using the same rows of &#92;(P&#92;). It is not used to estimate the matrix probabilities. Estimation from many independent trajectories is the purpose of Lesson 12.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>Click <strong>Run code</strong> to update the exact distribution for 40 steps, compare iteration with &#92;(P^n&#92;), and display state probabilities, extinction probability, probability conservation, the exact mean and one sample path.</p>
+
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Exact DTMC distribution through time</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Same row-stochastic SIS matrix as Lesson 10
+P = np.array([
+    [1.0, 0.0, 0.0, 0.0],
+    [0.1, 0.7, 0.2, 0.0],
+    [0.0, 0.2, 0.6, 0.2],
+    [0.0, 0.0, 0.3, 0.7]
+])
+
+states = np.arange(4)
+dt = 0.5
+number_of_steps = 40
+
+# Certain initial state I_0 = 1
+pi_initial = np.array([0.0, 1.0, 0.0, 0.0])
+pi_current = pi_initial.copy()
+
+# Validate P and the initial distribution
+if not np.allclose(P.sum(axis=1), 1.0):
+    raise ValueError("Rows of P must sum to 1.")
+
+if (P &lt; -1e-12).any() or (P &gt; 1 + 1e-12).any():
+    raise ValueError("P contains an invalid probability.")
+
+if not np.isclose(pi_initial.sum(), 1.0):
+    raise ValueError("Initial probabilities must sum to 1.")
+
+# Store pi_0, pi_1, ..., pi_number_of_steps
+distributions = [pi_current.copy()]
+
+for step in range(number_of_steps):
+    pi_current = pi_current @ P
+    distributions.append(pi_current.copy())
+
+distributions = np.vstack(distributions)
+step_values = np.arange(number_of_steps + 1)
+time_values = step_values * dt
+
+# Validate every stored distribution
+probability_sums = distributions.sum(axis=1)
+
+if not np.allclose(probability_sums, 1.0):
+    raise ValueError("Probability was not conserved.")
+
+if (distributions &lt; -1e-12).any():
+    raise ValueError("A negative state probability appeared.")
+
+# Compare iteration with a matrix power at step 10
+chosen_step = 10
+pi_from_iteration = distributions[chosen_step]
+pi_from_power = (
+    pi_initial
+    @ np.linalg.matrix_power(P, chosen_step)
+)
+
+if not np.allclose(pi_from_iteration, pi_from_power):
+    raise ValueError("Iteration and matrix power disagree.")
+
+# Derived exact quantities
+extinction_probability = distributions[:, 0]
+expected_I = distributions @ states
+maximum_sum_error = np.max(np.abs(probability_sums - 1))
+
+# Selected distributions for a readable table
+selected_steps = [0, 1, 5, 10, 20, 40]
+selected_table = pd.DataFrame(
+    distributions[selected_steps],
+    columns=["Pr(I=0)", "Pr(I=1)", "Pr(I=2)", "Pr(I=3)"]
+)
+selected_table.insert(0, "time", np.array(selected_steps) * dt)
+selected_table.insert(0, "step", selected_steps)
+
+print("Selected exact distributions")
+print(selected_table.round(6).to_string(index=False))
+print()
+print(f"Maximum probability-sum error: "
+      f"{maximum_sum_error:.3e}")
+print()
+print(f"Step {chosen_step} from iteration:")
+print(np.round(pi_from_iteration, 8))
+print(f"Step {chosen_step} from P^{chosen_step}:")
+print(np.round(pi_from_power, 8))
+
+# One illustrative trajectory from the same matrix
+seed = 7
+rng = np.random.default_rng(seed)
+current_state = 1
+sample_path = [current_state]
+
+for step in range(number_of_steps):
+    current_state = rng.choice(
+        states,
+        p=P[current_state]
+    )
+    sample_path.append(current_state)
+
+# Figure 1: all exact state probabilities
+plt.figure(figsize=(9, 5.2))
+for state in states:
+    plt.plot(
+        time_values,
+        distributions[:, state],
+        marker="o",
+        markersize=3,
+        label=f"Pr(I={state})"
+    )
+plt.xlabel("Time (days)")
+plt.ylabel("Probability")
+plt.title("Exact SIS state probabilities through time")
+plt.ylim(0, 1.03)
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+# Figure 2: absorption probability and conservation
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
+
+axes[0].plot(
+    time_values,
+    extinction_probability,
+    color="#dc2626",
+    linewidth=2
+)
+axes[0].set_xlabel("Time (days)")
+axes[0].set_ylabel("Pr(I = 0)")
+axes[0].set_title("Probability of extinction by time")
+axes[0].set_ylim(0, 1.03)
+axes[0].grid(alpha=0.25)
+
+axes[1].plot(
+    time_values,
+    probability_sums,
+    color="#16a34a",
+    linewidth=2
+)
+axes[1].axhline(1, color="black", linestyle="--")
+axes[1].set_xlabel("Time (days)")
+axes[1].set_ylabel("Sum of state probabilities")
+axes[1].set_title("Probability conservation")
+axes[1].set_ylim(0.999999, 1.000001)
+axes[1].grid(alpha=0.25)
+
+fig.tight_layout()
+
+# Figure 3: exact mean versus one random trajectory
+plt.figure(figsize=(9, 4.8))
+plt.plot(
+    time_values,
+    expected_I,
+    color="#7c3aed",
+    linewidth=2.5,
+    label="Exact mean E[I]"
+)
+plt.step(
+    time_values,
+    sample_path,
+    where="post",
+    color="#f59e0b",
+    alpha=0.8,
+    label=f"One trajectory, seed {seed}"
+)
+plt.xlabel("Time (days)")
+plt.ylabel("Infectious count")
+plt.title("A distribution mean is not an individual path")
+plt.yticks(states)
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the new code</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>distributions = [pi_current.copy()]</code></td><td>Begins storage with the initial distribution at step 0.</td></tr>
+<tr><td><code>np.vstack(distributions)</code></td><td>Stacks the stored one-dimensional vectors as rows of one two-dimensional array.</td></tr>
+<tr><td><code>distributions[:, 0]</code></td><td>Selects every time row and column 0, giving extinction probability through time.</td></tr>
+<tr><td><code>np.linalg.matrix_power(P, 10)</code></td><td>Calculates the 10-step transition matrix &#92;(P^{10}&#92;).</td></tr>
+<tr><td><code>distributions @ states</code></td><td>Calculates the probability-weighted mean infectious count at every step.</td></tr>
+<tr><td><code>np.max(np.abs(...))</code></td><td>Finds the largest absolute probability-conservation error.</td></tr>
+<tr><td><code>rng.choice(states, p=P[current_state])</code></td><td>Selects one next state using the probability row for the current state. It is a compact alternative to writing cumulative intervals explicitly.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret the long-time pattern carefully</h2>
+<p>For this finite SIS chain, state 0 is absorbing and every positive state can eventually reach it. Consequently, extinction probability approaches 1 as the number of steps becomes large.</p>
+<div class="math-box">
+&#92;[
+&#92;boldsymbol&#92;pi_n
+&#92;longrightarrow
+(1,0,0,0)
+&#92;qquad&#92;text{as }n&#92;to&#92;infty.
+&#92;]
+</div>
+<p>At a finite time such as day 20, the extinction probability may still be below 1. “Eventually certain” does not mean “already certain by the current observation time.”</p>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Increase <code>number_of_steps</code> to 100. Observe the approach to the absorbing distribution.</li>
+<li>Change <code>pi_initial</code> to <code>[0, 0, 1, 0]</code>. Compare early extinction probabilities.</li>
+<li>Use the mixed initial distribution <code>[0.2, 0.5, 0.3, 0]</code>.</li>
+<li>Change the trajectory seed. Confirm that the exact matrix probabilities and mean do not change.</li>
+<li>Change <code>chosen_step</code>. Verify that iterative updating and the matching matrix power still agree.</li>
+<li>Temporarily change a row of &#92;(P&#92;) so it does not sum to 1. Read the validation error.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has—and has not—done</h2>
+<div class="summary-box">
+<p><strong>You can now:</strong></p>
+<ul>
+<li>repeat &#92;(&#92;boldsymbol&#92;pi_{n+1}=&#92;boldsymbol&#92;pi_nP&#92;) through time;</li>
+<li>store and validate every exact state distribution;</li>
+<li>use &#92;(&#92;boldsymbol&#92;pi_n=&#92;boldsymbol&#92;pi_0P^n&#92;);</li>
+<li>follow extinction probability and probability conservation;</li>
+<li>calculate the exact mean from a finite distribution; and</li>
+<li>distinguish an exact distribution mean from one random path.</li>
+</ul>
+<p><strong>Not yet:</strong> one illustrative trajectory does not estimate probabilities. Lesson 12 simulates many independent trajectories and constructs empirical distributions for models whose full transition matrix may be too large to update conveniently.</p>
+</div>
+</section>
+
+<nav class="lesson-nav">
+<a href="../transition-matrices-probability-vectors/">← Previous lesson</a>
+<a href="../many-dtmc-trajectories/">Next lesson →</a>
+</nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
