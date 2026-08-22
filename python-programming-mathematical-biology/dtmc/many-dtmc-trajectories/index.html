@@ -1,1 +1,493 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Simulating many independent trajectories in Python for mathematical biology."><title>Simulating many independent trajectories | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">12</p><h1 class="section-title">Simulating many independent trajectories</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Simulate many independent DTMC epidemic trajectories, align their paths and construct empirical distributions with reproducible Monte Carlo Python code.">
+<title>Simulating many independent trajectories | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.level-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.level-card{padding:21px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.level-card h3{margin-top:0;color:#174c34}.mc-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0}.mc-card{padding:18px;background:#eaf4ee;border-radius:10px}.mc-card strong{display:block;color:#174c34;margin-bottom:6px}.seed-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}.data-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.data-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.data-card h3{margin-top:0;color:#174c34}.band-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.band-card{padding:18px;background:#eaf4ee;border-radius:10px}.band-card strong{display:block;color:#174c34;margin-bottom:6px}@media(max-width:800px){.level-grid,.mc-flow,.data-grid,.band-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+
+<main class="section container">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+<p class="section-number">12</p>
+<h1 class="section-title">Simulating many independent trajectories</h1>
+<p class="lesson-intro">One stochastic trajectory shows one possible epidemic. Monte Carlo simulation repeats the model independently to reveal the range, frequency and empirical distribution of possible outcomes.</p>
+
+<section class="lesson-section">
+<h2>Why one trajectory is insufficient</h2>
+<p>Suppose two simulations use the same biological parameters and initial state. Different random numbers can produce different:</p>
+<ul>
+<li>early infection or recovery sequences;</li>
+<li>peak infectious counts and peak times;</li>
+<li>outbreak durations; and</li>
+<li>final epidemic sizes.</li>
+</ul>
+<div class="definition-box">
+<p>A <strong>Monte Carlo experiment</strong> approximates stochastic-model outcomes by running many independent simulated trajectories and summarising the resulting sample.</p>
+</div>
+<p>The model does not change between runs. Only the random realisation changes.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Two levels of repetition</h2>
+<div class="level-grid">
+<div class="level-card">
+<h3>Inner loop: one trajectory</h3>
+<p>Repeatedly apply infection, recovery or no change through time until extinction or the observation horizon.</p>
+</div>
+<div class="level-card">
+<h3>Outer loop: many trajectories</h3>
+<p>Call the complete-trajectory function again for simulation 0, simulation 1, and so on.</p>
+</div>
+</div>
+<div class="math-box">
+&#92;[
+&#92;underbrace{X_0^{(m)},X_1^{(m)},&#92;ldots,X_K^{(m)}}_
+{&#92;text{trajectory }m},
+&#92;qquad m=1,2,&#92;ldots,M.
+&#92;]
+</div>
+<p>The superscript &#92;((m)&#92;) identifies the simulation. It is not a mathematical power.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The Monte Carlo workflow</h2>
+<div class="mc-flow">
+<div class="mc-card"><strong>1. Fix model inputs</strong>Use the same parameters and initial state.</div>
+<div class="mc-card"><strong>2. Create one generator</strong>Set one seed before the outer loop.</div>
+<div class="mc-card"><strong>3. Simulate independently</strong>Let the generator advance between runs.</div>
+<div class="mc-card"><strong>4. Summarise</strong>Build empirical tables and distributions.</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Independence and random seeds</h2>
+<div class="seed-box">
+<p>Create the random generator once:</p>
+<pre><code>rng = np.random.default_rng(seed)
+
+for simulation in range(number_of_simulations):
+    result = simulate_one_trajectory(..., rng)</code></pre>
+</div>
+<p>The generator supplies a continuing sequence of pseudo-random numbers. Different runs receive different portions of that sequence and are treated as independent simulations.</p>
+<div class="warning-box">
+<p>Do not recreate <code>np.random.default_rng(seed)</code> with the same seed inside the outer loop. That would restart the same sequence for every simulation and could produce identical trajectories rather than independent replicates.</p>
+</div>
+<p>Using the seed once makes the entire Monte Carlo experiment reproducible. Changing the seed creates a different reproducible sample.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Two kinds of stored results</h2>
+<div class="data-grid">
+<div class="data-card">
+<h3>Path arrays</h3>
+<p>Store &#92;(S&#92;), &#92;(I&#92;) and &#92;(R&#92;) at every common time. These arrays support trajectory graphs, pointwise means and percentile bands.</p>
+</div>
+<div class="data-card">
+<h3>One-row summaries</h3>
+<p>Store one peak, peak time, final size and completion indicator per simulation. These values support empirical outcome tables and histograms.</p>
+</div>
+</div>
+<p>Keeping these two data structures separate prevents confusion between “one value per time” and “one value per simulation.”</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why trajectories must be aligned</h2>
+<p>Different outbreaks become extinct at different times. To calculate quantities across simulations at time &#92;(t_n&#92;), every path array must use the same time grid and length.</p>
+<p>After extinction in a closed SIR model, the state is absorbing. Therefore it is biologically correct to extend the remaining array with the final state:</p>
+<div class="math-box">
+&#92;[
+(S_n,I_n,R_n)=(S_&#92;mathrm{final},0,R_&#92;mathrm{final})
+&#92;quad&#92;text{for later stored times}.
+&#92;]
+</div>
+<p>This is called <strong>absorbing-state padding</strong>. It aligns paths without inventing new epidemic events.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Empirical distributions</h2>
+<p>If the completed final sizes are &#92;(Z_1,Z_2,&#92;ldots,Z_M&#92;), their empirical distribution is the observed pattern across the simulations.</p>
+<p>For a possible value &#92;(z&#92;), its empirical relative frequency is:</p>
+<div class="math-box">
+&#92;[
+&#92;widehat p(z)
+=
+&#92;frac{&#92;text{number of simulations with }Z_m=z}{M}.
+&#92;]
+</div>
+<p>A histogram groups nearby values into bins and displays how frequently different ranges occurred. It approximates the outcome distribution; it is not one epidemic trajectory.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Mean and percentile bands across paths</h2>
+<div class="band-grid">
+<div class="band-card"><strong>Pointwise mean</strong>Average the &#92;(M&#92;) infectious counts separately at every time.</div>
+<div class="band-card"><strong>10th percentile</strong>At each time, about 10% of simulated counts lie at or below this value.</div>
+<div class="band-card"><strong>90th percentile</strong>At each time, about 90% of simulated counts lie at or below this value.</div>
+</div>
+<p>The region between the 10th and 90th percentiles describes the central 80% of the simulated counts at each time.</p>
+<div class="note-box">
+<p>This percentile band describes variability among trajectories. It is not a confidence interval for an unknown parameter, and it does not represent one path that simultaneously follows the lower or upper boundary.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Scenario</h2>
+<p>Simulate &#92;(M=400&#92;) independent SIR trajectories in a population of 100:</p>
+<div class="math-box">
+&#92;[
+(S_0,I_0,R_0)=(98,2,0),
+&#92;quad
+&#92;beta=0.3,
+&#92;quad
+&#92;gamma=0.1,
+&#92;quad
+&#92;Delta t=0.02&#92;text{ day}.
+&#92;]
+</div>
+<p>The common observation horizon is 160 days. The program reports whether any trajectory is still infectious at that time, because its completed final size would not yet be known.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>Click <strong>Run code</strong>. The calculation may take longer than a single-path lesson because it simulates millions of individual DTMC steps.</p>
+
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>400 independent SIR trajectories</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def simulate_one_sir(
+    N, initial_I, beta, gamma, dt, max_days, rng
+):
+    max_steps = int(max_days / dt)
+
+    S = N - initial_I
+    I = initial_I
+    R = 0
+
+    # Fixed-length aligned arrays
+    S_path = np.empty(max_steps + 1, dtype=int)
+    I_path = np.empty(max_steps + 1, dtype=int)
+    R_path = np.empty(max_steps + 1, dtype=int)
+
+    S_path[0] = S
+    I_path[0] = I
+    R_path[0] = R
+
+    peak_I = I
+    peak_step = 0
+    extinction_step = None
+
+    for step in range(max_steps):
+        p_infection = beta * S * I / N * dt
+        p_recovery = gamma * I * dt
+        p_no_change = 1 - p_infection - p_recovery
+
+        if p_no_change &lt; -1e-12:
+            raise ValueError("dt gives invalid probabilities.")
+
+        u = rng.random()
+
+        if u &lt; p_infection:
+            S -= 1
+            I += 1
+        elif u &lt; p_infection + p_recovery:
+            I -= 1
+            R += 1
+
+        S_path[step + 1] = S
+        I_path[step + 1] = I
+        R_path[step + 1] = R
+
+        if I &gt; peak_I:
+            peak_I = I
+            peak_step = step + 1
+
+        if I == 0:
+            extinction_step = step + 1
+
+            # Pad the absorbing final state
+            S_path[step + 2:] = S
+            I_path[step + 2:] = 0
+            R_path[step + 2:] = R
+            break
+
+    completed = extinction_step is not None
+
+    if completed:
+        end_time = extinction_step * dt
+    else:
+        end_time = max_days
+
+    return {
+        "S_path": S_path,
+        "I_path": I_path,
+        "R_path": R_path,
+        "peak_I": peak_I,
+        "peak_time": peak_step * dt,
+        "final_size": N - S,
+        "completed": completed,
+        "end_time": end_time
+    }
+
+# Monte Carlo settings
+N = 100
+initial_I = 2
+beta = 0.30
+gamma = 0.10
+dt = 0.02
+max_days = 160
+number_of_simulations = 400
+seed = 21
+
+if number_of_simulations &lt;= 0:
+    raise ValueError("Number of simulations must be positive.")
+
+if initial_I &lt;= 0 or initial_I &gt; N:
+    raise ValueError("initial_I must be between 1 and N.")
+
+# Sufficient whole-state-space probability check
+upper_probability_bound = (
+    beta * N / 4 + gamma * N
+) * dt
+
+if upper_probability_bound &gt; 1:
+    raise ValueError("dt is not guaranteed valid.")
+
+max_steps = int(max_days / dt)
+time_values = np.arange(max_steps + 1) * dt
+
+# One generator is created before the outer loop
+rng = np.random.default_rng(seed)
+
+all_I_paths = np.empty(
+    (number_of_simulations, max_steps + 1),
+    dtype=int
+)
+summary_rows = []
+
+for simulation in range(number_of_simulations):
+    result = simulate_one_sir(
+        N, initial_I, beta, gamma, dt, max_days, rng
+    )
+
+    all_I_paths[simulation] = result["I_path"]
+
+    summary_rows.append({
+        "simulation": simulation,
+        "peak_I": result["peak_I"],
+        "peak_time": result["peak_time"],
+        "final_size": result["final_size"],
+        "completed": result["completed"],
+        "end_time": result["end_time"]
+    })
+
+summaries = pd.DataFrame(summary_rows)
+
+# Monte Carlo summaries across aligned paths
+mean_I = all_I_paths.mean(axis=0)
+lower_I = np.percentile(all_I_paths, 10, axis=0)
+upper_I = np.percentile(all_I_paths, 90, axis=0)
+
+completed_summaries = summaries[summaries["completed"]]
+number_incomplete = (~summaries["completed"]).sum()
+
+descriptive_table = completed_summaries[
+    ["peak_I", "peak_time", "final_size", "end_time"]
+].describe().loc[["mean", "std", "min", "50%", "max"]]
+
+print("Monte Carlo experiment")
+print(f"Seed used once: {seed}")
+print(f"Independent trajectories: {number_of_simulations}")
+print(f"Common observation horizon: {max_days} days")
+print(f"Incomplete trajectories at horizon: {number_incomplete}")
+print()
+print("First 10 trajectory summaries")
+print(summaries.head(10).to_string(index=False))
+print()
+print("Descriptive outcomes for completed trajectories")
+print(descriptive_table.round(3).to_string())
+
+# Figure 1: selected paths, mean and percentile band
+plt.figure(figsize=(10, 5.5))
+
+for simulation in range(15):
+    plt.step(
+        time_values,
+        all_I_paths[simulation],
+        where="post",
+        color="#94a3b8",
+        alpha=0.35,
+        linewidth=0.8
+    )
+
+plt.fill_between(
+    time_values,
+    lower_I,
+    upper_I,
+    color="#bfdbfe",
+    alpha=0.7,
+    label="10th to 90th percentile"
+)
+plt.plot(
+    time_values,
+    mean_I,
+    color="#1d4ed8",
+    linewidth=2.5,
+    label="Monte Carlo mean"
+)
+plt.xlabel("Time (days)")
+plt.ylabel("Infectious people")
+plt.title("Many stochastic trajectories and their pointwise summary")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+# Figure 2: empirical outcome distributions
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.7))
+
+axes[0].hist(
+    completed_summaries["final_size"],
+    bins=np.arange(0.5, N + 1.5, 4),
+    color="#16a34a",
+    edgecolor="white"
+)
+axes[0].set_xlabel("Completed final epidemic size")
+axes[0].set_ylabel("Number of trajectories")
+axes[0].set_title("Empirical final-size distribution")
+axes[0].grid(axis="y", alpha=0.25)
+
+axes[1].hist(
+    completed_summaries["peak_I"],
+    bins=np.arange(0.5, N + 1.5, 3),
+    color="#dc2626",
+    edgecolor="white"
+)
+axes[1].set_xlabel("Peak infectious count")
+axes[1].set_ylabel("Number of trajectories")
+axes[1].set_title("Empirical peak-size distribution")
+axes[1].grid(axis="y", alpha=0.25)
+
+fig.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the new Monte Carlo code</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>np.empty((M, K + 1), dtype=int)</code></td><td>Reserves a rectangular array with one trajectory per row and one time point per column.</td></tr>
+<tr><td><code>all_I_paths[simulation]</code></td><td>Selects the row assigned to one simulation.</td></tr>
+<tr><td><code>summary_rows.append({...})</code></td><td>Adds one dictionary of outcome values for each completed call.</td></tr>
+<tr><td><code>extinction_step is not None</code></td><td>Checks whether an extinction step was recorded.</td></tr>
+<tr><td><code>S_path[step + 2:] = S</code></td><td>Fills every later position with the absorbing final susceptible count.</td></tr>
+<tr><td><code>all_I_paths.mean(axis=0)</code></td><td>Averages down the simulation rows separately for every time column.</td></tr>
+<tr><td><code>np.percentile(..., axis=0)</code></td><td>Calculates a pointwise percentile across simulations at each time.</td></tr>
+<tr><td><code>summaries[summaries["completed"]]</code></td><td>Filters the table so completed-final-size summaries exclude unfinished trajectories.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why use (axis=0)?</h2>
+<p>The aligned array has shape:</p>
+<div class="math-box">
+&#92;[
+(&#92;text{number of simulations})
+&#92;times
+(&#92;text{number of time points}).
+&#92;]
+</div>
+<p>Rows distinguish simulations and columns distinguish time. Therefore <code>axis=0</code> collapses the simulation direction and leaves one result for every time column.</p>
+<p>Using <code>axis=1</code> would instead average each trajectory across its time points, answering a different question.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret the figures correctly</h2>
+<ul>
+<li>The grey lines are 15 individual trajectories selected only to keep the figure readable.</li>
+<li>The blue line is the pointwise mean across all 400 trajectories.</li>
+<li>The blue band is the pointwise central 80% empirical range.</li>
+<li>The histograms use one summary outcome from each completed trajectory.</li>
+</ul>
+<p>A histogram bar height is a count of simulations in an outcome interval. It is not the number of infectious people at a particular time.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Computational cost</h2>
+<p>If &#92;(M&#92;) simulations each allow &#92;(K&#92;) time steps, the maximum number of one-step calculations grows approximately like:</p>
+<div class="math-box">
+&#92;[
+M&#92;times K.
+&#92;]
+</div>
+<p>Doubling both the number of simulations and the number of time steps can make the work roughly four times larger. Early stopping reduces work when extinction occurs before the horizon.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Change <code>seed = 21</code>. The empirical summaries change, but the biological model remains the same.</li>
+<li>Reduce <code>number_of_simulations</code> to 25. Observe the less stable histograms and percentile band.</li>
+<li>Increase it to 1,000 if your browser can run the larger experiment comfortably.</li>
+<li>Set <code>initial_I = 1</code>. Look for stronger separation between small and large final sizes.</li>
+<li>Shorten <code>max_days</code>. Examine the incomplete-trajectory count and explain why those rows are excluded from completed final-size summaries.</li>
+<li>Move the generator creation inside the outer loop with the same seed. Observe why repeated identical random sequences are a mistake, then restore the correct code.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>The collection of paths shows that identical starting conditions and parameters do not imply identical epidemic histories. Some introductions disappear early, while others produce larger peaks and final sizes.</p>
+<p>The empirical distributions quantify this outcome variation. They do not yet define which outcomes count as extinction or a major outbreak. Those event definitions and their estimated probabilities are introduced carefully in Lesson 13.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has—and has not—done</h2>
+<div class="summary-box">
+<p><strong>You can now:</strong></p>
+<ul>
+<li>distinguish the inner trajectory loop from the outer Monte Carlo loop;</li>
+<li>generate independent, reproducible trajectories correctly;</li>
+<li>align paths using absorbing-state padding;</li>
+<li>store path arrays and one-row outcome summaries;</li>
+<li>calculate pointwise means and empirical percentile bands; and</li>
+<li>construct empirical peak and final-size distributions.</li>
+</ul>
+<p><strong>Not yet:</strong> this page has not chosen a major-outbreak threshold or estimated event probabilities and Monte Carlo standard errors. Lesson 13 defines those outcomes before estimating them.</p>
+</div>
+</section>
+
+<nav class="lesson-nav">
+<a href="../matrix-updating/">← Previous lesson</a>
+<a href="../extinction-major-outbreak-probabilities/">Next lesson →</a>
+</nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
