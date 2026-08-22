@@ -1,1 +1,496 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Programming a DTMC SIR model in Python for mathematical biology."><title>Programming a DTMC SIR model | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">08</p><h1 class="section-title">Programming a DTMC SIR model</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Build a DTMC SIR epidemic model with irreversible recovery, a two-dimensional state space, absorbing disease-free states and final epidemic size.">
+<title>Programming a DTMC SIR model | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.sir-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:13px;align-items:center;margin:24px 0}.sir-card{padding:20px;text-align:center;background:#fff;border:1px solid #dce7e0;border-radius:11px}.sir-card strong{display:block;color:#174c34;font-size:1.08rem}.flow-arrow{font-size:1.8rem;color:#176b45;font-weight:700}.transition-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:17px;margin:22px 0}.transition-card{padding:20px;background:#eaf4ee;border-radius:10px}.transition-card h3{margin-top:0;color:#174c34}.absorbing-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}.comparison-table td:first-child{font-weight:700;color:#174c34}.outcome-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.outcome-card{padding:18px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.outcome-card strong{display:block;color:#174c34;margin-bottom:6px}@media(max-width:800px){.sir-flow,.transition-grid,.outcome-grid{grid-template-columns:1fr}.flow-arrow{transform:rotate(90deg);text-align:center}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+
+<main class="section container">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+<p class="section-number">08</p>
+<h1 class="section-title">Programming a DTMC SIR model</h1>
+<p class="lesson-intro">The SIR model describes an infection followed by removal with lasting immunity. Recovery is irreversible, so the final removed population records how many people experienced infection during the modelled outbreak.</p>
+
+<section class="lesson-section">
+<h2>The new biological idea: irreversible recovery</h2>
+<div class="sir-flow">
+<div class="sir-card"><strong>Susceptible</strong>&#92;(S&#92;)</div>
+<div class="flow-arrow">→</div>
+<div class="sir-card"><strong>Infectious</strong>&#92;(I&#92;)</div>
+<div class="flow-arrow">→</div>
+<div class="sir-card"><strong>Removed</strong>&#92;(R&#92;)</div>
+</div>
+<div class="math-box">
+&#92;[
+S&#92;xrightarrow{&#92;text{infection}}I
+&#92;xrightarrow{&#92;text{recovery}}R.
+&#92;]
+</div>
+<p>A removed person does not return to susceptibility. Depending on the application, “removed” may mean recovered and immune, isolated, or otherwise no longer able to transmit.</p>
+</section>
+
+<section class="lesson-section">
+<h2>How SIR differs from SIS</h2>
+<div class="table-wrap">
+<table class="comparison-table">
+<thead><tr><th>Feature</th><th>SIS</th><th>SIR</th></tr></thead>
+<tbody>
+<tr><td>After recovery</td><td>&#92;(I&#92;to S&#92;)</td><td>&#92;(I&#92;to R&#92;)</td></tr>
+<tr><td>Reinfection</td><td>Allowed</td><td>Not allowed in the basic model</td></tr>
+<tr><td>State reduction</td><td>One count: &#92;(I&#92;)</td><td>Two counts are needed, such as &#92;((S,I)&#92;)</td></tr>
+<tr><td>Disease-free states</td><td>Only &#92;(I=0,S=N&#92;)</td><td>Many states with &#92;(I=0&#92;)</td></tr>
+<tr><td>Final epidemic size</td><td>No permanent removed total</td><td>Recorded by the final removed count</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>The SIR state and state space</h2>
+<p>For a closed population:</p>
+<div class="math-box">
+&#92;[
+S_n+I_n+R_n=N.
+&#92;]
+</div>
+<p>We may store the full state &#92;((S_n,I_n,R_n)&#92;) because it is biologically easy to read. Mathematically, only two counts are independent because:</p>
+<div class="math-box">
+&#92;[
+R_n=N-S_n-I_n.
+&#92;]
+</div>
+<p>Using &#92;((S,I)&#92;), the state space is the finite triangular set:</p>
+<div class="math-box">
+&#92;[
+&#92;mathcal S=
+&#92;{(s,i):s&#92;ge0,&#92; i&#92;ge0,&#92; s+i&#92;le N&#92;}.
+&#92;]
+</div>
+<p>Not every pair from &#92;(&#92;{0,&#92;ldots,N&#92;&#92;)^2&#92;) is possible. For example, &#92;(S=150,I=100&#92;) is impossible when &#92;(N=200&#92;) because their sum already exceeds the population.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Possible transitions from ((s,i,r))</h2>
+<div class="transition-grid">
+<div class="transition-card">
+<h3>Infection</h3>
+<div class="math-box">
+&#92;[
+(s,i,r)&#92;longrightarrow(s-1,i+1,r).
+&#92;]
+</div>
+<p>One susceptible person becomes infectious.</p>
+</div>
+<div class="transition-card">
+<h3>Recovery</h3>
+<div class="math-box">
+&#92;[
+(s,i,r)&#92;longrightarrow(s,i-1,r+1).
+&#92;]
+</div>
+<p>One infectious person is removed permanently from transmission.</p>
+</div>
+<div class="transition-card">
+<h3>No change</h3>
+<div class="math-box">
+&#92;[
+(s,i,r)&#92;longrightarrow(s,i,r).
+&#92;]
+</div>
+<p>No event occurs during the fixed step.</p>
+</div>
+<div class="transition-card">
+<h3>Impossible reverse movements</h3>
+<p>The basic model has no &#92;(R&#92;to S&#92;), &#92;(R&#92;to I&#92;) or &#92;(I&#92;to S&#92;) transition.</p>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Transition probabilities</h2>
+<p>At current state &#92;((s,i,r)&#92;), the short-step probabilities are:</p>
+<div class="math-box">
+&#92;[
+&#92;begin{aligned}
+p_{&#92;mathrm{inf}}(s,i)
+&=&#92;beta&#92;frac{si}{N}&#92;Delta t,&#92;&#92;
+p_{&#92;mathrm{rec}}(i)
+&=&#92;gamma i&#92;Delta t,&#92;&#92;
+p_{&#92;mathrm{stay}}(s,i)
+&=1-p_{&#92;mathrm{inf}}(s,i)-p_{&#92;mathrm{rec}}(i).
+&#92;end{aligned}
+&#92;]
+</div>
+<p>The removed count does not appear directly in these probabilities. It still matters because population conservation restricts how large &#92;(s&#92;) and &#92;(i&#92;) can be.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The absorbing boundary is a whole set of states</h2>
+<div class="absorbing-box">
+<p>If &#92;(i=0&#92;), then infection and recovery probabilities are both zero. Therefore every state:</p>
+<div class="math-box">
+&#92;[
+(s,0,N-s),&#92;qquad s=0,1,&#92;ldots,N,
+&#92;]
+</div>
+<p>is absorbing.</p>
+</div>
+<p>These states represent different completed outbreak histories. A large final susceptible count describes a small outbreak; a small final susceptible count describes a large outbreak.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Quantities obtained from one completed SIR path</h2>
+<div class="outcome-grid">
+<div class="outcome-card"><strong>Peak size</strong>&#92;(I_{&#92;max}&#92;): the largest infectious count in this realisation.</div>
+<div class="outcome-card"><strong>Peak time</strong>The first time at which this path reaches &#92;(I_{&#92;max}&#92;).</div>
+<div class="outcome-card"><strong>Final epidemic size</strong>The number ever infected by the end of this realisation.</div>
+</div>
+<p>If initially &#92;(R_0=0&#92;), everyone who has experienced infection is either still infectious or removed. At extinction &#92;(I_&#92;infty=0&#92;), so:</p>
+<div class="math-box">
+&#92;[
+Z=R_&#92;infty=N-S_&#92;infty.
+&#92;]
+</div>
+<p>If some people are already removed initially, the number infected <em>during the simulated outbreak</em> is:</p>
+<div class="math-box">
+&#92;[
+Z=R_&#92;infty-R_0=S_0-S_&#92;infty+I_0.
+&#92;]
+</div>
+<p>The attack proportion is &#92;(Z/N&#92;). It is a realised outcome for one trajectory, not yet an expected value.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>The code generates one SIR outbreak, checks all stored states, calculates the peak and final epidemic size, and produces both a time trajectory and a state-space path.</p>
+
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>DTMC SIR outbreak</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def sir_probabilities(S, I, N, beta, gamma, dt):
+    p_infection = beta * S * I / N * dt
+    p_recovery = gamma * I * dt
+    p_no_change = 1 - p_infection - p_recovery
+
+    return p_infection, p_recovery, p_no_change
+
+def one_sir_transition(S, I, R, beta, gamma, dt, rng):
+    N = S + I + R
+    p_infection, p_recovery, p_no_change = sir_probabilities(
+        S, I, N, beta, gamma, dt
+    )
+
+    if p_no_change &lt; -1e-12:
+        raise ValueError("dt gives invalid transition probabilities.")
+
+    u = rng.random()
+
+    if u &lt; p_infection:
+        return S - 1, I + 1, R, "infection"
+    elif u &lt; p_infection + p_recovery:
+        return S, I - 1, R + 1, "recovery"
+    else:
+        return S, I, R, "no change"
+
+# Model parameters and initial state
+beta = 0.30
+gamma = 0.10
+dt = 0.01
+max_days = 200
+seed = 9
+
+S, I, R = 197, 3, 0
+N = S + I + R
+initial_S = S
+initial_I = I
+initial_R = R
+
+if min(S, I, R, beta, gamma) &lt; 0:
+    raise ValueError("Counts and rates cannot be negative.")
+
+if N &lt;= 0 or dt &lt;= 0:
+    raise ValueError("N and dt must be positive.")
+
+# A sufficient whole-state-space check:
+# infection rate &lt;= beta*N/4 and recovery rate &lt;= gamma*N
+upper_probability_bound = (
+    beta * N / 4 + gamma * N
+) * dt
+
+if upper_probability_bound &gt; 1:
+    raise ValueError("dt is not guaranteed valid over the state space.")
+
+rng = np.random.default_rng(seed)
+times = [0.0]
+S_values = [S]
+I_values = [I]
+R_values = [R]
+events = ["initial state"]
+
+max_steps = int(max_days / dt)
+
+for step in range(max_steps):
+    S, I, R, event = one_sir_transition(
+        S, I, R, beta, gamma, dt, rng
+    )
+
+    times.append((step + 1) * dt)
+    S_values.append(S)
+    I_values.append(I)
+    R_values.append(R)
+    events.append(event)
+
+    if I == 0:
+        break
+
+trajectory = pd.DataFrame({
+    "time": times,
+    "S": S_values,
+    "I": I_values,
+    "R": R_values,
+    "event": events
+})
+
+# Validate the complete stored path
+totals = trajectory["S"] + trajectory["I"] + trajectory["R"]
+
+if not (totals == N).all():
+    raise ValueError("Population conservation failed.")
+
+if (trajectory[["S", "I", "R"]] &lt; 0).any().any():
+    raise ValueError("A compartment became negative.")
+
+if not (trajectory["S"].diff().dropna() &lt;= 0).all():
+    raise ValueError("Susceptible count increased.")
+
+if not (trajectory["R"].diff().dropna() &gt;= 0).all():
+    raise ValueError("Removed count decreased.")
+
+# Realised outcomes
+final_time = trajectory["time"].iloc[-1]
+final_S = trajectory["S"].iloc[-1]
+final_I = trajectory["I"].iloc[-1]
+final_R = trajectory["R"].iloc[-1]
+
+peak_I = trajectory["I"].max()
+peak_time = trajectory.loc[
+    trajectory["I"].idxmax(), "time"
+]
+
+new_infections = final_R - initial_R
+if final_I &gt; 0:
+    new_infections = (
+        initial_S - final_S
+    )
+
+attack_proportion = new_infections / N
+
+if final_I == 0:
+    stopping_reason = "infection became extinct"
+else:
+    stopping_reason = "the time horizon was reached"
+
+summary = pd.DataFrame({
+    "outcome": [
+        "Peak infectious count",
+        "First peak time (days)",
+        "Final susceptible",
+        "Final infectious",
+        "Final removed",
+        "New infections during simulation",
+        "Attack proportion"
+    ],
+    "value": [
+        peak_I,
+        round(peak_time, 2),
+        final_S,
+        final_I,
+        final_R,
+        new_infections,
+        round(attack_proportion, 4)
+    ]
+})
+
+print("Whole-state-space sufficient bound")
+print(f"Upper bound on event probability: "
+      f"{upper_probability_bound:.4f}")
+print()
+print(f"Seed: {seed}")
+print(f"Final time: {final_time:.2f} days")
+print(f"Stopping reason: {stopping_reason}")
+print()
+print("Realised-outcome table")
+print(summary.to_string(index=False))
+print()
+print("Last 8 stored states")
+print(trajectory.tail(8).to_string(index=False))
+
+# Figure 1: compartment trajectories
+plt.figure(figsize=(9, 5))
+plt.step(trajectory["time"], trajectory["S"],
+         where="post", label="Susceptible", color="#2563eb")
+plt.step(trajectory["time"], trajectory["I"],
+         where="post", label="Infectious", color="#dc2626")
+plt.step(trajectory["time"], trajectory["R"],
+         where="post", label="Removed", color="#16a34a")
+plt.axvline(peak_time, color="#7c3aed", linestyle="--",
+            alpha=0.7, label="First peak time")
+plt.xlabel("Time (days)")
+plt.ylabel("Number of people")
+plt.title("One stochastic SIR trajectory")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+# Figure 2: path through the two-dimensional state space
+plt.figure(figsize=(7, 5.5))
+plt.step(trajectory["S"], trajectory["I"],
+         where="post", color="#7c3aed")
+plt.scatter([initial_S], [initial_I],
+            color="#16a34a", s=70, label="Initial state", zorder=3)
+plt.scatter([final_S], [final_I],
+            color="#dc2626", s=70, label="Final state", zorder=3)
+plt.xlabel("Susceptible S")
+plt.ylabel("Infectious I")
+plt.title("The realised path through SIR state space")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why use a sufficient probability bound?</h2>
+<p>Across the SIR state space:</p>
+<div class="math-box">
+&#92;[
+SI&#92;le&#92;frac{N^2}{4},
+&#92;qquad I&#92;le N.
+&#92;]
+</div>
+<p>Therefore:</p>
+<div class="math-box">
+&#92;[
+p_{&#92;mathrm{inf}}+p_{&#92;mathrm{rec}}
+&#92;le
+&#92;left(&#92;frac{&#92;beta N}{4}+&#92;gamma N&#92;right)&#92;Delta t.
+&#92;]
+</div>
+<p>This bound is deliberately conservative because both separate maxima need not occur at the same state. If the bound is at most 1, every state is guaranteed to have a non-negative no-change probability.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why check monotonicity?</h2>
+<p>In the basic closed SIR model:</p>
+<div class="math-box">
+&#92;[
+S_{n+1}&#92;le S_n,
+&#92;qquad
+R_{n+1}&#92;ge R_n.
+&#92;]
+</div>
+<p>The susceptible count can fall or stay unchanged but cannot increase. The removed count can rise or stay unchanged but cannot decrease. The code uses <code>.diff()</code> to calculate consecutive changes and checks these model-specific directions.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Read the state-space graph</h2>
+<p>The first graph uses time on its horizontal axis. The second graph removes time from the axes and plots each realised pair &#92;((S_n,I_n)&#92;).</p>
+<ul>
+<li>An infection moves the state one unit left and one unit up.</li>
+<li>A recovery moves it one unit down while &#92;(S&#92;) stays fixed.</li>
+<li>No change leaves the point in the same position.</li>
+<li>The path ends on the horizontal absorbing boundary &#92;(I=0&#92;) if extinction occurs.</li>
+</ul>
+</section>
+
+<section class="lesson-section">
+<h2>Final epidemic size when the horizon is too short</h2>
+<p>If the simulation stops with &#92;(I&gt;0&#92;), <code>final_R</code> is not yet the completed final epidemic size. Some currently infectious people may recover, and additional infections may occur later.</p>
+<p>For this reason, the code reports the stopping reason. A completed final size should be claimed only when extinction has occurred or when an explicitly justified approximation is being used.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the model-specific code</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>initial_R = R</code></td><td>Retains the starting removed count so infections occurring during the simulation can be separated from earlier removals.</td></tr>
+<tr><td><code>trajectory["S"].diff()</code></td><td>Calculates each susceptible count minus the preceding susceptible count.</td></tr>
+<tr><td><code>.dropna()</code></td><td>Removes the undefined first difference, because the first row has no preceding row.</td></tr>
+<tr><td><code>final_R - initial_R</code></td><td>Counts new removals after a completed outbreak.</td></tr>
+<tr><td><code>new_infections / N</code></td><td>Calculates the realised attack proportion.</td></tr>
+<tr><td><code>plt.scatter(...)</code></td><td>Marks the initial and final points on the state-space path.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Change the seed. Compare peak size, peak time and final epidemic size.</li>
+<li>Set <code>initial_I = 1</code> by using <code>S, I, R = 199, 1, 0</code>. Look for early extinction.</li>
+<li>Use <code>beta = 0.08</code> and <code>gamma = 0.10</code>. Compare the outbreak outcome when &#92;(&#92;beta/&#92;gamma&lt;1&#92;).</li>
+<li>Set <code>max_days = 20</code>. Explain why the displayed removed count may not be the completed final size.</li>
+<li>Use <code>S, I, R = 147, 3, 50</code>. Confirm that new infections are measured relative to the initial removed count.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>In this realisation, infection consumes susceptible people and recovery accumulates removed people. Early random events influence whether the outbreak disappears quickly or reaches a substantial peak.</p>
+<p>Permanent removal gives the SIR process a direction that SIS does not have. Once susceptibility has been lost, it is not restored. This makes the final susceptible and removed counts informative summaries of the completed outbreak.</p>
+<div class="warning-box">
+<p>Peak size, peak time and final epidemic size from one run remain random outcomes. Their probability distributions require many independent trajectories, introduced in Lesson 12.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has added</h2>
+<div class="summary-box">
+<ul>
+<li>SIR recovery is irreversible and prevents reinfection.</li>
+<li>The independent state can be represented by &#92;((S,I)&#92;) in a triangular state space.</li>
+<li>Every state with &#92;(I=0&#92;) is absorbing.</li>
+<li>&#92;(S&#92;) is non-increasing and &#92;(R&#92;) is non-decreasing.</li>
+<li>A completed path gives a realised final epidemic size and attack proportion.</li>
+<li>A state-space path displays transitions differently from a time trajectory.</li>
+</ul>
+<p>Lesson 9 adds an exposed compartment and a new progression event to construct a DTMC SEIR model.</p>
+</div>
+</section>
+
+<nav class="lesson-nav">
+<a href="../dtmc-sis-model/">← Previous lesson</a>
+<a href="../dtmc-seir-model/">Next lesson →</a>
+</nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
