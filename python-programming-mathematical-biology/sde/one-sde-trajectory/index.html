@@ -1,1 +1,93 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Programming one SDE trajectory in Python for mathematical biology."><title>Programming one SDE trajectory | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">09</p><h1 class="section-title">Programming one SDE trajectory</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Program one reusable and validated epidemic SDE trajectory in Python."><title>Programming one SDE trajectory | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">09</p><h1 class="section-title">Programming one SDE trajectory</h1><p class="lesson-intro">A reliable stochastic program should make its inputs, random generator, numerical loop, stored path and validity diagnostics easy to inspect.</p>
+<section class="lesson-section"><h2>Programming goal</h2><p>The model equations and Euler–Maruyama method are already known. The new task is to package one complete simulation so that inputs, random-number generation, state storage, validation and outputs are clearly separated.</p></section>
+<section class="lesson-section"><h2>Inputs and outputs</h2><table><thead><tr><th>Inputs</th><th>Returned outputs</th></tr></thead><tbody><tr><td>Initial state and parameters</td><td>Time grid and state path</td></tr><tr><td>Final time and time step</td><td>Diagnostic information</td></tr><tr><td>A random-number generator</td><td>Values ready for tables and plots</td></tr></tbody></table>
+<p>Passing the generator into the function avoids hidden randomness and makes later repeated simulations straightforward.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>One reusable SDE trajectory</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def simulate_sis_sde(
+    rng, N, I0, beta, gamma, T, dt
+):
+    if dt <= 0:
+        raise ValueError("dt must be positive.")
+
+    if not 0 <= I0 <= N:
+        raise ValueError("I0 must be between 0 and N.")
+
+    steps = int(round(T / dt))
+    times = np.linspace(0, T, steps + 1)
+    I = np.zeros(steps + 1)
+    I[0] = I0
+    corrections = 0
+
+    for n in range(steps):
+        current = I[n]
+        infection_rate = beta * (N - current) * current / N
+        recovery_rate = gamma * current
+
+        drift = infection_rate - recovery_rate
+        diffusion = np.sqrt(max(
+            infection_rate + recovery_rate, 0
+        ))
+        dW = np.sqrt(dt) * rng.normal()
+
+        proposal = (
+            current + drift * dt + diffusion * dW
+        )
+        I[n + 1] = np.clip(proposal, 0, N)
+
+        if I[n + 1] != proposal:
+            corrections += 1
+
+    diagnostics = {
+        "steps": steps,
+        "boundary corrections": corrections,
+        "minimum I": I.min(),
+        "maximum I": I.max()
+    }
+
+    return times, I, diagnostics
+
+# Create the generator once, outside the function
+seed = 71
+rng = np.random.default_rng(seed)
+
+times, I, diagnostics = simulate_sis_sde(
+    rng=rng,
+    N=500,
+    I0=10,
+    beta=0.25,
+    gamma=0.15,
+    T=80,
+    dt=0.01
+)
+
+trajectory = pd.DataFrame({
+    "time": times,
+    "I": I
+})
+
+print("Diagnostics")
+print(pd.Series(diagnostics).round(4).to_string())
+print()
+print("First 10 stored states")
+print(trajectory.head(10).round(4).to_string(index=False))
+print()
+print("Last 10 stored states")
+print(trajectory.tail(10).round(4).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.2))
+plt.plot(trajectory["time"], trajectory["I"],
+         color="#b42318", linewidth=1.1)
+plt.xlabel("Time (days)")
+plt.ylabel("Infectious population")
+plt.title(f"One SIS SDE trajectory, seed = {seed}")
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Why each design choice matters</h2><table><thead><tr><th>Choice</th><th>Benefit</th></tr></thead><tbody><tr><td>Function parameters instead of global variables</td><td>The simulation can be reused safely with new scenarios.</td></tr><tr><td>Generator passed as <code>rng</code></td><td>The source of randomness is visible and controllable.</td></tr><tr><td>Preallocated NumPy array</td><td>Storage is efficient and has a predictable length.</td></tr><tr><td>Returned diagnostics</td><td>Boundary corrections and validity can be inspected rather than hidden.</td></tr></tbody></table></section>
+<section class="lesson-section"><h2>What one path can establish</h2><p>One path demonstrates a possible history and helps debug the program. It cannot estimate a probability, mean, variance or typical range. Those require independent repetitions.</p></section>
+<section class="lesson-section"><h2>Continuous model, discrete numerical storage</h2><p>The SDE defines a continuous-time process. Euler–Maruyama stores approximations only at grid times. A line plot connects those stored values; it is not evidence that the computer calculated every intermediate time.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now package one SDE path into a validated reusable function, pass randomness explicitly, return diagnostics, and distinguish a possible trajectory from an ensemble result.</p></div></section><nav class="lesson-nav"><a href="../stochastic-seir-model/">← Previous lesson</a><a href="../many-sde-trajectories/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
