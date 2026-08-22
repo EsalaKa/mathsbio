@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Python reference | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><main class="section container"><a class="back-link" href="../">← Reference Library</a><article class="lesson-content"><h1 class="section-title">Python reference</h1><h2>NumPy</h2><pre><code>import numpy as np
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Python reference | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a><a href="../">Reference Library</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Reference Library</a><article class="lesson-content"><h1 class="section-title">Python reference</h1><h2>NumPy</h2><pre><code>import numpy as np
 x = np.array([1.0, 2.0, 3.0])
 t = np.linspace(0, 10, 101)</code></pre><h2>Plotting</h2><pre><code>import matplotlib.pyplot as plt
 plt.plot(t, y)
@@ -9,4 +9,4 @@ sol = solve_ivp(model, [0, 100], y0)</code></pre><h2>Random generator</h2><pre><
 u = rng.uniform()
 z = rng.normal()</code></pre><h2>Linear algebra</h2><pre><code>y = A @ x
 values, vectors = np.linalg.eig(A)
-solution = np.linalg.solve(A, b)</code></pre></article></main></body></html>
+solution = np.linalg.solve(A, b)</code></pre></article><nav class="lesson-nav"><a href="../stochastic-calculus-reference/">← Previous reference</a><a href="../model-glossary/">Next reference →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
