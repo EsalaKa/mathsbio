@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Extinction and outbreak probabilities | MathsBio</title><link rel="stylesheet" href="../../style.css"><script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.warning{margin:1.4rem 0;padding:18px 22px;background:#fff8ed;border-left:4px solid #b9823d}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.figure{margin:1.5rem 0;padding:18px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:700px;height:auto;display:block}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}</style></head>
-<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a><a href="../">Stochastic Processes for Biology</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
 <h1 class="section-title">Extinction and outbreak probabilities</h1>
 <p>At the beginning of an epidemic, only a few infectious individuals may be present. Even when transmission is strong enough for infection to grow <em>on average</em>, chance can still determine whether the first transmission chains disappear or become established.</p>
 <div class="box"><strong>Core idea.</strong> A deterministic model describes average growth. A stochastic model can additionally ask: <strong>what is the probability that infection dies out, and what is the probability that it develops into an outbreak?</strong></div>
@@ -92,7 +92,7 @@
 <h2>What each quantity tells us</h2>
 <table class="compare"><tr><th>Quantity</th><th>Question answered</th></tr><tr><td>\(R_0\)</td><td>Is average early growth possible?</td></tr><tr><td>extinction probability</td><td>What is the chance the chain eventually disappears?</td></tr><tr><td>outbreak probability</td><td>What is the chance a specified outbreak criterion is reached?</td></tr><tr><td>Monte Carlo estimate</td><td>How can we estimate these probabilities for a complicated model?</td></tr></table>
 <div class="box"><strong>Key idea.</strong> \(R_0>1\) is an average-growth threshold, not a guarantee of outbreak. Early random events can still terminate transmission. Branching processes give intuitive analytical approximations, finite CTMCs give hitting probabilities, and Monte Carlo simulation can estimate these risks for more complicated biological models.</div>
-</article></main>
+</article><nav class="lesson-nav"><a href="../monte-carlo-simulation/">← Previous lesson</a><a href="../">Return to Stochastic Processes index →</a></nav></main>
 <script>
 (function(){
 const NS='http://www.w3.org/2000/svg';
@@ -105,4 +105,4 @@ try{const svg=document.getElementById('fixedPointPlot'),a=axes(svg,1,1,'s','G(s)
 try{const svg=document.getElementById('r0Plot'),a=axes(svg,5,1,'R₀','major-outbreak probability');[0,1,2,3,4,5].forEach(v=>E(svg,'text',{x:a.X(v),y:a.B+20,'text-anchor':'middle','font-size':11},v));[0,.2,.4,.6,.8,1].forEach(v=>E(svg,'text',{x:a.L-8,y:a.Y(v)+4,'text-anchor':'end','font-size':11},v.toFixed(1)));let pts=[];for(let j=0;j<=400;j++){const r=5*j/400,p=r<=1?0:1-1/r;pts.push(a.X(r)+','+a.Y(p));}E(svg,'polyline',{points:pts.join(' '),fill:'none',stroke:'#39815e','stroke-width':3});E(svg,'line',{x1:a.X(1),y1:a.T,x2:a.X(1),y2:a.B,stroke:'#a07042','stroke-width':1.5,'stroke-dasharray':'6 5'});E(svg,'text',{x:a.X(1)+8,y:a.T+16,'font-size':12,fill:'#8a6239'},'threshold R₀ = 1');}catch(e){console.error(e);}
 })();
 </script>
-</body></html>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
