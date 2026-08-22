@@ -1,1 +1,92 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Programming many independent SDE trajectories in Python for mathematical biology."><title>Programming many independent SDE trajectories | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">10</p><h1 class="section-title">Programming many independent SDE trajectories</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Program many independent epidemic SDE trajectories efficiently in Python."><title>Programming many independent SDE trajectories | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">10</p><h1 class="section-title">Programming many independent SDE trajectories</h1><p class="lesson-intro">Independent SDE paths turn possible histories into an empirical distribution. A two-dimensional NumPy array makes the ensemble structure explicit.</p>
+<section class="lesson-section"><h2>From one path to an ensemble</h2><p>Suppose &#92;(M&#92;) independent paths are stored in a rectangular array. Row &#92;(r&#92;) is trajectory &#92;(r&#92;), and column &#92;(n&#92;) is time &#92;(t_n&#92;):</p><div class="math-box">&#92;[X_{r,n}&#92;approx X_r(t_n).&#92;]</div><p>Unlike CTMC paths, Euler–Maruyama paths already share the chosen numerical grid, so no separate alignment step is needed.</p></section>
+<section class="lesson-section"><h2>Independence in the code</h2><p>At every time step, each path needs its own standard normal draw. The generator is created once before simulation. Reinitialising it with the same seed for each trajectory would create identical paths, not independent ones.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Many independent SIS SDE paths</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+N = 500
+I0 = 10
+beta = 0.25
+gamma = 0.15
+T = 80
+dt = 0.02
+number_of_paths = 300
+seed = 83
+
+steps = int(round(T / dt))
+times = np.linspace(0, T, steps + 1)
+rng = np.random.default_rng(seed)
+
+# Rows are paths; columns are time points
+I = np.zeros((number_of_paths, steps + 1))
+I[:, 0] = I0
+correction_count = 0
+
+for n in range(steps):
+    current = I[:, n]
+
+    infection_rate = beta * (N - current) * current / N
+    recovery_rate = gamma * current
+    drift = infection_rate - recovery_rate
+    diffusion = np.sqrt(np.maximum(
+        infection_rate + recovery_rate, 0
+    ))
+
+    # One independent normal draw for every path
+    Z = rng.normal(0, 1, size=number_of_paths)
+    proposals = (
+        current
+        + drift * dt
+        + diffusion * np.sqrt(dt) * Z
+    )
+
+    corrected = np.clip(proposals, 0, N)
+    correction_count += np.count_nonzero(
+        corrected != proposals
+    )
+    I[:, n + 1] = corrected
+
+path_summary = pd.DataFrame({
+    "path": np.arange(1, number_of_paths + 1),
+    "final I": I[:, -1],
+    "minimum I": I.min(axis=1),
+    "maximum I": I.max(axis=1)
+})
+
+print("Ensemble design")
+print(f"Array shape: {I.shape}")
+print(f"Independent paths: {number_of_paths}")
+print(f"Stored time points: {steps + 1}")
+print(f"Total boundary corrections: {correction_count}")
+print()
+print("First 10 path summaries")
+print(path_summary.head(10).round(3).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.2))
+for path_number in range(20):
+    plt.plot(
+        times, I[path_number],
+        alpha=0.42, linewidth=0.8
+    )
+
+plt.xlabel("Time (days)")
+plt.ylabel("Infectious population")
+plt.title("Twenty of 300 independent SIS SDE paths")
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+plt.figure(figsize=(8.5, 4.9))
+plt.hist(I[:, -1], bins=25,
+         color="#79ae90", edgecolor="white")
+plt.xlabel("Infectious population at day 80")
+plt.ylabel("Number of paths")
+plt.title("Distribution across all independent paths")
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Vectorisation</h2><p><code>current = I[:, n]</code> selects all paths at one time. NumPy then calculates rates and updates for the whole ensemble together. This is usually clearer and faster than a nested Python loop.</p>
+<table><thead><tr><th>Axis</th><th>Meaning</th></tr></thead><tbody><tr><td><code>axis=0</code></td><td>Summarise down paths at each time.</td></tr><tr><td><code>axis=1</code></td><td>Summarise across time within each path.</td></tr></tbody></table></section>
+<section class="lesson-section"><h2>What the displays establish</h2><p>The twenty path lines illustrate variability but are not the entire experiment. The histogram uses all 300 paths and describes the empirical distribution at one stated time. Neither alone is an uncertainty band; that is the next lesson.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now store an ensemble as a path-by-time array, generate independent Brownian draws, vectorise Euler–Maruyama, diagnose boundary corrections and distinguish illustrative paths from a full outcome distribution.</p></div></section><nav class="lesson-nav"><a href="../one-sde-trajectory/">← Previous lesson</a><a href="../mean-variance-uncertainty-bands/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
