@@ -4,12 +4,52 @@
 <p>On the grid &#92;(t_n=n&#92;Delta t&#92;), Euler–Maruyama replaces the infinitesimal expression by</p>
 <div class="math-box">&#92;[X_{n+1}=X_n+f(X_n,t_n)&#92;Delta t+g(X_n,t_n)&#92;Delta W_n,&#92;qquad &#92;Delta W_n=&#92;sqrt{&#92;Delta t}Z_n.&#92;]</div>
 </section>
+<section class="lesson-section"><h2>Where the update comes from</h2>
+<p>Over one interval from &#92;(t_n&#92;) to &#92;(t_{n+1}&#92;), the SDE can be written in integral form:</p>
+<div class="math-box">&#92;[
+X(t_{n+1})-X(t_n)
+=
+&#92;int_{t_n}^{t_{n+1}}f(X(s),s)ds
++
+&#92;int_{t_n}^{t_{n+1}}g(X(s),s)dW(s).
+&#92;]</div>
+<p>Euler–Maruyama holds both coefficients at their known left-endpoint values during this short interval:</p>
+<div class="math-box">&#92;[
+&#92;int_{t_n}^{t_{n+1}}f(X(s),s)ds
+&#92;approx f(X_n,t_n)&#92;Delta t,
+&#92;qquad
+&#92;int_{t_n}^{t_{n+1}}g(X(s),s)dW(s)
+&#92;approx g(X_n,t_n)&#92;Delta W_n.
+&#92;]</div>
+<p>Adding these approximations to &#92;(X_n&#92;) gives the Euler–Maruyama update. This is a numerical approximation, not an algebraic cancellation of &#92;(dt&#92;) or &#92;(dW&#92;).</p>
+</section>
 <section class="lesson-section"><h2>Four operations in every step</h2><ol><li>Evaluate drift at the current state.</li><li>Evaluate diffusion at the current state.</li><li>Generate one new Brownian increment.</li><li>Add drift change and diffusion change to the current state.</li></ol>
 <p>Both coefficients use &#92;(X_n&#92;), not the already updated value &#92;(X_{n+1}&#92;). This makes the method explicit.</p></section>
 <section class="lesson-section"><h2>Scenario: fluctuating logistic population</h2>
 <p>Let &#92;(X(t)&#92;) be a population growing toward carrying capacity &#92;(K&#92;), while environmental variation changes growth continuously:</p>
 <div class="math-box">&#92;[dX=rX&#92;left(1-&#92;frac{X}{K}&#92;right)dt+&#92;eta XdW.&#92;]</div>
 <p>The drift is logistic growth. The diffusion scale &#92;(&#92;eta X&#92;) makes environmental fluctuation proportional to current population size.</p></section>
+<section class="lesson-section"><h2>Calculate the first update by hand</h2>
+<p>For the values used in the program, &#92;(X_0=40&#92;), &#92;(r=0.8&#92;), &#92;(K=500&#92;), &#92;(&#92;eta=0.12&#92;) and &#92;(&#92;Delta t=0.02&#92;):</p>
+<div class="math-box">&#92;[
+f(40)&#92;Delta t
+=
+0.8(40)&#92;left(1-&#92;frac{40}{500}&#92;right)(0.02)
+=
+0.5888.
+&#92;]</div>
+<p>With seed 31, the first generated value is approximately &#92;(Z_0=-0.3953&#92;), so</p>
+<div class="math-box">&#92;[
+&#92;Delta W_0=&#92;sqrt{0.02}(-0.3953)&#92;approx-0.0559,
+&#92;]
+&#92;[
+g(40)&#92;Delta W_0=(0.12)(40)(-0.0559)&#92;approx-0.2683.
+&#92;]</div>
+<div class="math-box">&#92;[
+X_1=40+0.5888-0.2683&#92;approx40.3205.
+&#92;]</div>
+<p>The population increases because the positive drift contribution is larger than the negative diffusion contribution in this particular step.</p>
+</section>
 <section class="lesson-section"><h2>Interactive Python laboratory</h2><p>The code implements Euler–Maruyama line by line and compares it with deterministic Euler using the same drift and initial value.</p>
 <div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Euler–Maruyama from scratch</span></div>
 <textarea class="python-editor" spellcheck="false">import numpy as np
@@ -34,7 +74,16 @@ seed = 31
 if dt <= 0:
     raise ValueError("dt must be positive.")
 
+if T <= 0:
+    raise ValueError("T must be positive.")
+
+if K <= 0 or eta < 0 or X0 < 0:
+    raise ValueError("Use biologically valid inputs.")
+
 steps = int(round(T / dt))
+if not np.isclose(steps * dt, T):
+    raise ValueError("Choose dt so that T/dt is an integer.")
+
 times = np.linspace(0, T, steps + 1)
 
 rng = np.random.default_rng(seed)
