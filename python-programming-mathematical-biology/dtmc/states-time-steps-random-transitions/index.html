@@ -1,1 +1,285 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="States, fixed time steps and random transitions in Python for mathematical biology."><title>States, fixed time steps and random transitions | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">01</p><h1 class="section-title">States, fixed time steps and random transitions</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Understand DTMC states, fixed time steps, random transitions and realised epidemic trajectories using Python.">
+<title>States, fixed time steps and random transitions | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.clock-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:28px 0;padding-top:14px;border-top:4px solid #7eae91}.clock-point{position:relative;min-width:55px;text-align:center;color:#174c34}.clock-point::before{content:"";position:absolute;top:-22px;left:50%;width:12px;height:12px;transform:translateX(-50%);background:#39815e;border:3px solid #edf6f0;border-radius:50%}.state-anatomy{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.state-card{padding:20px;text-align:center;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.state-card strong{display:block;color:#174c34;font-size:1.15rem}.branch-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;margin:24px 0}.current-state{padding:22px;text-align:center;background:#eaf4ee;border:2px solid #79ad8d;border-radius:11px}.branch-arrow{font-size:2rem;color:#176b45;font-weight:700}.possible-states{display:grid;gap:9px}.possible-state{padding:13px;background:#fff;border:1px solid #dce7e0;border-radius:8px}.comparison-table{width:100%;border-collapse:collapse;background:#fff}.comparison-table th,.comparison-table td{padding:12px 14px;border:1px solid #d6e3db;text-align:left;vertical-align:top}.comparison-table th{background:#eaf4ee;color:#174c34}.concept-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.concept-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.boundary-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}@media(max-width:800px){.clock-row{overflow-x:auto;justify-content:flex-start;gap:30px;padding-bottom:10px}.state-anatomy,.branch-grid,.concept-grid{grid-template-columns:1fr}.branch-arrow{transform:rotate(90deg);text-align:center}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+<p class="section-number">01</p>
+<h1 class="section-title">States, fixed time steps and random transitions</h1>
+<p class="lesson-intro">A discrete-time Markov chain records a biological system at fixed times. Its next state is uncertain, so repeated epidemics starting from the same state need not follow the same path.</p>
+
+<section class="lesson-section">
+<h2>Biological scenario</h2>
+<div class="scenario-box">
+<p>A closed group contains five people. At the end of each day, we record how many are susceptible, infectious and recovered.</p>
+<p>On day 0 the state is four susceptible, one infectious and no recovered people. We want to understand how this information is represented before calculating transition probabilities or generating random events.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>What is a state?</h2>
+<p>A state contains the information used to describe the system at one time. For this small SIR model,</p>
+<div class="math-box">
+<p class="formula-line">&#92;[X_n=(S_n,I_n,R_n).&#92;]</p>
+</div>
+<div class="state-anatomy">
+<div class="state-card"><strong>&#92;(S_n&#92;)</strong>susceptible count at step &#92;(n&#92;)</div>
+<div class="state-card"><strong>&#92;(I_n&#92;)</strong>infectious count at step &#92;(n&#92;)</div>
+<div class="state-card"><strong>&#92;(R_n&#92;)</strong>recovered count at step &#92;(n&#92;)</div>
+</div>
+<p>The initial state is</p>
+<p class="formula-line">&#92;[X_0=(4,1,0).&#92;]</p>
+<p>The subscript &#92;(n&#92;) labels the discrete step. It does not mean multiplication.</p>
+</section>
+
+<section class="lesson-section">
+<h2>State space</h2>
+<p>The <strong>state space</strong> is the collection of all states allowed by the model. In a closed population of five, a valid state must satisfy</p>
+<p class="formula-line">&#92;[S_n&#92;geq0,&#92;qquad I_n&#92;geq0,&#92;qquad R_n&#92;geq0,&#92;qquad S_n+I_n+R_n=5.&#92;]</p>
+<p>Examples include &#92;((4,1,0)&#92;), &#92;((3,2,0)&#92;) and &#92;((3,1,1)&#92;). A state such as &#92;((4,2,0)&#92;) is invalid because its total is six.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Fixed time steps</h2>
+<p>The process is observed at</p>
+<p class="formula-line">&#92;[t_n=t_0+n&#92;Delta t,&#92;]</p>
+<p>where &#92;(&#92;Delta t&#92;) is fixed. Here &#92;(&#92;Delta t=1&#92;) day.</p>
+<div class="clock-row" aria-label="Daily discrete observation times">
+<div class="clock-point">&#92;(t_0=0&#92;)</div>
+<div class="clock-point">&#92;(t_1=1&#92;)</div>
+<div class="clock-point">&#92;(t_2=2&#92;)</div>
+<div class="clock-point">&#92;(t_3=3&#92;)</div>
+<div class="clock-point">&#92;(t_4=4&#92;)</div>
+<div class="clock-point">&#92;(t_5=5&#92;)</div>
+</div>
+<div class="technical-box">
+<p>The DTMC records a state at these discrete times. It does not specify the exact time within a day at which a biological event occurred.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>What is a random transition?</h2>
+<p>A transition is movement from the current state &#92;(X_n&#92;) to the next state &#92;(X_{n+1}&#92;). It is random because more than one next state may be possible from the same current state.</p>
+<div class="branch-grid">
+<div class="current-state"><strong>Current state</strong><br>&#92;(X_n=(4,1,0)&#92;)</div>
+<div class="branch-arrow">→</div>
+<div class="possible-states">
+<div class="possible-state">one possible next state: &#92;((3,2,0)&#92;)</div>
+<div class="possible-state">another possible next state: &#92;((4,1,0)&#92;)</div>
+<div class="possible-state">another possible next state: &#92;((4,0,1)&#92;)</div>
+</div>
+</div>
+<p>This lesson identifies possible next states only. Lesson 2 assigns transition probabilities, and later lessons use random numbers to select an outcome.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The Markov property</h2>
+<div class="math-box">
+<p>The Markov assumption states that, once the current state is known, the probability distribution of the next state does not require the complete earlier path:</p>
+<p class="formula-line">&#92;[&#92;Pr(X_{n+1}=x&#92;mid X_n,X_{n-1},&#92;ldots,X_0)=&#92;Pr(X_{n+1}=x&#92;mid X_n).&#92;]</p>
+</div>
+<p>This does not mean that the past had no biological effect. Its relevant effect is assumed to be summarised by the current state.</p>
+<div class="boundary-box">
+<p>If infection risk also depends on how long each person has been infectious, then &#92;((S,I,R)&#92;) may not contain enough information for the Markov property. The state would need to be expanded or the assumption reconsidered.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>One trajectory versus all possibilities</h2>
+<div class="concept-grid">
+<div class="concept-card">
+<h3>One realised trajectory</h3>
+<p>A single sequence that happened in one simulation or observation:</p>
+<p class="formula-line">&#92;[(4,1,0)&#92;to(3,2,0)&#92;to(3,2,0)&#92;to(3,1,1).&#92;]</p>
+</div>
+<div class="concept-card">
+<h3>Distribution of trajectories</h3>
+<p>The collection of possible paths and their probabilities across repeated realisations.</p>
+<p>One path cannot show the complete uncertainty of the model.</p>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Store a supplied trajectory in Python</h2>
+<p>We use a supplied path so that this lesson does not yet generate randomness.</p>
+<div class="step-card">
+<h3>States as tuples</h3>
+<pre><code>states = [
+    (4, 1, 0),
+    (3, 2, 0),
+    (3, 2, 0),
+    (3, 1, 1),
+    (2, 2, 1),
+    (2, 1, 2)
+]</code></pre>
+<p class="code-explain">A tuple is an ordered collection written with parentheses. Each tuple stores one complete &#92;((S,I,R)&#92;) state.</p>
+</div>
+<div class="step-card">
+<h3>Unpack one state</h3>
+<pre><code>S, I, R = states[0]</code></pre>
+<p class="code-explain">Tuple unpacking assigns the three entries to three names in the same order.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Run and inspect the trajectory</h2>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Supplied DTMC trajectory</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import matplotlib.pyplot as plt
+
+# Fixed observation settings
+start_time = 0
+dt = 1
+
+# One supplied realised trajectory
+states = [
+    (4, 1, 0),
+    (3, 2, 0),
+    (3, 2, 0),
+    (3, 1, 1),
+    (2, 2, 1),
+    (2, 1, 2)
+]
+
+# Create matching observation times
+number_of_states = len(states)
+time = start_time + dt * np.arange(number_of_states)
+
+# Check every state
+population = sum(states[0])
+
+for state in states:
+    S, I, R = state
+    
+    if min(S, I, R) &lt; 0:
+        raise ValueError("A state contains a negative count.")
+    
+    if S + I + R != population:
+        raise ValueError("A state violates population conservation.")
+
+# Display the trajectory
+print("Step   Time   State (S, I, R)")
+print("--------------------------------")
+
+for step, state in enumerate(states):
+    print(f"{step:4d}   {time[step]:4.1f}   {state}")
+
+# Convert state tuples into arrays for plotting
+state_array = np.array(states)
+S_values = state_array[:, 0]
+I_values = state_array[:, 1]
+R_values = state_array[:, 2]
+
+# Plot discrete-time states
+plt.figure(figsize=(8, 4.8))
+plt.step(
+    time,
+    S_values,
+    where="post",
+    marker="o",
+    label="Susceptible"
+)
+plt.step(
+    time,
+    I_values,
+    where="post",
+    marker="o",
+    label="Infectious"
+)
+plt.step(
+    time,
+    R_values,
+    where="post",
+    marker="o",
+    label="Recovered"
+)
+plt.xlabel("Time (days)")
+plt.ylabel("Number of people")
+plt.title("One supplied discrete-time SIR trajectory")
+plt.xticks(time)
+plt.grid(alpha=0.25)
+plt.legend()
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the new code</h2>
+<table class="comparison-table">
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>(4, 1, 0)</code></td><td>A tuple representing one ordered SIR state.</td></tr>
+<tr><td><code>sum(states[0])</code></td><td>Adds the entries of the initial state to obtain the population.</td></tr>
+<tr><td><code>for state in states</code></td><td>Visits each stored state in sequence.</td></tr>
+<tr><td><code>state_array[:, 1]</code></td><td>Selects every row and column 1, the infectious counts.</td></tr>
+<tr><td><code>plt.step(..., where="post")</code></td><td>Draws a step plot that holds each recorded value until the next discrete time.</td></tr>
+<tr><td><code>plt.xticks(time)</code></td><td>Places horizontal-axis tick marks at the recorded times.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>DTMC time is not Euler time</h2>
+<table class="comparison-table">
+<thead><tr><th>DTMC step</th><th>Euler step</th></tr></thead>
+<tbody>
+<tr><td>Part of the stochastic model definition.</td><td>A numerical approximation choice for solving differential equations.</td></tr>
+<tr><td>The next state is random.</td><td>The next approximation is determined by the current numerical formula.</td></tr>
+<tr><td>Changing the step can change the transition model itself.</td><td>Reducing the step usually aims to improve numerical accuracy for the same ODE.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Boundary of this lesson</h2>
+<div class="boundary-box">
+<p>We have not yet calculated transition probabilities, divided a random-number interval, or simulated a transition. The trajectory was supplied only to demonstrate states, fixed times and one realised path.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try another supplied path</h2>
+<div class="experiment-box">
+<p>Replace the states with:</p>
+<pre><code>states = [
+    (4, 1, 0),
+    (4, 0, 1),
+    (4, 0, 1),
+    (4, 0, 1)
+]</code></pre>
+<ol>
+<li>Run the code and inspect the step plot.</li>
+<li>Identify when the infectious population reaches zero.</li>
+<li>Explain why this is one possible trajectory, not the only possible path from &#92;((4,1,0)&#92;).</li>
+</ol>
+</div>
+</section>
+</main>
+</body>
+</html>
