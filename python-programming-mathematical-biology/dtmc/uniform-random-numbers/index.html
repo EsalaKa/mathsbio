@@ -150,13 +150,9 @@ else:
 <h2>Interactive Python laboratory</h2>
 <p>The code draws 12 visible random numbers, maps each one to an event, and then uses 10,000 additional draws to check that the long-run event frequencies are close to the specified probabilities.</p>
 
-<div class="python-cell" data-python-cell>
-<div class="python-toolbar">
-<button class="run-python" type="button">▶ Run code</button>
-<button class="reset-python" type="button">Reset</button>
-<button class="copy-python" type="button">Copy</button>
-</div>
-<textarea class="python-code" spellcheck="false">import numpy as np
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Uniform interval event selector</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -236,9 +232,16 @@ plt.legend()
 plt.grid(axis="y", alpha=0.25)
 plt.tight_layout()
 plt.show()</textarea>
-<div class="python-status" aria-live="polite"></div>
-<pre class="python-output" aria-live="polite"></pre>
-<div class="python-output-images"></div>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
 </div>
 </section>
 
