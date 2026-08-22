@@ -1,1 +1,586 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Extinction and major-outbreak probabilities in Python for mathematical biology."><title>Extinction and major-outbreak probabilities | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">13</p><h1 class="section-title">Extinction and major-outbreak probabilities</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Define and estimate early extinction, major-outbreak and time-specific extinction probabilities with Monte Carlo uncertainty in a DTMC SIR model.">
+<title>Extinction and major-outbreak probabilities | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.definition-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.definition-card{padding:19px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.definition-card h3{margin-top:0;color:#174c34}.partition-box{padding:22px;background:#eaf4ee;border-radius:11px}.threshold-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}.uncertainty-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.uncertainty-card{padding:21px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.uncertainty-card h3{margin-top:0;color:#174c34}.workflow-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0}.workflow-card{padding:18px;background:#eaf4ee;border-radius:10px}.workflow-card strong{display:block;color:#174c34;margin-bottom:6px}.meaning-table td:first-child{font-weight:700;color:#174c34}@media(max-width:800px){.definition-grid,.uncertainty-grid,.workflow-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+
+<main class="section container">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+<p class="section-number">13</p>
+<h1 class="section-title">Extinction and major-outbreak probabilities</h1>
+<p class="lesson-intro">Monte Carlo simulation becomes scientifically meaningful only after outcomes are defined precisely. We now define early fade-out, major outbreak and extinction by a chosen time, then estimate their probabilities and simulation uncertainty.</p>
+
+<section class="lesson-section">
+<h2>Why “extinction probability” is ambiguous</h2>
+<p>In a closed SIR model with no births or imported infections, every completed epidemic eventually reaches &#92;(I=0&#92;). Therefore:</p>
+<div class="math-box">
+&#92;[
+&#92;Pr(&#92;text{eventual extinction})=1.
+&#92;]
+</div>
+<p>This fact does not distinguish an introduction that disappears after infecting two people from an outbreak that infects most of the population and then ends.</p>
+<div class="warning-box">
+<p>Always specify whether “extinction” means eventual extinction, extinction before a threshold is reached, or extinction by a stated time.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Define the outcomes before running the simulations</h2>
+<p>Let &#92;(Z&#92;) be the completed epidemic size—the total number of people infected, including those infectious initially. Choose a major-outbreak threshold &#92;(H&#92;).</p>
+<div class="definition-grid">
+<div class="definition-card">
+<h3>Major outbreak</h3>
+<div class="math-box">&#92;[Z&#92;ge H.&#92;]</div>
+<p>The epidemic reaches or exceeds the pre-specified size threshold.</p>
+</div>
+<div class="definition-card">
+<h3>Early fade-out</h3>
+<div class="math-box">&#92;[Z&lt;H.&#92;]</div>
+<p>Infection becomes extinct before reaching the major-outbreak threshold.</p>
+</div>
+<div class="definition-card">
+<h3>Extinct by time (T)</h3>
+<div class="math-box">&#92;[I(T)=0.&#92;]</div>
+<p>The absorbing extinction state has been reached no later than the stated time.</p>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Which events form a partition?</h2>
+<div class="partition-box">
+<p>For a completed closed SIR trajectory, exactly one of these is true:</p>
+<div class="math-box">
+&#92;[
+Z&lt;H
+&#92;qquad&#92;text{or}&#92;qquad
+Z&#92;ge H.
+&#92;]
+</div>
+<p>Therefore:</p>
+<div class="math-box">
+&#92;[
+&#92;Pr(&#92;text{early fade-out})
++
+&#92;Pr(&#92;text{major outbreak})
+=1.
+&#92;]
+</div>
+</div>
+<p>“Extinct by day 20” is a different time-specific event. It may overlap with early fade-out, and it is not the complement of major outbreak.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Choosing the major-outbreak threshold</h2>
+<div class="threshold-box">
+<p>In the worked example, &#92;(N=100&#92;) and:</p>
+<div class="math-box">
+&#92;[
+H=20.
+&#92;]
+</div>
+<p>A major outbreak is therefore defined as at least 20 people infected, or 20% of the population.</p>
+</div>
+<p>This threshold is illustrative. In an applied study, it might be based on hospital demand, public-health workload, a percentage of the population, or a scientifically justified outbreak definition.</p>
+<ul>
+<li>Choose the threshold before examining the simulated results.</li>
+<li>State whether the threshold concerns final size, peak size, cumulative cases or another quantity.</li>
+<li>Report sensitivity to reasonable alternative thresholds.</li>
+</ul>
+<p>Changing &#92;(H&#92;) changes the event being measured, so it can change the estimated probability even when the epidemic model is unchanged.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Convert simulated outcomes into indicators</h2>
+<p>For simulation &#92;(m&#92;), define the major-outbreak indicator:</p>
+<div class="math-box">
+&#92;[
+Y_m=
+&#92;begin{cases}
+1,&Z_m&#92;ge H,&#92;&#92;
+0,&Z_m&lt;H.
+&#92;end{cases}
+&#92;]
+</div>
+<p>The indicator turns a verbal event into data that can be counted. Its sample mean is the estimated probability:</p>
+<div class="math-box">
+&#92;[
+&#92;widehat p
+=
+&#92;frac{1}{M}&#92;sum_{m=1}^{M}Y_m
+=
+&#92;frac{&#92;text{number of major outbreaks}}{M}.
+&#92;]
+</div>
+<p>The early-fade-out and time-specific extinction indicators are constructed in the same way.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Monte Carlo uncertainty</h2>
+<p>Repeating the entire experiment with another seed generally gives a slightly different estimate. This sampling variation is measured by the Monte Carlo standard error:</p>
+<div class="math-box">
+&#92;[
+&#92;operatorname{SE}_{&#92;mathrm{MC}}(&#92;widehat p)
+=
+&#92;sqrt{&#92;frac{&#92;widehat p(1-&#92;widehat p)}{M}}.
+&#92;]
+</div>
+<div class="uncertainty-grid">
+<div class="uncertainty-card">
+<h3>Biological uncertainty</h3>
+<p>The model assigns multiple possible epidemic outcomes even when parameters are fixed.</p>
+</div>
+<div class="uncertainty-card">
+<h3>Monte Carlo uncertainty</h3>
+<p>A finite number of simulations estimates the model probability imperfectly.</p>
+</div>
+</div>
+<p>Running more simulations reduces Monte Carlo uncertainty but does not remove the stochastic variability inherent in the epidemic model.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why four times as many runs halve the standard error</h2>
+<p>The standard error is proportional to &#92;(1/&#92;sqrt M&#92;). If &#92;(M&#92;) is multiplied by 4:</p>
+<div class="math-box">
+&#92;[
+&#92;frac{1}{&#92;sqrt{4M}}
+=
+&#92;frac{1}{2&#92;sqrt M}.
+&#92;]
+</div>
+<p>Thus approximately four times as much simulation work is required to halve the Monte Carlo standard error.</p>
+</section>
+
+<section class="lesson-section">
+<h2>A 95% interval for a simulated probability</h2>
+<p>The code reports a Wilson 95% interval. It is designed for a binomial proportion and behaves better than the simple &#92;(&#92;widehat p&#92;pm1.96&#92;operatorname{SE}&#92;) interval when probabilities are near 0 or 1 or the simulation count is modest.</p>
+<p>For &#92;(x&#92;) successes among &#92;(M&#92;) simulations and &#92;(z=1.96&#92;), the Wilson centre and half-width are:</p>
+<div class="math-box">
+&#92;[
+&#92;text{centre}
+=
+&#92;frac{&#92;widehat p+z^2/(2M)}{1+z^2/M},
+&#92;]
+&#92;[
+&#92;text{half-width}
+=
+&#92;frac{z}{1+z^2/M}
+&#92;sqrt{
+&#92;frac{&#92;widehat p(1-&#92;widehat p)}{M}
++
+&#92;frac{z^2}{4M^2}
+}.
+&#92;]
+</div>
+<div class="note-box">
+<p>This interval describes numerical uncertainty from a finite Monte Carlo sample under the chosen model. It does not include uncertainty in &#92;(&#92;beta&#92;), &#92;(&#92;gamma&#92;), initial conditions or model assumptions.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Worked scenario</h2>
+<p>Use the same SIR model as Lesson 12:</p>
+<div class="math-box">
+&#92;[
+N=100,&#92quad I_0=2,&#92quad
+&#92;beta=0.3,&#92quad&#92;gamma=0.1,
+&#92;quad&#92;Delta t=0.02&#92;text{ day}.
+&#92;]
+</div>
+<p>Run &#92;(M=1000&#92;) trajectories up to 160 days. Define:</p>
+<ul>
+<li>major outbreak: &#92;(Z&#92;ge20&#92;);</li>
+<li>early fade-out: &#92;(Z&lt;20&#92;); and</li>
+<li>extinct by day 20: extinction time &#92;(&#92;le20&#92;) days.</li>
+</ul>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>Click <strong>Run code</strong> to simulate the outcomes, estimate the three probabilities, calculate Monte Carlo uncertainty and examine sensitivity to the major-outbreak threshold.</p>
+
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Outbreak probabilities and uncertainty</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def simulate_sir_outcome(
+    N, initial_I, beta, gamma, dt, max_days, rng
+):
+    S = N - initial_I
+    I = initial_I
+    R = 0
+
+    peak_I = I
+    max_steps = int(max_days / dt)
+    extinction_time = None
+
+    for step in range(max_steps):
+        p_infection = beta * S * I / N * dt
+        p_recovery = gamma * I * dt
+        p_no_change = 1 - p_infection - p_recovery
+
+        if p_no_change &lt; -1e-12:
+            raise ValueError("dt gives invalid probabilities.")
+
+        u = rng.random()
+
+        if u &lt; p_infection:
+            S -= 1
+            I += 1
+        elif u &lt; p_infection + p_recovery:
+            I -= 1
+            R += 1
+
+        peak_I = max(peak_I, I)
+
+        if I == 0:
+            extinction_time = (step + 1) * dt
+            break
+
+    completed = extinction_time is not None
+    final_size_so_far = N - S
+
+    return {
+        "completed": completed,
+        "final_size": final_size_so_far,
+        "peak_I": peak_I,
+        "extinction_time": extinction_time
+    }
+
+def wilson_interval(successes, total, z=1.96):
+    p_hat = successes / total
+    denominator = 1 + z**2 / total
+
+    centre = (
+        p_hat + z**2 / (2 * total)
+    ) / denominator
+
+    half_width = (
+        z / denominator
+        * np.sqrt(
+            p_hat * (1 - p_hat) / total
+            + z**2 / (4 * total**2)
+        )
+    )
+
+    return centre - half_width, centre + half_width
+
+def probability_summary(name, indicator):
+    successes = int(indicator.sum())
+    total = len(indicator)
+    estimate = successes / total
+
+    standard_error = np.sqrt(
+        estimate * (1 - estimate) / total
+    )
+
+    lower, upper = wilson_interval(successes, total)
+
+    return {
+        "event": name,
+        "count": successes,
+        "simulations": total,
+        "estimate": estimate,
+        "MC standard error": standard_error,
+        "95% lower": lower,
+        "95% upper": upper
+    }
+
+# Model and Monte Carlo settings
+N = 100
+initial_I = 2
+beta = 0.30
+gamma = 0.10
+dt = 0.02
+max_days = 160
+
+number_of_simulations = 1000
+major_threshold = 20
+time_cutoff = 20
+seed = 31
+
+# Sufficient whole-state-space validity check
+upper_probability_bound = (
+    beta * N / 4 + gamma * N
+) * dt
+
+if upper_probability_bound &gt; 1:
+    raise ValueError("dt is not guaranteed valid.")
+
+rng = np.random.default_rng(seed)
+rows = []
+
+for simulation in range(number_of_simulations):
+    result = simulate_sir_outcome(
+        N, initial_I, beta, gamma, dt, max_days, rng
+    )
+    result["simulation"] = simulation
+    rows.append(result)
+
+outcomes = pd.DataFrame(rows)
+incomplete_count = (~outcomes["completed"]).sum()
+
+if incomplete_count &gt; 0:
+    raise ValueError(
+        "Some paths are incomplete. Increase max_days "
+        "before classifying final-size outcomes."
+    )
+
+# Define event indicators after using pre-chosen definitions
+major_indicator = (
+    outcomes["final_size"] &gt;= major_threshold
+)
+fadeout_indicator = (
+    outcomes["final_size"] &lt; major_threshold
+)
+extinct_by_time_indicator = (
+    outcomes["extinction_time"] &lt;= time_cutoff
+)
+
+if not (major_indicator | fadeout_indicator).all():
+    raise ValueError("An outcome was not classified.")
+
+if (major_indicator &amp; fadeout_indicator).any():
+    raise ValueError("The two final-size events overlap.")
+
+probability_table = pd.DataFrame([
+    probability_summary(
+        f"Major outbreak: Z &gt;= {major_threshold}",
+        major_indicator
+    ),
+    probability_summary(
+        f"Early fade-out: Z &lt; {major_threshold}",
+        fadeout_indicator
+    ),
+    probability_summary(
+        f"Extinct by day {time_cutoff}",
+        extinct_by_time_indicator
+    )
+])
+
+print("Definitions")
+print(f"Major outbreak: final size &gt;= {major_threshold}")
+print(f"Early fade-out: final size &lt; {major_threshold}")
+print(f"Time-specific event: extinct by day {time_cutoff}")
+print()
+print("Monte Carlo probability estimates")
+print(
+    probability_table.round(5).to_string(index=False)
+)
+print()
+print(
+    "Fade-out + major-outbreak estimate: "
+    f"{fadeout_indicator.mean() + major_indicator.mean():.6f}"
+)
+
+# Sensitivity to the chosen major-outbreak threshold
+thresholds = np.array([10, 20, 30, 40, 50])
+threshold_estimates = np.array([
+    (outcomes["final_size"] &gt;= threshold).mean()
+    for threshold in thresholds
+])
+
+threshold_table = pd.DataFrame({
+    "major threshold": thresholds,
+    "estimated major-outbreak probability": threshold_estimates
+})
+
+print()
+print("Threshold sensitivity")
+print(threshold_table.round(5).to_string(index=False))
+
+# Running estimate as simulations accumulate
+running_count = np.cumsum(major_indicator.to_numpy())
+running_numbers = np.arange(1, number_of_simulations + 1)
+running_estimate = running_count / running_numbers
+
+# Figure 1: estimates with Wilson intervals
+estimates = probability_table["estimate"].to_numpy()
+lower_errors = (
+    estimates - probability_table["95% lower"].to_numpy()
+)
+upper_errors = (
+    probability_table["95% upper"].to_numpy() - estimates
+)
+
+labels = ["Major outbreak", "Early fade-out", "Extinct by day 20"]
+x = np.arange(len(labels))
+
+plt.figure(figsize=(9, 4.9))
+plt.bar(x, estimates, color=["#dc2626", "#2563eb", "#16a34a"])
+plt.errorbar(
+    x,
+    estimates,
+    yerr=[lower_errors, upper_errors],
+    fmt="none",
+    ecolor="black",
+    capsize=6,
+    linewidth=1.5
+)
+plt.xticks(x, labels)
+plt.ylabel("Estimated probability")
+plt.ylim(0, 1.05)
+plt.title("Monte Carlo estimates with Wilson 95% intervals")
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()
+
+# Figure 2: sensitivity to threshold
+plt.figure(figsize=(8.5, 4.8))
+plt.plot(
+    thresholds,
+    threshold_estimates,
+    marker="o",
+    linewidth=2.2,
+    color="#7c3aed"
+)
+plt.xlabel("Major-outbreak final-size threshold H")
+plt.ylabel("Estimated Pr(Z >= H)")
+plt.title("Major-outbreak probability depends on its definition")
+plt.ylim(0, 1.05)
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+# Figure 3: Monte Carlo convergence
+plt.figure(figsize=(9, 4.8))
+plt.plot(
+    running_numbers,
+    running_estimate,
+    color="#f59e0b",
+    linewidth=1.5
+)
+plt.axhline(
+    major_indicator.mean(),
+    color="black",
+    linestyle="--",
+    label="Estimate using all simulations"
+)
+plt.xlabel("Number of simulations used")
+plt.ylabel("Running major-outbreak estimate")
+plt.title("Monte Carlo estimate stabilises as simulations accumulate")
+plt.ylim(0, 1.05)
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the new probability code</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>outcomes["final_size"] &gt;= major_threshold</code></td><td>Creates one Boolean major-outbreak indicator per simulation.</td></tr>
+<tr><td><code>indicator.sum()</code></td><td>Counts <code>True</code> values because Python treats <code>True</code> as 1.</td></tr>
+<tr><td><code>indicator.mean()</code></td><td>Calculates the proportion of <code>True</code> values—the Monte Carlo probability estimate.</td></tr>
+<tr><td><code>major_indicator | fadeout_indicator</code></td><td>Uses elementwise logical “or” to check that every completed outcome belongs to at least one category.</td></tr>
+<tr><td><code>major_indicator &amp; fadeout_indicator</code></td><td>Uses elementwise logical “and” to check that the categories do not overlap.</td></tr>
+<tr><td><code>np.cumsum(...)</code></td><td>Calculates cumulative successes after 1, 2, 3, and later simulations.</td></tr>
+<tr><td><code>yerr=[lower_errors, upper_errors]</code></td><td>Adds possibly unequal lower and upper Wilson interval lengths to the bar chart.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Read the probability table correctly</h2>
+<div class="table-wrap">
+<table class="meaning-table">
+<thead><tr><th>Column</th><th>Interpretation</th></tr></thead>
+<tbody>
+<tr><td><code>count</code></td><td>Number of simulations satisfying the event definition.</td></tr>
+<tr><td><code>estimate</code></td><td>Count divided by the total number of independent simulations.</td></tr>
+<tr><td><code>MC standard error</code></td><td>Estimated numerical sampling variability of the Monte Carlo proportion.</td></tr>
+<tr><td><code>95% lower/upper</code></td><td>Wilson interval endpoints for the model probability.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Report the event definition, number of simulations, estimate and uncertainty together. A bare probability without its definition or simulation count is incomplete.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why incomplete paths must not be silently classified</h2>
+<p>If the horizon is reached while &#92;(I&gt;0&#92;) and the current final size is below &#92;(H&#92;), the path might cross the threshold later. Calling it an early fade-out would be wrong.</p>
+<p>The code therefore stops with an error if any trajectory is incomplete. Other defensible approaches include extending the horizon or reporting an explicit unclassified/censored category.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret threshold sensitivity</h2>
+<p>As &#92;(H&#92;) increases, the event &#92;(&#92;{Z&#92;ge H&#92;}&#92;) becomes more demanding. Therefore its probability cannot increase.</p>
+<p>If conclusions change strongly across reasonable thresholds, report that sensitivity rather than presenting one threshold as uniquely correct.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret the running estimate</h2>
+<p>The first few simulations can make the running probability jump substantially. Each additional trajectory has less influence as the accumulated sample grows.</p>
+<p>Stabilisation is evidence about Monte Carlo precision, not proof that the epidemic model is biologically correct. A precisely simulated poor model remains a poor model.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Change <code>seed = 31</code>. Compare the new estimate with the original Wilson interval.</li>
+<li>Use only 100 simulations. Observe the wider intervals and more irregular running estimate.</li>
+<li>Increase the simulations to 2,000 if your browser can complete the calculation comfortably.</li>
+<li>Change <code>major_threshold</code> to 10, 30 or 40. State the changed event definition before interpreting the probability.</li>
+<li>Change <code>time_cutoff</code> from 20 to 10 and then 40 days. The extinction-by-time probability should be non-decreasing with the cutoff.</li>
+<li>Shorten <code>max_days</code> enough to produce incomplete paths and read the protective error message.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>The major-outbreak estimate describes how frequently the model crosses a specified public-health-relevant size under fixed parameters and initial conditions. The early-fade-out estimate describes failure to reach that size because stochastic recovery and transmission events unfold differently across introductions.</p>
+<p>These are conditional model probabilities. They change if parameters, population size, starting infections, time step, intervention assumptions or outcome definitions change.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has added</h2>
+<div class="summary-box">
+<ul>
+<li>Event definitions are fixed before probability estimation.</li>
+<li>Early fade-out and major outbreak partition completed final-size outcomes.</li>
+<li>Extinction by a stated time is a separate event.</li>
+<li>Boolean indicators convert definitions into countable simulation data.</li>
+<li>Monte Carlo standard error measures finite-simulation uncertainty.</li>
+<li>Wilson intervals quantify uncertainty in estimated event probabilities.</li>
+<li>Threshold sensitivity reveals dependence on the operational outbreak definition.</li>
+<li>Incomplete trajectories must be extended or explicitly treated as unclassified.</li>
+</ul>
+<p>Lesson 14 completes the DTMC pathway by choosing appropriate graphs, tables and written interpretations for trajectories, distributions and probability estimates.</p>
+</div>
+</section>
+
+<nav class="lesson-nav">
+<a href="../many-dtmc-trajectories/">← Previous lesson</a>
+<a href="../dtmc-plots-tables/">Next lesson →</a>
+</nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
