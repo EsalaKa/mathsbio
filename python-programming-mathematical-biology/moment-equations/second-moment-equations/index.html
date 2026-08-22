@@ -1,1 +1,100 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Deriving second-moment equations in Python for mathematical biology."><title>Deriving second-moment equations | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">06</p><h1 class="section-title">Deriving second-moment equations</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Derive second-moment and variance equations for a stochastic epidemic birth–death process."><title>Deriving second-moment equations | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">06</p><h1 class="section-title">Deriving second-moment equations</h1><p class="lesson-intro">Second moments follow from how each event changes the square of the stochastic state.</p>
+<section class="lesson-section"><h2>Squaring changes the jump contribution</h2><p>For current state &#92;(i&#92;), a birth changes &#92;(i^2&#92;) by</p>
+<div class="math-box">&#92;[(i+1)^2-i^2=2i+1,&#92;]</div>
+<p>and a removal changes it by</p>
+<div class="math-box">&#92;[(i-1)^2-i^2=-2i+1.&#92;]</div></section>
+<section class="lesson-section"><h2>Derive the second-moment equation</h2><p>Multiply each squared jump change by its rate and take expectation:</p>
+<div class="math-box">&#92;[
+&#92;frac{d}{dt}&#92;mathbb E[I^2]
+=
+&#92;mathbb E[(2I+1)&#92;lambda I+(-2I+1)&#92;mu I].
+&#92;]</div>
+<p>With &#92;(m_1=&#92;mathbb E[I]&#92;) and &#92;(m_2=&#92;mathbb E[I^2]&#92;),</p>
+<div class="math-box">&#92;[
+&#92;frac{dm_2}{dt}
+=
+2(&#92;lambda-&#92;mu)m_2+(&#92;lambda+&#92;mu)m_1.
+&#92;]</div>
+<p>This equation is closed together with &#92;(m_1'=(&#92;lambda-&#92;mu)m_1&#92;).</p></section>
+<section class="lesson-section"><h2>Obtain the variance equation</h2>
+<div class="math-box">&#92;[v=m_2-m_1^2.&#92;]</div>
+<p>Differentiating and substituting the moment equations gives</p>
+<div class="math-box">&#92;[
+&#92;frac{dv}{dt}
+=
+2(&#92;lambda-&#92;mu)v+(&#92;lambda+&#92;mu)m_1.
+&#92;]</div>
+<p>The additional &#92;((&#92;lambda+&#92;mu)m_1&#92;) term creates stochastic variation even when the initial state has zero variance.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Second moment and variance</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+I0 = 5
+birth = 0.18
+death = 0.12
+growth = birth - death
+times = np.linspace(0, 20, 81)
+
+# Exact moments of the linear birth–death process
+mean_exact = I0 * np.exp(growth * times)
+variance_exact = (
+    I0 * (birth + death) / growth
+    * np.exp(growth * times)
+    * (np.exp(growth * times) - 1)
+)
+second_exact = variance_exact + mean_exact ** 2
+
+def path_on_grid(rng):
+    I = I0
+    time = 0.0
+    event_times = [0.0]
+    values = [I]
+    while I > 0 and time < times[-1]:
+        wait = rng.exponential(1 / ((birth + death) * I))
+        if time + wait > times[-1]:
+            break
+        time += wait
+        I += 1 if rng.random() < birth / (birth + death) else -1
+        event_times.append(time)
+        values.append(I)
+    positions = np.searchsorted(
+        event_times, times, side="right"
+    ) - 1
+    return np.array(values)[positions]
+
+rng = np.random.default_rng(260)
+paths = np.array([path_on_grid(rng) for _ in range(5000)])
+mean_mc = paths.mean(axis=0)
+second_mc = np.mean(paths ** 2, axis=0)
+variance_mc = paths.var(axis=0, ddof=1)
+
+selected = [0, 5, 10, 15, 20]
+idx = [np.argmin(np.abs(times - t)) for t in selected]
+table = pd.DataFrame({
+    "time": selected,
+    "exact second moment": second_exact[idx],
+    "MC second moment": second_mc[idx],
+    "exact variance": variance_exact[idx],
+    "MC variance": variance_mc[idx]
+})
+print(table.round(3).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.2))
+plt.plot(times, second_exact, color="#174c34",
+         label="Exact second moment")
+plt.plot(times, second_mc, "--", color="#39815e",
+         label="Monte Carlo second moment")
+plt.plot(times, variance_exact, color="#b42318",
+         label="Exact variance")
+plt.plot(times, variance_mc, "--", color="#d97706",
+         label="Monte Carlo variance")
+plt.xlabel("Time")
+plt.ylabel("Moment value")
+plt.title("Second-moment equation and simulations")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Why the second moment is not the variance</h2><p>&#92;(m_2&#92;) includes both squared mean and spread. Variance removes the squared mean. Always calculate &#92;(v=m_2-m_1^2&#92;) before interpreting uncertainty.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now derive a second-moment equation from squared jump changes, obtain the variance equation and explain how stochastic events generate variance from a deterministic initial condition.</p></div></section><nav class="lesson-nav"><a href="../first-moment-equations/">← Previous lesson</a><a href="../unclosed-moments/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
