@@ -1,10 +1,90 @@
 let mathsBioPyodidePromise;
+let mathsBioLoaderPromise;
+
+const mathsBioPyodideSources = [
+    {
+        script: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js",
+        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/"
+    },
+    {
+        script: "https://unpkg.com/pyodide@0.27.7/pyodide.js",
+        indexURL: "https://unpkg.com/pyodide@0.27.7/"
+    }
+];
+
+function loadMathsBioScript(source) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = source;
+        script.async = true;
+
+        const timeout = setTimeout(() => {
+            script.remove();
+            reject(new Error("The Python loader timed out."));
+        }, 20000);
+
+        script.addEventListener("load", () => {
+            clearTimeout(timeout);
+            resolve();
+        }, { once: true });
+
+        script.addEventListener("error", () => {
+            clearTimeout(timeout);
+            script.remove();
+            reject(new Error("The Python loader could not be downloaded."));
+        }, { once: true });
+
+        document.head.appendChild(script);
+    });
+}
+
+async function getMathsBioLoader() {
+    if (typeof window.loadPyodide === "function") {
+        return mathsBioPyodideSources[0].indexURL;
+    }
+
+    if (!mathsBioLoaderPromise) {
+        mathsBioLoaderPromise = (async () => {
+            for (const source of mathsBioPyodideSources) {
+                try {
+                    await loadMathsBioScript(source.script);
+                    if (typeof window.loadPyodide === "function") {
+                        return source.indexURL;
+                    }
+                } catch (error) {
+                    // Try the next trusted CDN source.
+                }
+            }
+
+            throw new Error(
+                "Python could not be loaded. Check your internet connection, " +
+                "allow cdn.jsdelivr.net or unpkg.com, then try again."
+            );
+        })();
+    }
+
+    try {
+        return await mathsBioLoaderPromise;
+    } catch (error) {
+        mathsBioLoaderPromise = undefined;
+        throw error;
+    }
+}
 
 async function getMathsBioPython() {
     if (!mathsBioPyodidePromise) {
-        mathsBioPyodidePromise = loadPyodide();
+        mathsBioPyodidePromise = (async () => {
+            const indexURL = await getMathsBioLoader();
+            return window.loadPyodide({ indexURL });
+        })();
     }
-    return mathsBioPyodidePromise;
+
+    try {
+        return await mathsBioPyodidePromise;
+    } catch (error) {
+        mathsBioPyodidePromise = undefined;
+        throw error;
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
