@@ -1,1 +1,323 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Peak size, peak time and final epidemic size in Python for mathematical biology."><title>Peak size, peak time and final epidemic size | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Deterministic Models</a><p class="section-number">11</p><h1 class="section-title">Peak size, peak time and final epidemic size</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Define, calculate and interpret epidemic peak size, peak time and final epidemic size using Python.">
+<title>Peak size, peak time and final epidemic size | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.outcome-definitions{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}.outcome-definition{padding:20px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.outcome-definition span{display:block;margin-bottom:7px;font-size:.78rem;font-weight:700;color:#39815e}.outcome-definition strong{display:block;color:#174c34;font-size:1.08rem}.final-size-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:20px 0}.final-size-card{padding:20px;background:#eaf4ee;border-radius:10px}.final-size-card strong{display:block;color:#174c34}.outcome-table{width:100%;border-collapse:collapse;background:#fff}.outcome-table th,.outcome-table td{padding:12px 14px;border:1px solid #d6e3db;text-align:left;vertical-align:top}.outcome-table th{background:#eaf4ee;color:#174c34}.condition-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}.peak-process{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}.peak-step{padding:17px;background:#fff;border:1px solid #dce7e0;border-radius:9px}.peak-step span{display:block;color:#39815e;font-size:.77rem;font-weight:700}.meaning-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}.meaning-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}@media(max-width:800px){.outcome-definitions,.final-size-grid,.peak-process,.meaning-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Deterministic Models</a>
+<p class="section-number">11</p>
+<h1 class="section-title">Peak size, peak time and final epidemic size</h1>
+<p class="lesson-intro">A model trajectory becomes useful when it is converted into clearly defined biological outcomes. This lesson calculates the epidemic peak and final size while explaining exactly what each quantity does—and does not—mean.</p>
+
+<section class="lesson-section">
+<h2>Biological scenario</h2>
+<div class="scenario-box">
+<p>A deterministic SIR simulation begins with 990 susceptible, 10 infectious and no recovered people. We solve it for 200 days using &#92;(&#92;beta=0.3&#92;) and &#92;(&#92;gamma=0.1&#92;) per day.</p>
+<p>We want to answer three questions: How high does the infectious population rise? When does that maximum occur? How many people experience infection during the outbreak?</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Define the outcomes first</h2>
+<div class="outcome-definitions">
+<div class="outcome-definition"><span>OUTCOME 1</span><strong>Peak size</strong><p>The largest value reached by the infectious population.</p>&#92;[I_{&#92;max}=&#92;max_t I(t)&#92;]</div>
+<div class="outcome-definition"><span>OUTCOME 2</span><strong>Peak time</strong><p>The time at which the infectious maximum occurs.</p>&#92;[t_{&#92;mathrm{peak}}=&#92;operatorname*{arg&#92;,max}_t I(t)&#92;]</div>
+<div class="outcome-definition"><span>OUTCOME 3</span><strong>Final epidemic size</strong><p>The total number infected during the outbreak under a stated definition and sufficiently late end time.</p></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Peak size and peak time in stored data</h2>
+<div class="peak-process">
+<div class="peak-step"><span>1 SEARCH</span><code>np.argmax(I)</code><p>Find the index of the largest stored infectious value.</p></div>
+<div class="peak-step"><span>2 PEAK SIZE</span><code>I[peak_index]</code><p>Use that index in the infectious array.</p></div>
+<div class="peak-step"><span>3 PEAK TIME</span><code>time[peak_index]</code><p>Use the same index in the time array.</p></div>
+<div class="peak-step"><span>4 PERCENTAGE</span><code>100 * peak_I / N</code><p>Express the peak relative to population size.</p></div>
+</div>
+<div class="technical-box">
+<p>The calculated peak time is the time of the largest <em>stored</em> value. A finer reporting grid normally estimates the continuous peak time more precisely.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>“Final epidemic size” requires a definition</h2>
+<p>Suppose the simulation ends at time &#92;(T&#92;). Several related quantities can be reported:</p>
+<div class="final-size-grid">
+<div class="final-size-card"><strong>New infections after time 0</strong>&#92;[S(0)-S(T)&#92;]</div>
+<div class="final-size-card"><strong>Initially infectious plus new infections</strong>&#92;[I(0)+S(0)-S(T)&#92;]</div>
+<div class="final-size-card"><strong>Recovered at the end</strong>&#92;[R(T)&#92;]</div>
+</div>
+<div class="condition-box">
+<h3>When are the last two equal?</h3>
+<p>If &#92;(R(0)=0&#92;) and the epidemic has effectively ended so that &#92;(I(T)&#92;approx0&#92;), then</p>
+<p class="formula-line">&#92;[I(0)+S(0)-S(T)&#92;approx R(T).&#92;]</p>
+<p>If initially recovered people are present, or infectious people remain at &#92;(T&#92;), simply calling &#92;(R(T)&#92;) the final epidemic size can be misleading.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why the ending time matters</h2>
+<p>The final array entry is only the outcome at the chosen simulation end:</p>
+<pre><code>final_S = S[-1]
+final_I = I[-1]
+final_R = R[-1]</code></pre>
+<p>Index <span class="inline-code">-1</span> means the last stored entry. It does not automatically mean that the epidemic is biologically finished.</p>
+<div class="technical-box">
+<p>We therefore check whether <span class="inline-code">final_I</span> is below a small biological threshold. This threshold is an interpretation choice, not a proof that the mathematical solution has reached exactly zero.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Build an outcome function</h2>
+<div class="step-card">
+<pre><code>def calculate_outcomes(time, S, I, R):
+    peak_index = np.argmax(I)
+
+    peak_I = I[peak_index]
+    peak_time = time[peak_index]
+
+    final_S = S[-1]
+    final_I = I[-1]
+    final_R = R[-1]
+
+    new_infections = S[0] - final_S
+    total_infected = I[0] + new_infections
+
+    return {
+        "peak_I": peak_I,
+        "peak_time": peak_time,
+        "final_S": final_S,
+        "final_I": final_I,
+        "final_R": final_R,
+        "new_infections": new_infections,
+        "total_infected": total_infected
+    }</code></pre>
+<p class="code-explain">The function uses the initial and final compartment values explicitly, making the chosen definitions visible.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Run the model and calculate the outcomes</h2>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>SIR epidemic outcomes</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+
+def sir_rhs(t, y, beta, gamma):
+    """Return deterministic SIR derivatives."""
+    
+    S, I, R = y
+    N = S + I + R
+    
+    infection_flow = beta * S * I / N
+    recovery_flow = gamma * I
+    
+    return [
+        -infection_flow,
+        infection_flow - recovery_flow,
+        recovery_flow
+    ]
+
+
+def calculate_outcomes(time, S, I, R):
+    """Calculate peak and final outcomes from an SIR solution."""
+    
+    peak_index = np.argmax(I)
+    
+    peak_I = I[peak_index]
+    peak_time = time[peak_index]
+    
+    final_S = S[-1]
+    final_I = I[-1]
+    final_R = R[-1]
+    
+    new_infections = S[0] - final_S
+    total_infected = I[0] + new_infections
+    
+    return {
+        "peak_index": peak_index,
+        "peak_I": peak_I,
+        "peak_time": peak_time,
+        "final_S": final_S,
+        "final_I": final_I,
+        "final_R": final_R,
+        "new_infections": new_infections,
+        "total_infected": total_infected
+    }
+
+
+# Initial state and parameters
+S0 = 990
+I0 = 10
+R0 = 0
+N = S0 + I0 + R0
+
+beta = 0.3
+gamma = 0.1
+
+# Fine reporting grid for outcome estimation
+end_time = 200
+reporting_times = np.linspace(0, end_time, 4001)
+
+# Solve the SIR model
+solution = solve_ivp(
+    sir_rhs,
+    t_span=(0, end_time),
+    y0=[S0, I0, R0],
+    t_eval=reporting_times,
+    args=(beta, gamma),
+    rtol=1e-9,
+    atol=1e-11
+)
+
+if not solution.success:
+    raise RuntimeError(solution.message)
+
+S, I, R = solution.y
+outcomes = calculate_outcomes(solution.t, S, I, R)
+
+# Determine whether the epidemic is effectively finished
+infectious_threshold = 0.01
+finished = outcomes["final_I"] &lt; infectious_threshold
+
+# Display outcomes
+print("SIR epidemic outcomes")
+print("------------------------------------------------")
+print(f"Population:                    {N}")
+print(f"Peak infectious:               {outcomes['peak_I']:.2f}")
+print(f"Peak percentage:               {100 * outcomes['peak_I'] / N:.2f}%")
+print(f"Peak time:                     {outcomes['peak_time']:.2f} days")
+print(f"Final susceptible S(T):        {outcomes['final_S']:.2f}")
+print(f"Final infectious I(T):         {outcomes['final_I']:.6f}")
+print(f"Final recovered R(T):          {outcomes['final_R']:.2f}")
+print(f"New infections after t=0:      {outcomes['new_infections']:.2f}")
+print(f"Total infected incl. initial:  {outcomes['total_infected']:.2f}")
+print(f"Below infectious threshold:    {finished}")
+
+# Check the relationship when R(0)=0
+difference = abs(
+    outcomes["total_infected"] - outcomes["final_R"]
+)
+print(f"Difference from final R:       {difference:.6f}")
+
+# Plot and mark the peak
+plt.figure(figsize=(8, 4.8))
+plt.plot(solution.t, S, label="Susceptible")
+plt.plot(solution.t, I, label="Infectious")
+plt.plot(solution.t, R, label="Recovered")
+
+plt.scatter(
+    outcomes["peak_time"],
+    outcomes["peak_I"],
+    color="black",
+    zorder=5,
+    label="Infectious peak"
+)
+plt.axvline(
+    outcomes["peak_time"],
+    color="grey",
+    linestyle=":"
+)
+
+plt.xlabel("Time (days)")
+plt.ylabel("Number of people")
+plt.title("SIR trajectory and infectious peak")
+plt.grid(alpha=0.25)
+plt.legend()
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret each reported quantity</h2>
+<table class="outcome-table">
+<thead><tr><th>Output</th><th>Question answered</th><th>Important qualification</th></tr></thead>
+<tbody>
+<tr><td>Peak infectious</td><td>What is the largest simultaneous infectious population?</td><td>It is not the total number infected over the outbreak.</td></tr>
+<tr><td>Peak time</td><td>When is the stored infectious maximum reached?</td><td>Precision depends partly on reporting-time resolution.</td></tr>
+<tr><td>New infections</td><td>How many initially susceptible people become infected?</td><td>Calculated as &#92;(S(0)-S(T)&#92;).</td></tr>
+<tr><td>Total infected including initial</td><td>How many people participate in the outbreak as infectious cases, including those infectious at time 0?</td><td>Calculated as &#92;(I(0)+S(0)-S(T)&#92;) for this SIR setup.</td></tr>
+<tr><td>Final recovered</td><td>How many people are in &#92;(R&#92;) at time &#92;(T&#92;)?</td><td>Equals total outbreak infections only under the stated initial and end conditions.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Peak prevalence is not incidence</h2>
+<div class="meaning-grid">
+<div class="meaning-card">
+<h3>Peak infectious population</h3>
+<p>The maximum number infectious at the same time. This is a prevalence-type quantity.</p>
+</div>
+<div class="meaning-card">
+<h3>New infections through time</h3>
+<p>The flow &#92;(&#92;beta SI/N&#92;) measures the instantaneous rate at which new infections occur. This is related to incidence.</p>
+</div>
+</div>
+<p>A high daily infection flow and a high simultaneous infectious population are related but are not the same outcome.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<div class="interpretation-box">
+<p>The peak size indicates the largest simultaneous infectious burden, which may be relevant to healthcare demand and workforce absence. Peak time indicates when that burden is expected under the model.</p>
+<p>Final epidemic size describes cumulative outbreak involvement rather than simultaneous burden. Its interpretation must state whether initially infectious or initially recovered people are included.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Important reporting rules</h2>
+<div class="technical-box">
+<ul>
+<li>Define every outcome before calculating it.</li>
+<li>Report whether outcomes are counts or percentages.</li>
+<li>State the simulation end time.</li>
+<li>Check that infectious prevalence is sufficiently small before calling an outcome “final.”</li>
+<li>State whether initial infectious people are included in final epidemic size.</li>
+<li>Do not confuse peak prevalence with cumulative infections or incidence.</li>
+<li>Remember that deterministic outputs need not be whole numbers.</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try ending the simulation too early</h2>
+<div class="experiment-box">
+<p>Change <span class="inline-code">end_time = 200</span> to <span class="inline-code">end_time = 40</span> and change the reporting grid accordingly:</p>
+<pre><code>reporting_times = np.linspace(0, end_time, 801)</code></pre>
+<ol>
+<li>Check whether the infectious threshold condition is satisfied.</li>
+<li>Compare <span class="inline-code">final_R</span> with <span class="inline-code">total_infected</span>.</li>
+<li>Explain why the day-40 result should not be called the final epidemic size.</li>
+<li>Restore the 200-day simulation and compare again.</li>
+</ol>
+</div>
+</section>
+</main>
+</body>
+</html>
