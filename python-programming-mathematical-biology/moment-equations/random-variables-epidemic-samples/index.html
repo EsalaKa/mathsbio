@@ -1,1 +1,169 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Random variables and simulated epidemic samples in Python for mathematical biology."><title>Random variables and simulated epidemic samples | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">01</p><h1 class="section-title">Random variables and simulated epidemic samples</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Understand epidemic random variables, realisations, simulated samples and empirical distributions with Python."><title>Random variables and simulated epidemic samples | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">01</p><h1 class="section-title">Random variables and simulated epidemic samples</h1><p class="lesson-intro">Moment equations describe numerical features of random variables. We therefore begin by defining exactly what an epidemic random variable, a realisation and a simulated sample mean.</p>
+<section class="lesson-section"><h2>Scenario: infectious population on day 20</h2>
+<p>Consider a stochastic SIS epidemic in a closed population of 100 people. Initially, 5 are infectious. Infection and recovery occur randomly in continuous time.</p>
+<p>Before the epidemic is simulated, the infectious population on day 20 is unknown. We denote it by</p>
+<div class="math-box">&#92;[I(20).&#92;]</div>
+<p>&#92;(I(20)&#92;) is a random variable because its numerical value depends on the random epidemic events occurring before day 20.</p>
+</section>
+
+<section class="lesson-section"><h2>Random variable, outcome and realisation</h2>
+<table><thead><tr><th>Term</th><th>Meaning in this scenario</th></tr></thead><tbody>
+<tr><td>Random experiment</td><td>Simulate one SIS epidemic from day 0 to day 20.</td></tr>
+<tr><td>Random variable</td><td>The rule that records the infectious count &#92;(I(20)&#92;).</td></tr>
+<tr><td>Outcome or realisation</td><td>The value produced in one run, such as &#92;(I(20)=17&#92;).</td></tr>
+<tr><td>Sample</td><td>A collection of values from independent runs.</td></tr>
+<tr><td>Distribution</td><td>The probabilities of the possible values before observing a run.</td></tr>
+</tbody></table>
+<div class="definition-box"><p>The random variable is not “random” after a particular run has finished. That run has produced one observed value. Uncertainty concerns which value will occur before the random experiment is performed.</p></div>
+</section>
+
+<section class="lesson-section"><h2>State space and possible values</h2>
+<p>Because the population is 100,</p>
+<div class="math-box">&#92;[I(20)&#92;in&#92;{0,1,2,&#92;ldots,100&#92;}.&#92;]</div>
+<p>The value must be an integer in the CTMC. State 0 represents extinction and is absorbing because this model has no imported infection.</p>
+<p>Not every mathematically possible value needs to have substantial probability under the chosen parameters and initial condition.</p>
+</section>
+
+<section class="lesson-section"><h2>One variable is not one trajectory</h2>
+<p>A complete trajectory contains the epidemic state through time. The random variable &#92;(I(20)&#92;) extracts only one feature from that trajectory: the infectious count at the specified time.</p>
+<p>Other random variables could be defined from the same trajectory:</p>
+<ul>
+<li>final outbreak size;</li>
+<li>time of extinction;</li>
+<li>maximum infectious count; or</li>
+<li>whether hospital capacity is exceeded.</li>
+</ul>
+<p>Every variable needs a precise definition before samples or moments are calculated.</p>
+</section>
+
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<p>Run 2,000 independent CTMC epidemics and record only &#92;(I(20)&#92;) from each run. The output shows raw sample values, a frequency table and a histogram. This page deliberately does not calculate the sample mean or variance; those belong to the next lessons.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Samples of I(20)</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def infectious_at_time(
+    rng, N, I0, beta, gamma, observation_time
+):
+    I = I0
+    time = 0.0
+
+    while I > 0 and time < observation_time:
+        S = N - I
+        infection_rate = beta * S * I / N
+        recovery_rate = gamma * I
+        total_rate = infection_rate + recovery_rate
+
+        waiting_time = rng.exponential(1 / total_rate)
+
+        if time + waiting_time > observation_time:
+            break
+
+        time += waiting_time
+
+        if rng.random() < infection_rate / total_rate:
+            I += 1
+        else:
+            I -= 1
+
+    return I
+
+# Model and sampling settings
+N = 100
+I0 = 5
+beta = 0.25
+gamma = 0.15
+observation_time = 20
+sample_size = 2000
+seed = 210
+
+rng = np.random.default_rng(seed)
+sample = np.zeros(sample_size, dtype=int)
+
+for run in range(sample_size):
+    sample[run] = infectious_at_time(
+        rng, N, I0, beta, gamma, observation_time
+    )
+
+sample_table = pd.DataFrame({
+    "run": np.arange(1, sample_size + 1),
+    "I(20)": sample
+})
+
+frequency_table = (
+    sample_table["I(20)"]
+    .value_counts()
+    .sort_index()
+    .rename_axis("I(20)")
+    .reset_index(name="frequency")
+)
+frequency_table["relative frequency"] = (
+    frequency_table["frequency"] / sample_size
+)
+
+print("First 25 realisations of the random variable I(20)")
+print(sample_table.head(25).to_string(index=False))
+print()
+print("Observed values and frequencies")
+print(frequency_table.to_string(index=False))
+print()
+print(
+    "Number of independent realisations:",
+    len(sample)
+)
+print(
+    "Relative frequencies sum to:",
+    frequency_table["relative frequency"].sum()
+)
+
+bins = np.arange(-0.5, N + 1.5, 1)
+
+plt.figure(figsize=(9.5, 5.2))
+plt.hist(
+    sample, bins=bins,
+    color="#79ae90", edgecolor="white"
+)
+plt.xlabel("Infectious population on day 20, I(20)")
+plt.ylabel("Number of simulated epidemics")
+plt.title("Empirical distribution of I(20)")
+plt.xlim(-1, max(sample) + 2)
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div>
+</div>
+</section>
+
+<section class="lesson-section"><h2>Understand the sampling code</h2>
+<table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>return I</code></td><td>Extracts the value of the random variable at the observation time.</td></tr>
+<tr><td><code>sample[run] = ...</code></td><td>Stores one realisation in the sample.</td></tr>
+<tr><td><code>dtype=int</code></td><td>Records the CTMC infectious count as an integer.</td></tr>
+<tr><td><code>.value_counts()</code></td><td>Counts how often each observed value occurs.</td></tr>
+<tr><td><code>frequency / sample_size</code></td><td>Converts a count into an empirical relative frequency.</td></tr>
+</tbody></table>
+</section>
+
+<section class="lesson-section"><h2>Sample versus theoretical distribution</h2>
+<p>The theoretical distribution assigns a probability to every possible value of &#92;(I(20)&#92;). The simulation sample provides empirical frequencies that approximate those probabilities.</p>
+<p>A different seed produces a different sample and slightly different frequencies. Increasing the number of independent simulations generally makes the empirical distribution more stable.</p>
+</section>
+
+<section class="lesson-section"><h2>Common misunderstandings</h2>
+<ul>
+<li>&#92;(I(20)&#92;) is a random variable; 17 is one possible realisation.</li>
+<li>The 2,000 stored values are a sample, not 2,000 values within one epidemic.</li>
+<li>A histogram describes the sample distribution, not how one trajectory changes through time.</li>
+<li>Relative frequency estimates probability but is not automatically the exact theoretical probability.</li>
+</ul>
+</section>
+
+<section class="lesson-section"><h2>What this lesson adds</h2>
+<div class="summary-box"><p>You can now define an epidemic random variable, distinguish it from a realised value and a full trajectory, generate an independent simulated sample, and form an empirical distribution using frequencies. The next lesson uses such samples to introduce expectation and the sample mean.</p></div>
+</section><nav class="lesson-nav"><a href="../">← Moment-equations index</a><a href="../expectation-sample-mean/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
