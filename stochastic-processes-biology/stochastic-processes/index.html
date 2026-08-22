@@ -4,7 +4,7 @@
 <style>
 .lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.3rem}.lesson-content h3{font-size:1.2rem;margin-top:1.6rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.figure{margin:1.5rem 0;padding:16px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:700px;height:auto;display:block}.defs,.compare{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td,.compare th,.compare td{padding:11px 13px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th,.compare th{background:#edf5f0}.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:1.4rem 0}.flow span{padding:9px 13px;background:#edf5f0;border-radius:7px;font-weight:600}.flow b{font-size:1.2rem;color:#39815e}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}
 </style></head>
-<body><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
+<body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a><a href="../">Stochastic Processes for Biology</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Processes for Biology</a><article class="lesson-content">
 <h1 class="section-title">Stochastic processes</h1>
 <p>A random variable describes an uncertain numerical quantity. Biological systems usually change through time, so we need a way to describe an uncertain quantity at many different times. This leads to a <strong>stochastic process</strong>.</p>
 <div class="box"><strong>Core idea.</strong> A stochastic process describes how a random state evolves through time. At every time \(t\), the state \(X(t)\) is a random variable.</div>
@@ -98,7 +98,7 @@
 <h2>Where we go next</h2>
 <p>The next question is how much of the past is needed to determine the probability law of the future. This leads to the <strong>Markov property</strong>.</p>
 <div class="box"><strong>Key idea.</strong> A stochastic process is a family of connected random variables indexed by time. Each fixed time gives a random variable; one complete realised history gives a trajectory; and the process itself describes the probability law governing all possible trajectories.</div>
-</article></main>
+</article><nav class="lesson-nav"><a href="../random-variables/">← Previous lesson</a><a href="../markov-property/">Next lesson →</a></nav></main>
 
 <script>
 (function(){
@@ -116,4 +116,4 @@ const svg2=document.getElementById('fixedTimeChart');const b=setup(svg2,10,40,'t
 const svg3=document.getElementById('jumpChart');const c=setup(svg3,10,10,'continuous time','integer-valued state');const events=[[0,2],[1.3,3],[2.7,4],[4.1,3],[5.8,4],[7.2,5],[8.6,4],[10,4]];let d='M '+c.sx(events[0][0])+' '+c.sy(events[0][1]);for(let i=1;i<events.length;i++){d+=' H '+c.sx(events[i][0])+' V '+c.sy(events[i][1]);}el(svg3,'path',{d:d,fill:'none',stroke:'#39815e','stroke-width':3});events.slice(1,-1).forEach(p=>el(svg3,'circle',{cx:c.sx(p[0]),cy:c.sy(p[1]),r:4,fill:'#39815e'}));
 })();
 </script>
-</body></html>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
