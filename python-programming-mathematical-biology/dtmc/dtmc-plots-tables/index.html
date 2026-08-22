@@ -1,1 +1,507 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Histograms, sample paths, probability plots and tables in Python for mathematical biology."><title>Histograms, sample paths, probability plots and tables | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">14</p><h1 class="section-title">Histograms, sample paths, probability plots and tables</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Choose and interpret sample-path plots, histograms, probability curves and numerical tables for stochastic DTMC epidemic results.">
+<title>Histograms, sample paths, probability plots and tables | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.question-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:17px;margin:22px 0}.question-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.question-card h3{margin-top:0;color:#174c34}.question-card strong{display:block;margin-top:10px;color:#176b45}.caption-example{padding:22px;background:#f1f8f4;border-left:5px solid #39815e;border-radius:10px}.mistake-table td:first-child{font-weight:700;color:#8a1f1f}.interpret-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:22px 0}.interpret-card{padding:16px;background:#eaf4ee;border-radius:10px}.interpret-card strong{display:block;color:#174c34;margin-bottom:5px}.checklist{columns:2;column-gap:40px}.checklist li{break-inside:avoid;margin-bottom:9px}@media(max-width:850px){.question-grid,.interpret-steps{grid-template-columns:1fr}.checklist{columns:1}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+
+<main class="section container">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+<p class="section-number">14</p>
+<h1 class="section-title">Histograms, sample paths, probability plots and tables</h1>
+<p class="lesson-intro">The same stochastic results can be communicated well or badly. The correct display depends on the question: individual histories, outcome variability, event probability through time or precise numerical estimates.</p>
+
+<section class="lesson-section">
+<h2>The purpose and boundary of this lesson</h2>
+<div class="definition-box">
+<p>This lesson introduces no new epidemic transitions, probability formulas or simulation algorithms. It reuses the DTMC and Monte Carlo methods from Lessons 1–13 and focuses on selecting, labelling and interpreting outputs.</p>
+</div>
+<p>A display should answer one clearly stated question. Trying to make one graph communicate trajectories, distributions, thresholds, estimates and uncertainty simultaneously usually reduces clarity.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Start with the question, not the graph type</h2>
+<div class="question-grid">
+<div class="question-card">
+<h3>What can individual epidemics look like?</h3>
+<p>Show several sample paths against time.</p>
+<strong>Use: step-path plot</strong>
+</div>
+<div class="question-card">
+<h3>How variable is one outcome?</h3>
+<p>Collect one value per trajectory, such as final size.</p>
+<strong>Use: histogram or empirical distribution</strong>
+</div>
+<div class="question-card">
+<h3>How does an event probability change with time?</h3>
+<p>Estimate the proportion extinct by each common time.</p>
+<strong>Use: probability curve</strong>
+</div>
+<div class="question-card">
+<h3>What exact values should be reported?</h3>
+<p>Present definitions, simulation count, estimates and uncertainty.</p>
+<strong>Use: numerical table</strong>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>1. Sample-path plots</h2>
+<p>A sample-path plot displays a small selection of realised integer-valued trajectories:</p>
+<div class="math-box">
+&#92;[
+I_0^{(m)},I_1^{(m)},&#92;ldots,I_K^{(m)}.
+&#92;]
+</div>
+<p>Use a step plot because the DTMC state changes at fixed time points. Display only enough paths to reveal variation without creating an unreadable mass of lines.</p>
+<ul>
+<li>Label the time unit and compartment count.</li>
+<li>State how many paths are shown and how many were simulated.</li>
+<li>Use transparency so overlapping paths remain visible.</li>
+<li>Do not describe one selected path as the predicted epidemic.</li>
+</ul>
+<div class="caption-example">
+<p><strong>Example caption:</strong> “Fifteen of 600 simulated SIR DTMC trajectories. Each grey step line is one realisation from the same initial condition and parameter set; variation arises from random infection and recovery events.”</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>2. Histograms of trajectory outcomes</h2>
+<p>A histogram should use one comparable outcome per independent trajectory, such as:</p>
+<ul>
+<li>completed final epidemic size;</li>
+<li>peak infectious count;</li>
+<li>peak time; or</li>
+<li>extinction time.</li>
+</ul>
+<p>The horizontal axis shows the outcome value or interval. The vertical axis must say whether bars represent counts, relative frequencies or probability density.</p>
+<div class="warning-box">
+<p>Histogram appearance depends on bin width. Very wide bins hide structure; very narrow bins create a noisy display. Check that the biological conclusion is not an artefact of one arbitrary bin choice.</p>
+</div>
+<p>If a major-outbreak threshold is relevant, mark it with a vertical line and identify it in the legend or caption.</p>
+</section>
+
+<section class="lesson-section">
+<h2>3. Probability plots</h2>
+<p>Here “probability plot” means a probability shown against time or a threshold—not a statistical Q–Q plot.</p>
+<p>Because extinction is absorbing in the closed SIR model:</p>
+<div class="math-box">
+&#92;[
+&#92;widehat P(&#92;text{extinct by }t_n)
+=
+&#92;frac{1}{M}
+&#92;sum_{m=1}^{M}
+&#92;mathbf 1&#92;{I_n^{(m)}=0&#92;}.
+&#92;]
+</div>
+<p>The resulting curve must be non-decreasing. If it falls, either the event is not absorbing, the event definition changed, or the code is incorrect.</p>
+<ul>
+<li>Keep the vertical probability axis between 0 and 1.</li>
+<li>State the denominator &#92;(M&#92;).</li>
+<li>State the initial condition and parameter scenario.</li>
+<li>Do not call an estimated probability exact.</li>
+</ul>
+</section>
+
+<section class="lesson-section">
+<h2>4. Numerical tables</h2>
+<p>Graphs reveal patterns; tables preserve exact reported values. A probability table should normally contain:</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Field</th><th>Why it is needed</th></tr></thead>
+<tbody>
+<tr><td>Event</td><td>Defines precisely what was counted.</td></tr>
+<tr><td>Threshold or time</td><td>Prevents ambiguous terms such as “major” or “early.”</td></tr>
+<tr><td>Count</td><td>Shows the number of simulations satisfying the event.</td></tr>
+<tr><td>Total simulations</td><td>Provides the denominator.</td></tr>
+<tr><td>Probability estimate</td><td>Reports count divided by total simulations.</td></tr>
+<tr><td>Monte Carlo uncertainty</td><td>Shows the numerical precision of the simulation estimate.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Round values consistently, but retain enough digits to reflect the Monte Carlo precision. Reporting many more decimal places than the standard error supports gives false precision.</p>
+</section>
+
+<section class="lesson-section">
+<h2>One scenario, four complementary outputs</h2>
+<p>The runnable example uses one shared dataset from 600 SIR simulations:</p>
+<div class="math-box">
+&#92;[
+N=100,&#92;quad(S_0,I_0,R_0)=(98,2,0),
+&#92;quad&#92;beta=0.3,&#92;quad&#92;gamma=0.1,
+&#92;quad&#92;Delta t=0.02.
+&#92;]
+</div>
+<p>The major-outbreak threshold is 20 people ever infected. All outputs use the same simulations, ensuring that differences between displays arise from the questions they answer—not from different model settings.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>Click <strong>Run code</strong> to generate a communication-ready summary table and three deliberately separate figures.</p>
+
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Communicating DTMC results</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def simulate_one_sir(
+    N, initial_I, beta, gamma, dt, max_days, rng
+):
+    max_steps = int(max_days / dt)
+
+    S = N - initial_I
+    I = initial_I
+    R = 0
+
+    I_path = np.empty(max_steps + 1, dtype=int)
+    I_path[0] = I
+
+    peak_I = I
+    extinction_time = None
+
+    for step in range(max_steps):
+        p_infection = beta * S * I / N * dt
+        p_recovery = gamma * I * dt
+        p_no_change = 1 - p_infection - p_recovery
+
+        if p_no_change &lt; -1e-12:
+            raise ValueError("dt gives invalid probabilities.")
+
+        u = rng.random()
+
+        if u &lt; p_infection:
+            S -= 1
+            I += 1
+        elif u &lt; p_infection + p_recovery:
+            I -= 1
+            R += 1
+
+        I_path[step + 1] = I
+        peak_I = max(peak_I, I)
+
+        if I == 0:
+            extinction_time = (step + 1) * dt
+            I_path[step + 2:] = 0
+            break
+
+    return {
+        "I_path": I_path,
+        "peak_I": peak_I,
+        "final_size": N - S,
+        "extinction_time": extinction_time,
+        "completed": extinction_time is not None
+    }
+
+def wilson_interval(successes, total, z=1.96):
+    p_hat = successes / total
+    denominator = 1 + z**2 / total
+    centre = (
+        p_hat + z**2 / (2 * total)
+    ) / denominator
+    half_width = (
+        z / denominator
+        * np.sqrt(
+            p_hat * (1 - p_hat) / total
+            + z**2 / (4 * total**2)
+        )
+    )
+    return centre - half_width, centre + half_width
+
+# Shared model and simulation settings
+N = 100
+initial_I = 2
+beta = 0.30
+gamma = 0.10
+dt = 0.02
+max_days = 160
+
+number_of_simulations = 600
+major_threshold = 20
+seed = 41
+
+max_steps = int(max_days / dt)
+time_values = np.arange(max_steps + 1) * dt
+rng = np.random.default_rng(seed)
+
+all_I_paths = np.empty(
+    (number_of_simulations, max_steps + 1),
+    dtype=int
+)
+rows = []
+
+for simulation in range(number_of_simulations):
+    result = simulate_one_sir(
+        N, initial_I, beta, gamma, dt, max_days, rng
+    )
+
+    all_I_paths[simulation] = result["I_path"]
+
+    rows.append({
+        "simulation": simulation,
+        "peak_I": result["peak_I"],
+        "final_size": result["final_size"],
+        "extinction_time": result["extinction_time"],
+        "completed": result["completed"]
+    })
+
+outcomes = pd.DataFrame(rows)
+
+if not outcomes["completed"].all():
+    raise ValueError(
+        "Increase max_days before reporting completed outcomes."
+    )
+
+# Event definitions
+major = outcomes["final_size"] &gt;= major_threshold
+early_fadeout = outcomes["final_size"] &lt; major_threshold
+
+# Probability of extinction by each common time
+extinction_probability = (all_I_paths == 0).mean(axis=0)
+
+if (np.diff(extinction_probability) &lt; -1e-12).any():
+    raise ValueError("Extinction probability decreased.")
+
+# Communication-ready probability table
+table_rows = []
+
+for event_name, definition, indicator in [
+    (
+        "Major outbreak",
+        f"Final size &gt;= {major_threshold}",
+        major
+    ),
+    (
+        "Early fade-out",
+        f"Final size &lt; {major_threshold}",
+        early_fadeout
+    )
+]:
+    count = int(indicator.sum())
+    estimate = count / number_of_simulations
+    mc_se = np.sqrt(
+        estimate * (1 - estimate) / number_of_simulations
+    )
+    lower, upper = wilson_interval(
+        count, number_of_simulations
+    )
+
+    table_rows.append({
+        "event": event_name,
+        "definition": definition,
+        "count": count,
+        "M": number_of_simulations,
+        "estimate": estimate,
+        "MC SE": mc_se,
+        "95% interval": f"[{lower:.3f}, {upper:.3f}]"
+    })
+
+probability_table = pd.DataFrame(table_rows)
+
+outcome_table = pd.DataFrame({
+    "outcome": [
+        "Final epidemic size",
+        "Peak infectious count",
+        "Extinction time (days)"
+    ],
+    "median": [
+        outcomes["final_size"].median(),
+        outcomes["peak_I"].median(),
+        outcomes["extinction_time"].median()
+    ],
+    "10th percentile": [
+        outcomes["final_size"].quantile(0.10),
+        outcomes["peak_I"].quantile(0.10),
+        outcomes["extinction_time"].quantile(0.10)
+    ],
+    "90th percentile": [
+        outcomes["final_size"].quantile(0.90),
+        outcomes["peak_I"].quantile(0.90),
+        outcomes["extinction_time"].quantile(0.90)
+    ]
+})
+
+print("Probability table")
+print(probability_table.round(4).to_string(index=False))
+print()
+print("Outcome-distribution table")
+print(outcome_table.round(2).to_string(index=False))
+
+# Figure 1: selected sample paths
+plt.figure(figsize=(9, 5))
+for simulation in range(15):
+    plt.step(
+        time_values,
+        all_I_paths[simulation],
+        where="post",
+        alpha=0.45,
+        linewidth=1
+    )
+plt.xlabel("Time (days)")
+plt.ylabel("Infectious people")
+plt.title("Fifteen individual SIR DTMC sample paths")
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+# Figure 2: final-size histogram with threshold
+bins = np.arange(0.5, N + 1.5, 4)
+
+plt.figure(figsize=(9, 4.8))
+plt.hist(
+    outcomes["final_size"],
+    bins=bins,
+    color="#39815e",
+    edgecolor="white"
+)
+plt.axvline(
+    major_threshold,
+    color="#b91c1c",
+    linestyle="--",
+    linewidth=2,
+    label=f"Major threshold = {major_threshold}"
+)
+plt.xlabel("Completed final epidemic size")
+plt.ylabel("Number of trajectories")
+plt.title("Empirical distribution of final epidemic size")
+plt.legend()
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()
+
+# Figure 3: extinction probability through time
+plt.figure(figsize=(9, 4.8))
+plt.plot(
+    time_values,
+    extinction_probability,
+    color="#2563eb",
+    linewidth=2.5
+)
+plt.xlabel("Time (days)")
+plt.ylabel("Estimated probability")
+plt.title(
+    f"Probability of extinction by time "
+    f"({number_of_simulations} simulations)"
+)
+plt.ylim(0, 1.03)
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the communication code</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Code</th><th>Communication purpose</th></tr></thead>
+<tbody>
+<tr><td><code>alpha=0.45</code></td><td>Makes overlapping paths partly transparent so several remain visible.</td></tr>
+<tr><td><code>where="post"</code></td><td>Displays fixed-step DTMC states without suggesting continuous fractional changes.</td></tr>
+<tr><td><code>bins=...</code></td><td>Defines the outcome intervals counted by the histogram.</td></tr>
+<tr><td><code>plt.axvline(...)</code></td><td>Marks the stated major-outbreak threshold on the outcome distribution.</td></tr>
+<tr><td><code>(all_I_paths == 0).mean(axis=0)</code></td><td>Estimates extinction probability separately at every common time.</td></tr>
+<tr><td><code>plt.ylim(0, 1.03)</code></td><td>Keeps a probability axis anchored to its meaningful 0-to-1 range.</td></tr>
+<tr><td><code>.quantile(0.10)</code></td><td>Calculates an empirical lower percentile for the outcome table.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Common display mistakes</h2>
+<div class="table-wrap">
+<table class="mistake-table">
+<thead><tr><th>Mistake</th><th>Why it misleads</th><th>Correction</th></tr></thead>
+<tbody>
+<tr><td>One path labelled “the prediction”</td><td>Hides stochastic variability.</td><td>Call it one realisation and show distributional summaries.</td></tr>
+<tr><td>A smooth line through DTMC states</td><td>Suggests continuous fractional movement.</td><td>Use a step plot.</td></tr>
+<tr><td>Histogram with no vertical-axis definition</td><td>Counts and densities have different meanings.</td><td>Label count, frequency or density explicitly.</td></tr>
+<tr><td>Probability axis truncated near the estimate</td><td>Can exaggerate small differences.</td><td>Normally show the meaningful 0-to-1 probability range.</td></tr>
+<tr><td>Threshold used but not displayed</td><td>The event definition is hidden.</td><td>State it in text, table and graph.</td></tr>
+<tr><td>Too many coloured paths</td><td>Creates clutter without adding meaning.</td><td>Use a restrained selection and transparency.</td></tr>
+<tr><td>Incomplete paths treated as final outcomes</td><td>Understates possible later infections.</td><td>Extend the horizon or report censoring.</td></tr>
+<tr><td>Excessive decimal places</td><td>Implies unsupported precision.</td><td>Round consistently with the Monte Carlo error.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>A five-part biological interpretation</h2>
+<div class="interpret-steps">
+<div class="interpret-card"><strong>1. Scenario</strong>State the model, population, initial state and parameters.</div>
+<div class="interpret-card"><strong>2. Individual paths</strong>Describe visible variation without selecting a favourite path.</div>
+<div class="interpret-card"><strong>3. Distribution</strong>Explain the range, concentration or multiple outcome groups.</div>
+<div class="interpret-card"><strong>4. Probability</strong>Quote the event definition, estimate and Monte Carlo uncertainty.</div>
+<div class="interpret-card"><strong>5. Limitation</strong>State what the model or simulation does not include.</div>
+</div>
+<div class="caption-example">
+<p><strong>Example interpretation:</strong> “For a closed population of 100 beginning with two infectious people, the simulations produced both early fade-outs and large outbreaks. Final epidemic sizes were therefore highly variable rather than concentrated around one deterministic outcome. Using a pre-specified threshold of 20 infections, the major-outbreak probability was estimated from 600 independent trajectories and reported with its Monte Carlo interval. These results are conditional on fixed parameters, homogeneous mixing and the one-event DTMC approximation.”</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Final checklist before publishing a DTMC result</h2>
+<ul class="checklist">
+<li>Is the biological scenario stated?</li>
+<li>Are parameter values and units supplied?</li>
+<li>Is the initial state supplied?</li>
+<li>Is the time step stated and valid?</li>
+<li>Is the number of simulations reported?</li>
+<li>Is the random-seed policy reproducible?</li>
+<li>Are paths distinguished from distributions?</li>
+<li>Are all graph axes labelled with units?</li>
+<li>Is a step plot used for state trajectories?</li>
+<li>Is every threshold defined and displayed?</li>
+<li>Are incomplete trajectories identified?</li>
+<li>Is Monte Carlo uncertainty reported?</li>
+<li>Are probability axes interpreted between 0 and 1?</li>
+<li>Are tables rounded consistently?</li>
+<li>Does the conclusion remain conditional on model assumptions?</li>
+</ul>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has added</h2>
+<div class="summary-box">
+<ul>
+<li>Choose the display from the scientific question.</li>
+<li>Use sample paths for individual histories.</li>
+<li>Use histograms for empirical outcome distributions.</li>
+<li>Use probability curves for event probability through time.</li>
+<li>Use tables for precise definitions, estimates and uncertainty.</li>
+<li>Keep trajectories, distribution summaries and probabilities conceptually separate.</li>
+<li>Interpret results through the biological scenario and stated limitations.</li>
+</ul>
+<p>This completes the DTMC programming pathway. The next section introduces continuous-time Markov chains, where event times are random rather than restricted to a fixed time grid.</p>
+</div>
+</section>
+
+<nav class="lesson-nav">
+<a href="../extinction-major-outbreak-probabilities/">← Previous lesson</a>
+<a href="../../ctmc/">Next section: CTMC →</a>
+</nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
