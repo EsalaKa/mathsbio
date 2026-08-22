@@ -1,1 +1,406 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Vaccination and time-dependent interventions in Python for mathematical biology."><title>Vaccination and time-dependent interventions | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Deterministic Models</a><p class="section-number">12</p><h1 class="section-title">Vaccination and time-dependent interventions</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Program vaccination and time-dependent transmission interventions in a deterministic SIR model.">
+<title>Vaccination and time-dependent interventions | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.intervention-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.intervention-card{padding:21px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.intervention-card h3{margin-top:0;color:#174c34}.schedule{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;margin:22px 0}.period{padding:20px;text-align:center;background:#eaf4ee;border-radius:10px}.switch{font-size:1.6rem;color:#176b45;font-weight:700}.assumption-table{width:100%;border-collapse:collapse;background:#fff}.assumption-table th,.assumption-table td{padding:12px 14px;border:1px solid #d6e3db;text-align:left;vertical-align:top}.assumption-table th{background:#eaf4ee;color:#174c34}.scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:20px 0}.scenario-card{padding:19px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.scenario-card strong{display:block;color:#174c34}.warning-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}@media(max-width:800px){.intervention-grid,.scenario-grid{grid-template-columns:1fr}.schedule{grid-template-columns:1fr}.switch{transform:rotate(90deg);text-align:center}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Deterministic Models</a>
+<p class="section-number">12</p>
+<h1 class="section-title">Vaccination and time-dependent interventions</h1>
+<p class="lesson-intro">An intervention changes either the population state or the model parameters. We represent pre-outbreak vaccination by reducing the initial susceptible population, and a timed contact intervention by changing the transmission parameter during the epidemic.</p>
+
+<section class="lesson-section">
+<h2>Biological scenario</h2>
+<div class="scenario-box">
+<p>A population of 1,000 begins with 10 infectious people. We compare:</p>
+<ol>
+<li>no intervention;</li>
+<li>40% vaccination coverage with 80% efficacy before the outbreak;</li>
+<li>the same vaccination plus a day-30 intervention reducing &#92;(&#92;beta&#92;) from 0.30 to 0.12 per day.</li>
+</ol>
+<p>The aim is to compare infectious peaks, peak times and infections occurring after the simulation begins.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Two interventions, two mathematical mechanisms</h2>
+<div class="intervention-grid">
+<div class="intervention-card">
+<h3>Vaccination before the outbreak</h3>
+<p>Changes the initial conditions by moving effectively immunised people out of &#92;(S(0)&#92;).</p>
+<p class="formula-line">&#92;[V_{&#92;mathrm{immune}}=c&#92;varepsilon S_{&#92;mathrm{eligible}},&#92;]</p>
+<p>where &#92;(c&#92;) is coverage and &#92;(&#92;varepsilon&#92;) is vaccine efficacy.</p>
+</div>
+<div class="intervention-card">
+<h3>Timed contact intervention</h3>
+<p>Changes transmission during the simulation through a time-dependent parameter &#92;(&#92;beta(t)&#92;).</p>
+<p class="formula-line">&#92;[&#92;beta(t)=&#92;begin{cases}&#92;beta_1,&t&lt;T_L,&#92;&#92;&#92;beta_2,&t&#92;geq T_L.&#92;end{cases}&#92;]</p>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Vaccination changes the initial state</h2>
+<p>There are &#92;(N-I(0)&#92;) initially non-infectious people eligible to be susceptible in this simplified scenario:</p>
+<p class="formula-line">&#92;[S_{&#92;mathrm{eligible}}=N-I(0).&#92;]</p>
+<p>With coverage &#92;(c=0.4&#92;) and efficacy &#92;(&#92;varepsilon=0.8&#92;), the effectively immunised fraction is &#92;(c&#92;varepsilon=0.32&#92;), not 0.40.</p>
+<div class="math-box">
+<p class="formula-line">&#92;[V_{&#92;mathrm{immune}}=0.4&#92;times0.8&#92;times990=316.8.&#92;]</p>
+<p class="formula-line">&#92;[S(0)=990-316.8=673.2.&#92;]</p>
+</div>
+<div class="technical-box">
+<p>The standard SIR symbol &#92;(R&#92;) is better interpreted here as <strong>removed or immune</strong>, because it contains vaccine-induced immunity as well as people who later recover from infection.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Program a time-dependent transmission parameter</h2>
+<div class="schedule">
+<div class="period"><strong>Before day 30</strong><br>&#92;(&#92;beta(t)=0.30&#92;)</div>
+<div class="switch">→</div>
+<div class="period"><strong>From day 30</strong><br>&#92;(&#92;beta(t)=0.12&#92;)</div>
+</div>
+<div class="step-card">
+<pre><code>def beta_at_time(
+    t,
+    beta_before,
+    beta_after,
+    intervention_day
+):
+    if t &lt; intervention_day:
+        return beta_before
+    else:
+        return beta_after</code></pre>
+<ul>
+<li><span class="inline-code">t</span> is the time supplied by the ODE solver.</li>
+<li><span class="inline-code">if</span> selects the pre-intervention value before the switching day.</li>
+<li><span class="inline-code">else</span> selects the post-intervention value from that day onwards.</li>
+<li>The function returns one value of &#92;(&#92;beta(t)&#92;) for each solver evaluation.</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Use &#92;(&#92;beta(t)&#92;) inside the SIR equations</h2>
+<div class="step-card">
+<pre><code>beta = beta_at_time(
+    t,
+    beta_before,
+    beta_after,
+    intervention_day
+)
+
+infection_flow = beta * S * I / N</code></pre>
+<p class="code-explain">The equations retain the same structure, but the infection flow now uses the transmission value appropriate to the current time.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Scenarios compared</h2>
+<div class="scenario-grid">
+<div class="scenario-card"><strong>No intervention</strong><p>No vaccine immunity and &#92;(&#92;beta=0.30&#92;) throughout.</p></div>
+<div class="scenario-card"><strong>Vaccination</strong><p>32% of initially eligible susceptible people effectively immunised; &#92;(&#92;beta=0.30&#92;) throughout.</p></div>
+<div class="scenario-card"><strong>Vaccination + timed intervention</strong><p>Same vaccine immunity; &#92;(&#92;beta&#92;) changes to 0.12 on day 30.</p></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Run the intervention comparison</h2>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Vaccination and timed intervention</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+
+def beta_at_time(
+    t,
+    beta_before,
+    beta_after,
+    intervention_day
+):
+    """Return the transmission parameter at time t."""
+    
+    if t &lt; intervention_day:
+        return beta_before
+    else:
+        return beta_after
+
+
+def sir_intervention_rhs(
+    t,
+    y,
+    beta_before,
+    beta_after,
+    intervention_day,
+    gamma
+):
+    """Return SIR derivatives with time-dependent transmission."""
+    
+    S, I, R = y
+    N = S + I + R
+    
+    beta = beta_at_time(
+        t,
+        beta_before,
+        beta_after,
+        intervention_day
+    )
+    
+    infection_flow = beta * S * I / N
+    recovery_flow = gamma * I
+    
+    return [
+        -infection_flow,
+        infection_flow - recovery_flow,
+        recovery_flow
+    ]
+
+
+def simulate_scenario(
+    name,
+    population,
+    I0,
+    coverage,
+    efficacy,
+    beta_before,
+    beta_after,
+    intervention_day,
+    gamma,
+    end_time=200
+):
+    """Solve one vaccination and transmission scenario."""
+    
+    if not 0 &lt;= coverage &lt;= 1:
+        raise ValueError("coverage must lie between 0 and 1.")
+    if not 0 &lt;= efficacy &lt;= 1:
+        raise ValueError("efficacy must lie between 0 and 1.")
+    if intervention_day &lt; 0:
+        raise ValueError("intervention_day cannot be negative.")
+    
+    eligible_susceptible = population - I0
+    immune_from_vaccine = (
+        coverage * efficacy * eligible_susceptible
+    )
+    
+    S0 = eligible_susceptible - immune_from_vaccine
+    R0 = immune_from_vaccine
+    
+    reporting_times = np.linspace(0, end_time, 2001)
+    
+    solution = solve_ivp(
+        sir_intervention_rhs,
+        t_span=(0, end_time),
+        y0=[S0, I0, R0],
+        t_eval=reporting_times,
+        args=(
+            beta_before,
+            beta_after,
+            intervention_day,
+            gamma
+        ),
+        rtol=1e-8,
+        atol=1e-10,
+        max_step=0.5
+    )
+    
+    if not solution.success:
+        raise RuntimeError(solution.message)
+    
+    S, I, R = solution.y
+    peak_index = np.argmax(I)
+    
+    return {
+        "name": name,
+        "time": solution.t,
+        "S": S,
+        "I": I,
+        "R": R,
+        "S0": S0,
+        "I0": I0,
+        "vaccine_immune": immune_from_vaccine,
+        "peak_I": I[peak_index],
+        "peak_time": solution.t[peak_index],
+        "outbreak_infections": I0 + S0 - S[-1],
+        "beta_before": beta_before,
+        "beta_after": beta_after,
+        "intervention_day": intervention_day
+    }
+
+
+# Shared settings
+N = 1000
+I0 = 10
+gamma = 0.1
+
+# Run three scenarios
+scenarios = [
+    simulate_scenario(
+        name="No intervention",
+        population=N,
+        I0=I0,
+        coverage=0,
+        efficacy=0.8,
+        beta_before=0.30,
+        beta_after=0.30,
+        intervention_day=30,
+        gamma=gamma
+    ),
+    simulate_scenario(
+        name="Vaccination",
+        population=N,
+        I0=I0,
+        coverage=0.40,
+        efficacy=0.80,
+        beta_before=0.30,
+        beta_after=0.30,
+        intervention_day=30,
+        gamma=gamma
+    ),
+    simulate_scenario(
+        name="Vaccination + timed intervention",
+        population=N,
+        I0=I0,
+        coverage=0.40,
+        efficacy=0.80,
+        beta_before=0.30,
+        beta_after=0.12,
+        intervention_day=30,
+        gamma=gamma
+    )
+]
+
+# Display outcome table
+print("Scenario                         Vaccine immune   Peak I   Peak day   Outbreak infections")
+print("------------------------------------------------------------------------------------------")
+
+for result in scenarios:
+    print(
+        f"{result['name']:32s} "
+        f"{result['vaccine_immune']:14.1f} "
+        f"{result['peak_I']:8.2f} "
+        f"{result['peak_time']:10.1f} "
+        f"{result['outbreak_infections']:19.2f}"
+    )
+
+# Prepare transmission schedules for plotting
+plot_time = scenarios[0]["time"]
+beta_no_intervention = np.full_like(plot_time, 0.30)
+beta_combined = np.where(plot_time &lt; 30, 0.30, 0.12)
+
+# Plot infectious curves and beta schedule
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
+
+for result in scenarios:
+    axes[0].plot(
+        result["time"],
+        result["I"],
+        label=result["name"]
+    )
+
+axes[0].axvline(30, color="grey", linestyle=":")
+axes[0].set_xlabel("Time (days)")
+axes[0].set_ylabel("Infectious population")
+axes[0].set_title("Infectious trajectories")
+axes[0].grid(alpha=0.25)
+axes[0].legend(fontsize=8)
+
+axes[1].plot(
+    plot_time,
+    beta_no_intervention,
+    label="No timed change"
+)
+axes[1].plot(
+    plot_time,
+    beta_combined,
+    label="Timed intervention"
+)
+axes[1].axvline(30, color="grey", linestyle=":")
+axes[1].set_xlabel("Time (days)")
+axes[1].set_ylabel("Transmission parameter")
+axes[1].set_title("Transmission schedules")
+axes[1].set_ylim(0, 0.35)
+axes[1].grid(alpha=0.25)
+axes[1].legend()
+
+fig.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the new code</h2>
+<table class="assumption-table">
+<thead><tr><th>Code</th><th>Technical meaning</th><th>Modelling use</th></tr></thead>
+<tbody>
+<tr><td><code>0 &lt;= coverage &lt;= 1</code></td><td>A chained comparison requiring a proportion between 0 and 1.</td><td>Prevents impossible vaccination coverage.</td></tr>
+<tr><td><code>np.where(condition, a, b)</code></td><td>Creates an array choosing <span class="inline-code">a</span> where a condition is true and <span class="inline-code">b</span> otherwise.</td><td>Creates the displayed piecewise transmission schedule.</td></tr>
+<tr><td><code>np.full_like(time, 0.30)</code></td><td>Creates an array matching the shape of <span class="inline-code">time</span> and fills it with 0.30.</td><td>Displays constant transmission.</td></tr>
+<tr><td><code>max_step=0.5</code></td><td>Prevents the solver from taking an internal step longer than half a day.</td><td>Encourages resolution around the abrupt day-30 parameter change.</td></tr>
+<tr><td><code>outbreak_infections</code></td><td>Uses &#92;(I(0)+S(0)-S(T)&#92;).</td><td>Excludes people immune from vaccination who never enter the outbreak.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<div class="interpretation-box">
+<p>Vaccination lowers the number initially susceptible to infection. The timed intervention reduces the infection flow from day 30 onward. Both mechanisms can lower infectious burden, but they act through different parts of the model.</p>
+<p>The effect of a timed intervention depends strongly on when it begins. If it begins after the natural infectious peak, it cannot reduce the earlier peak retrospectively.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Assumptions and limitations</h2>
+<table class="assumption-table">
+<thead><tr><th>Assumption</th><th>Consequence</th></tr></thead>
+<tbody>
+<tr><td>Vaccine protection is immediate.</td><td>No delay between vaccination and immunity is represented.</td></tr>
+<tr><td>Effective protection is all-or-nothing.</td><td>Successfully protected people are placed directly in the immune compartment.</td></tr>
+<tr><td>Protection does not wane.</td><td>Vaccinated immune people remain immune throughout the simulation.</td></tr>
+<tr><td>&#92;(&#92;beta&#92;) changes instantly on day 30.</td><td>Behavioural change is represented as an abrupt step rather than a gradual transition.</td></tr>
+<tr><td>Parameters are otherwise constant.</td><td>Changing adherence and other time-varying factors are omitted.</td></tr>
+</tbody>
+</table>
+<div class="warning-box">
+<p>This is a scenario analysis under model assumptions. It does not establish that an observed intervention caused a particular real-world outcome.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try changing intervention timing</h2>
+<div class="experiment-box">
+<p>In the combined scenario, change <span class="inline-code">intervention_day=30</span> to 15 and then to 60. Also change the plotted schedule condition and vertical line to match.</p>
+<ol>
+<li>Compare peak sizes and peak times.</li>
+<li>Compare outbreak infections.</li>
+<li>Determine whether day 60 occurs before or after the uncontrolled peak.</li>
+<li>Explain why timing changes the outcome even when &#92;(&#92;beta_2&#92;) is unchanged.</li>
+</ol>
+</div>
+</section>
+</main>
+</body>
+</html>
