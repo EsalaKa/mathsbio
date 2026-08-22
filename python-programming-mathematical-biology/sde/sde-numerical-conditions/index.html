@@ -1,1 +1,94 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Time-step choice, negative values and model conditions in Python for mathematical biology."><title>Time-step choice, negative values and model conditions | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">13</p><h1 class="section-title">Time-step choice, negative values and model conditions</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Investigate SDE time-step choice, negative values, boundary corrections and numerical conditions."><title>Time-step choice, negative values and model conditions | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">13</p><h1 class="section-title">Time-step choice, negative values and model conditions</h1><p class="lesson-intro">A trustworthy SDE result requires more than code that runs: the time grid, state boundaries, coefficient conditions and sensitivity to numerical choices must be examined.</p>
+<section class="lesson-section"><h2>A valid equation does not guarantee a valid numerical path</h2><p>Euler–Maruyama uses normal increments with unbounded support. Even when the true process should remain in &#92;([0,N]&#92;), a finite-step proposal can be negative or exceed &#92;(N&#92;). The risk grows near boundaries, with large diffusion, or with a large time step.</p></section>
+<section class="lesson-section"><h2>Time-step requirements</h2><ul><li><code>dt &lt;= 0</code> is invalid exactly because a step length cannot be zero or negative.</li><li>&#92;(T/&#92;Delta t&#92;) should be handled consistently so the grid ends at the intended horizon.</li><li>Results should be repeated with smaller steps to check numerical stability.</li><li>A smaller step reduces discretisation error but increases computation.</li></ul>
+<p>This is different from checking whether a floating-point calculation is approximately zero; exact input conditions and computed numerical residuals require different tests.</p></section>
+<section class="lesson-section"><h2>Four boundary approaches</h2>
+<table><thead><tr><th>Approach</th><th>Consequence</th></tr></thead><tbody><tr><td>Stop and report</td><td>Exposes invalidity but produces incomplete paths.</td></tr><tr><td>Projection or clipping</td><td>Simple and bounded, but changes the Euler–Maruyama scheme.</td></tr><tr><td>Absorbing rule at zero</td><td>Represents extinction once zero is reached, but crossing behaviour remains numerical.</td></tr><tr><td>Alternative transformed or positivity-preserving method</td><td>Can respect structure better but requires a different numerical method.</td></tr></tbody></table>
+<p>No correction should be applied silently.</p></section>
+<section class="lesson-section"><h2>Interactive sensitivity experiment</h2><p>Run 500 SIS paths at three time steps. The code records every raw out-of-range proposal before applying the same declared projection rule.</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Time-step and boundary diagnostics</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+N = 200
+I0 = 3
+beta = 0.25
+gamma = 0.15
+T = 40
+M = 500
+time_steps = [0.50, 0.10, 0.02]
+base_seed = 150
+
+rows = []
+mean_paths = {}
+
+for experiment, dt in enumerate(time_steps):
+    steps = int(round(T / dt))
+    times = np.linspace(0, T, steps + 1)
+    rng = np.random.default_rng(base_seed + experiment)
+
+    I = np.zeros((M, steps + 1))
+    I[:, 0] = I0
+    invalid_proposals = 0
+    paths_ever_corrected = np.zeros(M, dtype=bool)
+
+    for n in range(steps):
+        current = I[:, n]
+        infection_rate = beta * (N - current) * current / N
+        recovery_rate = gamma * current
+        drift = infection_rate - recovery_rate
+        diffusion = np.sqrt(np.maximum(
+            infection_rate + recovery_rate, 0
+        ))
+
+        dW = np.sqrt(dt) * rng.normal(0, 1, size=M)
+        proposals = current + drift * dt + diffusion * dW
+
+        invalid = (proposals < 0) | (proposals > N)
+        invalid_proposals += invalid.sum()
+        paths_ever_corrected |= invalid
+
+        I[:, n + 1] = np.clip(proposals, 0, N)
+
+    mean_paths[dt] = (times, I.mean(axis=0))
+
+    rows.append({
+        "dt": dt,
+        "steps": steps,
+        "invalid proposals": invalid_proposals,
+        "fraction paths corrected": paths_ever_corrected.mean(),
+        "mean final I": I[:, -1].mean(),
+        "fraction final I = 0": (I[:, -1] == 0).mean()
+    })
+
+results = pd.DataFrame(rows)
+print(results.round(4).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.2))
+for dt, (times, mean_I) in mean_paths.items():
+    plt.plot(times, mean_I, label=f"dt = {dt}")
+
+plt.xlabel("Time (days)")
+plt.ylabel("Mean infectious population")
+plt.title("Mean paths under three numerical time steps")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+plt.figure(figsize=(7.8, 4.8))
+plt.plot(
+    results["dt"],
+    results["fraction paths corrected"],
+    "o-", color="#b42318"
+)
+plt.xscale("log")
+plt.xlabel("Time step dt (log scale)")
+plt.ylabel("Fraction of paths needing correction")
+plt.title("Boundary diagnostics must be reported")
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>How to choose a practical time step</h2><ol><li>Choose a plausible initial &#92;(&#92;Delta t&#92;) from the biological time scale.</li><li>Run the same outcome experiment with &#92;(&#92;Delta t/2&#92;) and &#92;(&#92;Delta t/4&#92;).</li><li>Compare means, quantiles, extinction measures and correction frequency.</li><li>Reduce the step until conclusions are acceptably stable for the question.</li><li>Report the chosen step and diagnostic results.</li></ol></section>
+<section class="lesson-section"><h2>Mathematical coefficient conditions</h2><p>Standard Euler–Maruyama convergence theory commonly assumes sufficient regularity such as Lipschitz continuity and controlled growth of drift and diffusion. Square-root epidemic diffusion coefficients are not globally Lipschitz at zero, so boundary behaviour deserves particular care. A numerical plot alone is not a proof of convergence.</p></section>
+<section class="lesson-section"><h2>Validation checklist</h2><ul><li>Initial compartments are non-negative and sum to &#92;(N&#92;).</li><li>Parameters and event rates are non-negative.</li><li>The time step is positive and the horizon is reached as intended.</li><li>Population conservation errors are checked for multivariable models.</li><li>Boundary corrections are counted and reported.</li><li>Important outcomes remain stable under step refinement.</li></ul></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now distinguish model validity from numerical validity, diagnose raw invalid proposals, evaluate a declared boundary rule, perform step-refinement experiments and explain why epidemic square-root diffusions require care near extinction.</p></div></section><nav class="lesson-nav"><a href="../compare-deterministic-ctmc-sde/">← Previous lesson</a><a href="../sde-plots-tables/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
