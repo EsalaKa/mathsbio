@@ -1,10 +1,29 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Compare matched deterministic, CTMC and SDE epidemic results in Python."><title>Comparing deterministic, CTMC and SDE results | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">12</p><h1 class="section-title">Comparing deterministic, CTMC and SDE results</h1><p class="lesson-intro">A fair comparison holds the biological rates, initial state and observation times fixed while recognising that the three approaches represent randomness differently.</p>
+<section class="lesson-section"><h2>Scenario and comparison question</h2>
+<p>Use an SIS infection in a population of &#92;(N=200&#92;), initially with &#92;(I(0)=3&#92;). All three models use &#92;(&#92;beta=0.25&#92;) and &#92;(&#92;gamma=0.15&#92;) per day and are compared over the same 60-day period.</p>
+<p>The comparison asks three separate questions:</p>
+<ol>
+<li>How does the deterministic prevalence path compare with stochastic ensemble means?</li>
+<li>How wide are the CTMC and SDE outcome distributions?</li>
+<li>How similarly do the stochastic models represent the disease-free boundary?</li>
+</ol>
+</section>
 <section class="lesson-section"><h2>One biology, three mathematical descriptions</h2>
 <table><thead><tr><th>Approach</th><th>State and path</th><th>Main information</th></tr></thead><tbody><tr><td>Deterministic ODE</td><td>Continuous, one smooth path</td><td>Average-direction reference</td></tr><tr><td>CTMC</td><td>Integer, piecewise-constant jumps at random times</td><td>Discrete events and extinction</td></tr><tr><td>SDE</td><td>Continuous, irregular diffusion path</td><td>Approximate continuous fluctuations</td></tr></tbody></table>
 <p>The parameter values and biological rates must match before outcomes are compared.</p></section>
 <section class="lesson-section"><h2>Shared SIS drift</h2>
 <div class="math-box">&#92;[f(I)=&#92;beta&#92;frac{(N-I)I}{N}-&#92;gamma I.&#92;]</div>
 <p>The deterministic model uses &#92;(dI=f(I)dt&#92;). The CTMC uses infection and recovery events separately. The SDE uses the same drift and diffusion &#92;(g(I)=&#92;sqrt{a_1(I)+a_2(I)}&#92;).</p></section>
+<section class="lesson-section"><h2>Requirements for a fair comparison</h2>
+<table><thead><tr><th>Must match</th><th>Why</th></tr></thead><tbody>
+<tr><td>Population and initial state</td><td>Different starting risks produce different outcomes.</td></tr>
+<tr><td>Infection and recovery rate formulas</td><td>The models must represent the same biological mechanisms.</td></tr>
+<tr><td>Parameter values and units</td><td>A per-day rate cannot be compared with a per-week rate.</td></tr>
+<tr><td>Observation times</td><td>Outcomes must refer to the same dates.</td></tr>
+<tr><td>Boundary and stopping definitions</td><td>Extinction must mean the same biological event.</td></tr>
+</tbody></table>
+<p>Numerical choices such as Euler–Maruyama &#92;(&#92;Delta t&#92;) must also be reported, even though the CTMC does not use that fixed step.</p>
+</section>
 <section class="lesson-section"><h2>Interactive Python laboratory</h2>
 <div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Deterministic, CTMC and SDE comparison</span></div>
 <textarea class="python-editor" spellcheck="false">import numpy as np
@@ -19,7 +38,10 @@ T = 60
 dt = 0.02
 M = 300
 seed = 107
-rng = np.random.default_rng(seed)
+seed_sequence = np.random.SeedSequence(seed)
+ctmc_seed, sde_seed = seed_sequence.spawn(2)
+ctmc_rng = np.random.default_rng(ctmc_seed)
+sde_rng = np.random.default_rng(sde_seed)
 
 observation_times = np.arange(0, T + 1)
 
@@ -49,13 +71,13 @@ for run in range(M):
         infection_rate = beta * (N - I) * I / N
         recovery_rate = gamma * I
         total_rate = infection_rate + recovery_rate
-        wait = rng.exponential(1 / total_rate)
+        wait = ctmc_rng.exponential(1 / total_rate)
 
         if time + wait > T:
             break
 
         time += wait
-        if rng.random() < infection_rate / total_rate:
+        if ctmc_rng.random() < infection_rate / total_rate:
             I += 1
         else:
             I -= 1
@@ -80,7 +102,7 @@ for n in range(steps):
     diffusion = np.sqrt(np.maximum(
         infection_rate + recovery_rate, 0
     ))
-    dW = np.sqrt(dt) * rng.normal(0, 1, size=M)
+    dW = np.sqrt(dt) * sde_rng.normal(0, 1, size=M)
     I_sde_fine[:, n + 1] = np.clip(
         current + drift(current) * dt + diffusion * dW,
         0, N
@@ -98,21 +120,24 @@ sde_low, sde_high = np.quantile(
     I_sde, [0.05, 0.95], axis=0
 )
 
-comparison = pd.DataFrame({
-    "model": ["Deterministic", "CTMC", "SDE"],
-    "mean I at day 60": [
-        ode_daily[-1],
-        I_ctmc[:, -1].mean(),
-        I_sde[:, -1].mean()
-    ],
-    "fraction at zero on day 60": [
-        0,
-        (I_ctmc[:, -1] == 0).mean(),
-        (I_sde[:, -1] == 0).mean()
-    ]
+selected_days = [0, 10, 20, 40, 60]
+selected_indices = [int(day) for day in selected_days]
+
+time_comparison = pd.DataFrame({
+    "day": selected_days,
+    "deterministic I": ode_daily[selected_indices],
+    "CTMC mean I": ctmc_mean[selected_indices],
+    "SDE mean I": sde_mean[selected_indices],
+    "CTMC fraction zero": (
+        I_ctmc[:, selected_indices] == 0
+    ).mean(axis=0),
+    "SDE fraction zero": (
+        I_sde[:, selected_indices] == 0
+    ).mean(axis=0)
 })
 
-print(comparison.round(4).to_string(index=False))
+print("Matched-model comparison at selected times")
+print(time_comparison.round(4).to_string(index=False))
 
 plt.figure(figsize=(9.5, 5.4))
 plt.fill_between(
@@ -153,6 +178,15 @@ plt.title("Final-time outcomes")
 plt.legend()
 plt.grid(axis="y", alpha=0.25)
 plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Why the stochastic mean need not equal the deterministic path</h2>
+<p>The SIS drift is nonlinear because it contains &#92;(I^2&#92;). In general,</p>
+<div class="math-box">&#92;[&#92;mathbb E[f(I)]&#92;ne f(&#92;mathbb E[I]).&#92;]</div>
+<p>The deterministic equation evaluates the drift at one deterministic state. The stochastic mean depends on the full distribution, including variance and extinction. Therefore, matching biological rates does not require the deterministic path and stochastic ensemble mean to be identical.</p>
+</section>
 <section class="lesson-section"><h2>How to interpret agreement</h2><p>The deterministic path is not expected to equal every stochastic path. Agreement is assessed through ensemble summaries. For sufficiently large populations away from boundaries, the SDE distribution may approximate the CTMC distribution. Near extinction and small counts, discrepancies can be important.</p></section>
+<section class="lesson-section"><h2>When is the SDE approximation useful?</h2>
+<p>The diffusion approximation is generally most plausible when event rates and population counts are sufficiently large, changes of one individual are small relative to the population scale, and trajectories remain away from absorbing boundaries.</p>
+<p>It becomes less reliable when infectious counts are small, extinction probability is central, discrete superspreading events matter, or the numerical method frequently corrects invalid states. In those cases, the CTMC provides a more direct event-level description.</p>
+</section>
 <section class="lesson-section"><h2>Do not claim that one model is universally better</h2><ul><li>Use the ODE for a fast average-direction baseline.</li><li>Use the CTMC when integer events, exact absorption or small populations matter.</li><li>Use the SDE when continuous fluctuation is a useful and efficient approximation.</li><li>Model choice depends on the biological question, scale and required outcomes.</li></ul></section>
 <section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now compare three models under matched assumptions, align their outputs on common times, distinguish path agreement from distributional agreement, and explain why extinction boundaries challenge diffusion approximations.</p></div></section><nav class="lesson-nav"><a href="../mean-variance-uncertainty-bands/">← Previous lesson</a><a href="../sde-numerical-conditions/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
