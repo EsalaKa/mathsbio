@@ -1,1 +1,458 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Programming a DTMC SIS model in Python for mathematical biology."><title>Programming a DTMC SIS model | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">07</p><h1 class="section-title">Programming a DTMC SIS model</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Build and simulate a discrete-time Markov-chain SIS epidemic model with reinfection, birth-death transitions and absorbing extinction.">
+<title>Programming a DTMC SIS model | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.sis-flow{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin:24px 0}.sis-card{padding:22px;text-align:center;background:#fff;border:1px solid #dce7e0;border-radius:11px}.sis-card strong{display:block;color:#174c34;font-size:1.1rem}.two-way{font-size:2rem;color:#176b45;font-weight:700}.state-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.state-card{padding:19px;background:#eaf4ee;border-radius:10px}.state-card h3{margin-top:0;color:#174c34}.boundary-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin:22px 0}.boundary-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.compare-table td:first-child{font-weight:700;color:#174c34}@media(max-width:800px){.sis-flow,.state-grid,.boundary-grid{grid-template-columns:1fr}.two-way{transform:rotate(90deg);text-align:center}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+
+<main class="section container">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+<p class="section-number">07</p>
+<h1 class="section-title">Programming a DTMC SIS model</h1>
+<p class="lesson-intro">The SIS model describes an infection that does not give lasting immunity. Recovery returns an infectious person to the susceptible compartment, so the same person may later become infected again.</p>
+
+<section class="lesson-section">
+<h2>The new biological idea: reinfection</h2>
+<div class="sis-flow">
+<div class="sis-card"><strong>Susceptible</strong>&#92;(S&#92;)</div>
+<div class="two-way">⇄</div>
+<div class="sis-card"><strong>Infectious</strong>&#92;(I&#92;)</div>
+</div>
+<div class="math-box">
+&#92;[
+S&#92;xrightarrow{&#92;text{infection}}I,
+&#92;qquad
+I&#92;xrightarrow{&#92;text{recovery}}S.
+&#92;]
+</div>
+<p>Unlike the SIR model, SIS has no removed compartment. Recovery does not create permanent immunity. SIS models can be useful for infections for which immunity is absent, short-lived or ignored at the chosen modelling scale.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Closed population and a one-dimensional state</h2>
+<p>Assume a closed population of constant size &#92;(N&#92;):</p>
+<div class="math-box">
+&#92;[
+S_n+I_n=N.
+&#92;]
+</div>
+<p>Knowing &#92;(I_n&#92;) automatically determines the susceptible count:</p>
+<div class="math-box">
+&#92;[
+S_n=N-I_n.
+&#92;]
+</div>
+<div class="definition-box">
+<p>Therefore the DTMC can use the single integer state &#92;(X_n=I_n&#92;) with state space:</p>
+<div class="math-box">
+&#92;[
+&#92;mathcal S=&#92;{0,1,2,&#92;ldots,N&#92;&#92;}.
+&#92;]
+</div>
+</div>
+<p>This reduction is not an approximation. It follows exactly from population conservation.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Possible movements from state (i)</h2>
+<p>Suppose &#92;(I_n=i&#92;). Under the one-event-per-step assumption, the next infectious count can be only:</p>
+<div class="state-grid">
+<div class="state-card">
+<h3>Infection: upward movement</h3>
+<div class="math-box">&#92;[i&#92;longrightarrow i+1.&#92;]</div>
+<p>One susceptible person becomes infectious.</p>
+</div>
+<div class="state-card">
+<h3>Recovery: downward movement</h3>
+<div class="math-box">&#92;[i&#92;longrightarrow i-1.&#92;]</div>
+<p>One infectious person becomes susceptible again.</p>
+</div>
+<div class="state-card">
+<h3>No change: stay</h3>
+<div class="math-box">&#92;[i&#92;longrightarrow i.&#92;]</div>
+<p>No infection or recovery occurs in the step.</p>
+</div>
+</div>
+<p>A chain with only upward, downward and stay movements between neighbouring integer states is commonly called a <strong>birth–death DTMC</strong>. Here “birth” means an increase in the infectious count, not a biological birth.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Derive the SIS transition probabilities</h2>
+<p>At state &#92;(i&#92;), the susceptible count is &#92;(N-i&#92;). The infection and recovery event rates are:</p>
+<div class="math-box">
+&#92;[
+&#92;lambda_i=&#92;beta&#92;frac{(N-i)i}{N},
+&#92;qquad
+&#92;mu_i=&#92;gamma i.
+&#92;]
+</div>
+<p>For sufficiently short fixed step &#92;(&#92;Delta t&#92;), the DTMC probabilities are:</p>
+<div class="math-box">
+&#92;[
+&#92;begin{aligned}
+p_i&=&#92;Pr(I_{n+1}=i+1&#92;mid I_n=i)
+=&#92;beta&#92;frac{(N-i)i}{N}&#92;Delta t,&#92;&#92;
+q_i&=&#92;Pr(I_{n+1}=i-1&#92;mid I_n=i)
+=&#92;gamma i&#92;Delta t,&#92;&#92;
+r_i&=&#92;Pr(I_{n+1}=i&#92;mid I_n=i)
+=1-p_i-q_i.
+&#92;end{aligned}
+&#92;]
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Symbol</th><th>Meaning</th><th>State change</th></tr></thead>
+<tbody>
+<tr><td>&#92;(p_i&#92;)</td><td>Infection probability at state &#92;(i&#92;)</td><td>&#92;(+1&#92;)</td></tr>
+<tr><td>&#92;(q_i&#92;)</td><td>Recovery probability at state &#92;(i&#92;)</td><td>&#92;(-1&#92;)</td></tr>
+<tr><td>&#92;(r_i&#92;)</td><td>No-change probability at state &#92;(i&#92;)</td><td>&#92;(0&#92;)</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why the probabilities change with the state</h2>
+<p>This DTMC is time-homogeneous when &#92;(&#92;beta&#92;), &#92;(&#92;gamma&#92;) and &#92;(&#92;Delta t&#92;) remain fixed. However, its transition probabilities still depend on the current infectious count &#92;(i&#92;).</p>
+<ul>
+<li>When &#92;(i&#92;) is small, there are many susceptible people but few infectious people.</li>
+<li>At intermediate values, both groups are present, so infection probability can be larger.</li>
+<li>When &#92;(i&#92;) is near &#92;(N&#92;), few susceptible people remain, so infection probability falls.</li>
+<li>Recovery probability increases linearly with &#92;(i&#92;).</li>
+</ul>
+</section>
+
+<section class="lesson-section">
+<h2>Boundary states</h2>
+<div class="boundary-grid">
+<div class="boundary-card">
+<h3>Extinction: (i=0)</h3>
+<div class="math-box">
+&#92;[
+p_0=0,&#92;quad q_0=0,&#92;quad r_0=1.
+&#92;]
+</div>
+<p>With no infectious people, neither infection nor recovery can occur. State 0 is absorbing.</p>
+</div>
+<div class="boundary-card">
+<h3>Everyone infectious: (i=N)</h3>
+<div class="math-box">
+&#92;[
+p_N=0,&#92;quad q_N=&#92;gamma N&#92;Delta t.
+&#92;]
+</div>
+<p>There is nobody susceptible to infect, but recovery can move the process down to &#92;(N-1&#92;). State &#92;(N&#92;) is not absorbing when &#92;(&#92;gamma&gt;0&#92;).</p>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Check one fixed time step over the whole state space</h2>
+<p>A simulation may visit many values of &#92;(i&#92;). Therefore it is not enough to check the probabilities only at the initial state. For every possible state:</p>
+<div class="math-box">
+&#92;[
+p_i+q_i&#92;le1,
+&#92;qquad i=0,1,&#92;ldots,N.
+&#92;]
+</div>
+<p>The code calculates this sum for every integer state and rejects &#92;(&#92;Delta t&#92;) if any no-change probability is negative.</p>
+<div class="note-box">
+<p>Satisfying the inequality makes the probabilities valid. It does not by itself prove that the one-event approximation is accurate. A smaller time step makes multiple unrepresented events within one step less likely.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>The program verifies all states, simulates one SIS trajectory, records event counts and creates two graphs: the realised epidemic path and the transition probabilities across the state space.</p>
+
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>DTMC SIS epidemic</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def sis_probabilities(i, N, beta, gamma, dt):
+    susceptible = N - i
+
+    p_infection = beta * susceptible * i / N * dt
+    p_recovery = gamma * i * dt
+    p_no_change = 1 - p_infection - p_recovery
+
+    return p_infection, p_recovery, p_no_change
+
+def one_sis_transition(i, N, beta, gamma, dt, rng):
+    p_infection, p_recovery, p_no_change = sis_probabilities(
+        i, N, beta, gamma, dt
+    )
+
+    if p_no_change &lt; -1e-12:
+        raise ValueError("dt gives invalid transition probabilities.")
+
+    u = rng.random()
+
+    if u &lt; p_infection:
+        return i + 1, "infection"
+    elif u &lt; p_infection + p_recovery:
+        return i - 1, "recovery"
+    else:
+        return i, "no change"
+
+# Population, parameters and initial state
+N = 200
+beta = 0.25
+gamma = 0.20
+dt = 0.01
+initial_I = 5
+max_days = 300
+seed = 7
+
+if N &lt;= 0:
+    raise ValueError("N must be positive.")
+
+if initial_I &lt; 0 or initial_I &gt; N:
+    raise ValueError("initial_I must be between 0 and N.")
+
+if beta &lt; 0 or gamma &lt; 0 or dt &lt;= 0:
+    raise ValueError("Rates must be non-negative and dt positive.")
+
+# Check dt at every possible infectious-count state
+state_grid = np.arange(N + 1)
+infection_probabilities = (
+    beta * (N - state_grid) * state_grid / N * dt
+)
+recovery_probabilities = gamma * state_grid * dt
+total_event_probabilities = (
+    infection_probabilities + recovery_probabilities
+)
+
+maximum_total_probability = total_event_probabilities.max()
+worst_state = int(total_event_probabilities.argmax())
+
+if maximum_total_probability &gt; 1 + 1e-12:
+    raise ValueError(
+        "dt is invalid somewhere in the SIS state space."
+    )
+
+print("Whole-state-space time-step check")
+print(f"Maximum infection + recovery probability: "
+      f"{maximum_total_probability:.4f}")
+print(f"This maximum occurs at I = {worst_state}")
+print()
+
+# Store and simulate one trajectory
+rng = np.random.default_rng(seed)
+I = initial_I
+times = [0.0]
+I_values = [I]
+events = ["initial state"]
+
+max_steps = int(max_days / dt)
+
+for step in range(max_steps):
+    I, event = one_sis_transition(
+        I, N, beta, gamma, dt, rng
+    )
+
+    times.append((step + 1) * dt)
+    I_values.append(I)
+    events.append(event)
+
+    if I == 0:
+        break
+
+trajectory = pd.DataFrame({
+    "time": times,
+    "S": N - np.array(I_values),
+    "I": I_values,
+    "event": events
+})
+
+# Validate the stored trajectory
+if not ((trajectory["S"] + trajectory["I"]) == N).all():
+    raise ValueError("Population conservation failed.")
+
+if (trajectory[["S", "I"]] &lt; 0).any().any():
+    raise ValueError("A compartment became negative.")
+
+final_time = trajectory["time"].iloc[-1]
+final_I = trajectory["I"].iloc[-1]
+peak_I = trajectory["I"].max()
+peak_time = trajectory.loc[
+    trajectory["I"].idxmax(), "time"
+]
+
+if final_I == 0:
+    outcome = "infection became extinct"
+else:
+    outcome = "infection remained at the time horizon"
+
+event_counts = (
+    trajectory["event"]
+    .value_counts()
+    .reindex(["infection", "recovery", "no change"], fill_value=0)
+)
+
+print("SIS trajectory summary")
+print(f"Seed: {seed}")
+print(f"Basic ratio beta/gamma: {beta / gamma:.3f}")
+print(f"Final time: {final_time:.2f} days")
+print(f"Outcome: {outcome}")
+print(f"Peak infectious count: {peak_I}")
+print(f"First time at peak: {peak_time:.2f} days")
+print()
+print("Event counts")
+print(event_counts.to_string())
+print()
+print("First 8 states")
+print(trajectory.head(8).to_string(index=False))
+print()
+print("Last 8 states")
+print(trajectory.tail(8).to_string(index=False))
+
+# Figure 1: one realised SIS path
+plt.figure(figsize=(9, 4.8))
+plt.step(trajectory["time"], trajectory["I"],
+         where="post", label="Infectious", color="#dc2626")
+plt.step(trajectory["time"], trajectory["S"],
+         where="post", label="Susceptible", color="#2563eb",
+         alpha=0.75)
+plt.xlabel("Time (days)")
+plt.ylabel("Number of people")
+plt.title("One stochastic SIS trajectory")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+# Figure 2: probabilities at every state
+no_change_probabilities = 1 - total_event_probabilities
+
+plt.figure(figsize=(9, 4.8))
+plt.plot(state_grid, infection_probabilities,
+         label="Infection: i to i + 1", color="#dc2626")
+plt.plot(state_grid, recovery_probabilities,
+         label="Recovery: i to i - 1", color="#2563eb")
+plt.plot(state_grid, no_change_probabilities,
+         label="No change: i to i", color="#16a34a")
+plt.xlabel("Current infectious count i")
+plt.ylabel("One-step probability")
+plt.title("SIS transition probabilities depend on the state")
+plt.ylim(0, 1.02)
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Read the two graphs differently</h2>
+<div class="table-wrap">
+<table class="compare-table">
+<thead><tr><th>Graph</th><th>Question answered</th><th>What it represents</th></tr></thead>
+<tbody>
+<tr><td>Trajectory graph</td><td>What happened in this simulation?</td><td>One randomly realised path through time.</td></tr>
+<tr><td>Probability-by-state graph</td><td>How does the model behave from each possible state?</td><td>The model's transition rule, not one realised path.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Do not interpret the probability curves as compartment trajectories. Their horizontal axis is the current state &#92;(i&#92;), not time.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What does (eta/gamma) tell us?</h2>
+<p>For this simple SIS model, the ratio:</p>
+<div class="math-box">
+&#92;[
+&#92;mathcal R_0=&#92;frac{&#92;beta}{&#92;gamma}
+&#92;]
+</div>
+<p>compares transmission with recovery near the disease-free state. If it exceeds 1, infection has an initial tendency to grow in the corresponding deterministic model.</p>
+<div class="warning-box">
+<p>&#92;(&#92;mathcal R_0&gt;1&#92;) does not guarantee growth in every stochastic realisation. With only a few infectious people, early recoveries can still send the DTMC to the absorbing state &#92;(I=0&#92;).</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why event counts are not counts of different people</h2>
+<p>In an SIS trajectory, one person can be infected, recover and later become infected again. Therefore the total number of infection events may exceed the population size.</p>
+<p>This differs from a closed SIR model, where a person enters the removed compartment after recovery and cannot be infected again. SIS has no conventional “final epidemic size” measured by a permanently removed compartment.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the model-specific code</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>susceptible = N - i</code></td><td>Reconstructs &#92;(S&#92;) from the one-dimensional infectious state.</td></tr>
+<tr><td><code>return i + 1</code></td><td>An infection moves the birth–death chain one state upward.</td></tr>
+<tr><td><code>return i - 1</code></td><td>A recovery returns one person to susceptibility and moves the chain downward.</td></tr>
+<tr><td><code>np.arange(N + 1)</code></td><td>Creates every infectious-count state from 0 through &#92;(N&#92;), including both boundaries.</td></tr>
+<tr><td><code>.argmax()</code></td><td>Returns the position where the total event probability is largest.</td></tr>
+<tr><td><code>N - np.array(I_values)</code></td><td>Calculates the complete susceptible trajectory from the stored infectious counts.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Change <code>seed = 7</code>. Compare early extinction with longer persistence.</li>
+<li>Set <code>initial_I = 1</code>. Explain why early chance events become especially influential.</li>
+<li>Use <code>beta = 0.15</code> and <code>gamma = 0.20</code>, so &#92;(&#92;beta/&#92;gamma&lt;1&#92;). Compare the trajectory.</li>
+<li>Increase <code>dt</code> gradually. Find when the whole-state-space validity check rejects it.</li>
+<li>Set <code>initial_I = N</code>. Confirm from the probability graph that infection probability is zero at the right boundary.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>The SIS model permits repeated circulation because recovery replenishes the susceptible group. Nevertheless, a finite closed stochastic population eventually can reach &#92;(I=0&#92;), after which the infection cannot return without importation.</p>
+<p>A trajectory that remains infectious at 300 days demonstrates persistence during the observation window. It does not prove permanent persistence. Similarly, an early extinction path does not prove that every introduction will fail.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has added</h2>
+<div class="summary-box">
+<ul>
+<li>SIS recovery returns people to susceptibility.</li>
+<li>Population conservation reduces the state to the single count &#92;(I_n&#92;).</li>
+<li>The process moves between neighbouring states &#92;(i-1,i,i+1&#92;).</li>
+<li>State 0 is absorbing, while state &#92;(N&#92;) allows recovery.</li>
+<li>A fixed time step must be valid across the whole state space.</li>
+<li>One person may contribute multiple infection events through reinfection.</li>
+</ul>
+<p>Lesson 8 turns to the SIR model, where recovery is irreversible and the removed compartment makes final epidemic size meaningful.</p>
+</div>
+</section>
+
+<nav class="lesson-nav">
+<a href="../complete-epidemic-trajectory/">← Previous lesson</a>
+<a href="../dtmc-sir-model/">Next lesson →</a>
+</nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
