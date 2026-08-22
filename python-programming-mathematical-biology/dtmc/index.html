@@ -1,1 +1,75 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Part 2: Discrete-Time Markov Chains taught through intuitive, fully explained and workable Python programs."><title>Part 2: Discrete-Time Markov Chains | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Python Programming</a><h1 class="section-title">Part 2: Discrete-Time Markov Chains</h1><div class="topic-grid"><a class="topic-card" href="states-time-steps-random-transitions/"><span class="topic-number">01</span><strong class="topic-name">States, fixed time steps and random transitions</strong></a><a class="topic-card" href="transition-probabilities-conditions/"><span class="topic-number">02</span><strong class="topic-name">Transition probabilities and their conditions</strong></a><a class="topic-card" href="infection-recovery-no-change/"><span class="topic-number">03</span><strong class="topic-name">Infection, recovery and no-change events</strong></a><a class="topic-card" href="uniform-random-numbers/"><span class="topic-number">04</span><strong class="topic-name">Uniform random numbers and probability intervals</strong></a><a class="topic-card" href="one-dtmc-transition/"><span class="topic-number">05</span><strong class="topic-name">Programming one DTMC transition</strong></a><a class="topic-card" href="complete-epidemic-trajectory/"><span class="topic-number">06</span><strong class="topic-name">Loops for a complete epidemic trajectory</strong></a><a class="topic-card" href="dtmc-sis-model/"><span class="topic-number">07</span><strong class="topic-name">Programming a DTMC SIS model</strong></a><a class="topic-card" href="dtmc-sir-model/"><span class="topic-number">08</span><strong class="topic-name">Programming a DTMC SIR model</strong></a><a class="topic-card" href="dtmc-seir-model/"><span class="topic-number">09</span><strong class="topic-name">Programming a DTMC SEIR model</strong></a><a class="topic-card" href="transition-matrices-probability-vectors/"><span class="topic-number">10</span><strong class="topic-name">Transition matrices and probability vectors</strong></a><a class="topic-card" href="matrix-updating/"><span class="topic-number">11</span><strong class="topic-name">Matrix updating through time</strong></a><a class="topic-card" href="many-dtmc-trajectories/"><span class="topic-number">12</span><strong class="topic-name">Simulating many independent trajectories</strong></a><a class="topic-card" href="extinction-major-outbreak-probabilities/"><span class="topic-number">13</span><strong class="topic-name">Extinction and major-outbreak probabilities</strong></a><a class="topic-card" href="dtmc-plots-tables/"><span class="topic-number">14</span><strong class="topic-name">Histograms, sample paths, probability plots and tables</strong></a></div></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A progressive Python pathway for discrete-time Markov-chain epidemic models, from states and probabilities to simulation, matrices and outbreak outcomes.">
+<title>Part 2: Discrete-Time Markov Chains | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<style>
+.path-intro{max-width:880px;margin-bottom:34px;color:#42564a}.stage{margin:42px 0}.stage:first-of-type{margin-top:24px}.stage-heading{margin:0 0 6px;color:#174c34}.stage-intro{margin:0 0 20px;color:#596a60}.lesson-card-copy{display:flex;flex-direction:column;gap:4px}.lesson-card-copy small{color:#637269;font-weight:400;line-height:1.35}.topic-card{align-items:flex-start}.coverage-box{margin-top:45px;padding:24px;background:#eaf4ee;border-radius:12px}.coverage-box h2{font-size:1.35rem}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Python Programming</a>
+<h1 class="section-title">Part 2: Discrete-Time Markov Chains</h1>
+<p class="path-intro">This pathway separates the DTMC ideas carefully. First define states and valid probabilities, then learn random selection and trajectory construction, apply the method to SIS, SIR and SEIR, and finally study distributions, repeated simulations and outbreak outcomes.</p>
+
+<section class="stage">
+<h2 class="stage-heading">Stage A: Define the stochastic model</h2>
+<p class="stage-intro">Understand what the system records, what probabilities must satisfy and how biological events determine possible transitions.</p>
+<div class="topic-grid">
+<a class="topic-card" href="states-time-steps-random-transitions/"><span class="topic-number">01</span><span class="lesson-card-copy"><strong>States, fixed time steps and random transitions</strong><small>Define states, state spaces, fixed times, the Markov property and one realised path—without calculating probabilities.</small></span></a>
+<a class="topic-card" href="transition-probabilities-conditions/"><span class="topic-number">02</span><span class="lesson-card-copy"><strong>Transition probabilities and their conditions</strong><small>Learn conditional transition notation, non-negativity, normalisation, boundary states and time-step validity.</small></span></a>
+<a class="topic-card" href="infection-recovery-no-change/"><span class="topic-number">03</span><span class="lesson-card-copy"><strong>Infection, recovery and no-change events</strong><small>Translate biological event mechanisms into model-specific transition probabilities and a remaining no-change probability.</small></span></a>
+</div>
+</section>
+
+<section class="stage">
+<h2 class="stage-heading">Stage B: Generate one stochastic trajectory</h2>
+<p class="stage-intro">Move from probabilities to random event selection, then apply one transition repeatedly while storing a valid path.</p>
+<div class="topic-grid">
+<a class="topic-card" href="uniform-random-numbers/"><span class="topic-number">04</span><span class="lesson-card-copy"><strong>Uniform random numbers and probability intervals</strong><small>Map one draw from &#92;(U[0,1)&#92;) to mutually exclusive outcomes and introduce reproducible random seeds.</small></span></a>
+<a class="topic-card" href="one-dtmc-transition/"><span class="topic-number">05</span><span class="lesson-card-copy"><strong>Programming one DTMC transition</strong><small>Combine the current state, valid probabilities and one random draw to produce exactly one next state.</small></span></a>
+<a class="topic-card" href="complete-epidemic-trajectory/"><span class="topic-number">06</span><span class="lesson-card-copy"><strong>Loops for a complete epidemic trajectory</strong><small>Repeat the one-step mechanism, store times and states, enforce boundaries and stop under stated conditions.</small></span></a>
+</div>
+</section>
+
+<section class="stage">
+<h2 class="stage-heading">Stage C: Build epidemic DTMC models</h2>
+<p class="stage-intro">Apply the common simulation mechanism to three biologically distinct compartment structures.</p>
+<div class="topic-grid">
+<a class="topic-card" href="dtmc-sis-model/"><span class="topic-number">07</span><span class="lesson-card-copy"><strong>Programming a DTMC SIS model</strong><small>Represent reinfection, infectious-count states, birth–death movement and the absorbing extinction state.</small></span></a>
+<a class="topic-card" href="dtmc-sir-model/"><span class="topic-number">08</span><span class="lesson-card-copy"><strong>Programming a DTMC SIR model</strong><small>Track susceptible, infectious and removed counts, irreversible recovery and final outbreak size.</small></span></a>
+<a class="topic-card" href="dtmc-seir-model/"><span class="topic-number">09</span><span class="lesson-card-copy"><strong>Programming a DTMC SEIR model</strong><small>Add exposed states, progression events and the extra probability constraints created by four compartments.</small></span></a>
+</div>
+</section>
+
+<section class="stage">
+<h2 class="stage-heading">Stage D: Calculate state distributions</h2>
+<p class="stage-intro">Study the matrix approach, which evolves an entire probability distribution rather than selecting one random trajectory.</p>
+<div class="topic-grid">
+<a class="topic-card" href="transition-matrices-probability-vectors/"><span class="topic-number">10</span><span class="lesson-card-copy"><strong>Transition matrices and probability vectors</strong><small>Construct a stochastic matrix, fix its row/column convention, represent an initial distribution and calculate one distribution update.</small></span></a>
+<a class="topic-card" href="matrix-updating/"><span class="topic-number">11</span><span class="lesson-card-copy"><strong>Matrix updating through time</strong><small>Repeat matrix multiplication, check probability conservation and compare exact state probabilities with trajectory simulation.</small></span></a>
+</div>
+</section>
+
+<section class="stage">
+<h2 class="stage-heading">Stage E: Estimate outcomes and communicate uncertainty</h2>
+<p class="stage-intro">Use independent simulations to estimate distributions and probabilities, then select visual and tabular summaries appropriate to discrete stochastic data.</p>
+<div class="topic-grid">
+<a class="topic-card" href="many-dtmc-trajectories/"><span class="topic-number">12</span><span class="lesson-card-copy"><strong>Simulating many independent trajectories</strong><small>Run Monte Carlo experiments, manage reproducibility, align paths and form empirical distributions.</small></span></a>
+<a class="topic-card" href="extinction-major-outbreak-probabilities/"><span class="topic-number">13</span><span class="lesson-card-copy"><strong>Extinction and major-outbreak probabilities</strong><small>Define outcome events and thresholds before estimating their probabilities and Monte Carlo uncertainty.</small></span></a>
+<a class="topic-card" href="dtmc-plots-tables/"><span class="topic-number">14</span><span class="lesson-card-copy"><strong>Histograms, sample paths, probability plots and tables</strong><small>Communicate individual paths, empirical distributions, state probabilities and biological conclusions without confusing them.</small></span></a>
+</div>
+</section>
+
+<section class="coverage-box">
+<h2>Coverage and non-duplication rule</h2>
+<p>Lessons 1–6 teach the generic DTMC mechanism once. Lessons 7–9 apply that mechanism to different biological models. Lessons 10–11 calculate probability distributions without random sampling. Lessons 12–14 use Monte Carlo simulation to estimate outcomes and communicate uncertainty. Each later lesson may reuse earlier code, but should explain only its genuinely new modelling or programming idea.</p>
+</section>
+</main>
+</body>
+</html>
