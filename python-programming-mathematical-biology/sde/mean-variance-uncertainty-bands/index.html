@@ -1,1 +1,101 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Mean paths, variance and uncertainty bands in Python for mathematical biology."><title>Mean paths, variance and uncertainty bands | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">11</p><h1 class="section-title">Mean paths, variance and uncertainty bands</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Calculate SDE mean paths, variances, percentile bands and Monte Carlo uncertainty in Python."><title>Mean paths, variance and uncertainty bands | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">11</p><h1 class="section-title">Mean paths, variance and uncertainty bands</h1><p class="lesson-intro">An ensemble becomes scientifically useful when its centre, spread and simulation error are calculated and labelled correctly.</p>
+<section class="lesson-section"><h2>Time-specific ensemble summaries</h2><p>For &#92;(M&#92;) simulated paths evaluated at time &#92;(t_n&#92;), the sample mean and variance are</p>
+<div class="math-box">&#92;[&#92;overline X(t_n)=&#92;frac{1}{M}&#92;sum_{r=1}^{M}X_r(t_n),&#92;]</div>
+<div class="math-box">&#92;[s^2(t_n)=&#92;frac{1}{M-1}&#92;sum_{r=1}^{M}[X_r(t_n)-&#92;overline X(t_n)]^2.&#92;]</div>
+<p>The mean may be fractional even when the biological variable represents people.</p></section>
+<section class="lesson-section"><h2>Three different intervals</h2>
+<table><thead><tr><th>Display</th><th>Interpretation</th></tr></thead><tbody><tr><td>Mean ± one SD</td><td>Scale of path-to-path spread; not generally a fixed probability interval.</td></tr><tr><td>5th–95th percentiles</td><td>Central 90% of simulated outcomes at each time.</td></tr><tr><td>Mean ± 1.96 SE</td><td>Monte Carlo uncertainty in the estimated mean, where &#92;(&#92;mathrm{SE}=s/&#92;sqrt M&#92;).</td></tr></tbody></table>
+<p>These answer different questions and must not share the vague label “confidence band.”</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Mean, variance and bands</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+N = 500
+I0 = 10
+beta = 0.25
+gamma = 0.15
+T = 80
+dt = 0.02
+M = 1000
+seed = 94
+
+steps = int(round(T / dt))
+times = np.linspace(0, T, steps + 1)
+rng = np.random.default_rng(seed)
+
+I = np.zeros((M, steps + 1))
+I[:, 0] = I0
+
+for n in range(steps):
+    current = I[:, n]
+    infection_rate = beta * (N - current) * current / N
+    recovery_rate = gamma * current
+    drift = infection_rate - recovery_rate
+    diffusion = np.sqrt(np.maximum(
+        infection_rate + recovery_rate, 0
+    ))
+    dW = np.sqrt(dt) * rng.normal(0, 1, size=M)
+    I[:, n + 1] = np.clip(
+        current + drift * dt + diffusion * dW,
+        0, N
+    )
+
+mean_I = I.mean(axis=0)
+variance_I = I.var(axis=0, ddof=1)
+sd_I = np.sqrt(variance_I)
+lower_quantile = np.quantile(I, 0.05, axis=0)
+upper_quantile = np.quantile(I, 0.95, axis=0)
+
+standard_error = sd_I / np.sqrt(M)
+mean_ci_lower = mean_I - 1.96 * standard_error
+mean_ci_upper = mean_I + 1.96 * standard_error
+
+selected_days = [0, 10, 20, 40, 60, 80]
+indices = [int(day / dt) for day in selected_days]
+
+summary = pd.DataFrame({
+    "day": selected_days,
+    "mean I": mean_I[indices],
+    "variance I": variance_I[indices],
+    "SD I": sd_I[indices],
+    "5th percentile": lower_quantile[indices],
+    "95th percentile": upper_quantile[indices],
+    "MC SE of mean": standard_error[indices]
+})
+
+print(summary.round(3).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.2))
+plt.fill_between(
+    times, lower_quantile, upper_quantile,
+    color="#b9ddc7", alpha=0.75,
+    label="5th–95th percentiles"
+)
+plt.plot(times, mean_I, color="#174c34",
+         linewidth=2, label="Mean path")
+plt.xlabel("Time (days)")
+plt.ylabel("Infectious population")
+plt.title("Path variability: central 90% simulation band")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+plt.figure(figsize=(9.5, 5.2))
+plt.fill_between(
+    times, mean_ci_lower, mean_ci_upper,
+    color="#f2c7c2", alpha=0.8,
+    label="Approximate 95% Monte Carlo interval for mean"
+)
+plt.plot(times, mean_I, color="#b42318",
+         linewidth=1.8, label="Estimated mean")
+plt.xlabel("Time (days)")
+plt.ylabel("Mean infectious population")
+plt.title("Precision of the estimated mean")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Pointwise does not mean simultaneous</h2><p>The 5th and 95th percentiles are calculated separately at each time. Approximately 90% of path values lie within them at any selected time, but this does not mean 90% of complete trajectories remain inside the band for the entire interval.</p></section>
+<section class="lesson-section"><h2>Variance is not parameter uncertainty</h2><p>The variance above measures intrinsic path-to-path stochasticity with fixed parameters. If &#92;(&#92;beta&#92;) and &#92;(&#92;gamma&#92;) are uncertain, parameter uncertainty requires another layer of sampling or statistical inference.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now calculate time-dependent mean and sample variance, construct percentile bands, quantify Monte Carlo error in the mean, and state clearly which kind of uncertainty each display represents.</p></div></section><nav class="lesson-nav"><a href="../many-sde-trajectories/">← Previous lesson</a><a href="../compare-deterministic-ctmc-sde/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
