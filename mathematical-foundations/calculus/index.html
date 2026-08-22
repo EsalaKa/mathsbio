@@ -1,1 +1,44 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Calculus | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Mathematical Foundations</a><h1 class="section-title">Calculus</h1></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Learn derivatives, rates of change and integrals through intuitive population and epidemic examples.">
+<link rel="canonical" href="https://mathsbio.com/mathematical-foundations/calculus/">
+<title>Calculus | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a><a href="../">Foundations</a></nav></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Mathematical Foundations</a>
+<p class="section-number">01 · Lesson 02</p>
+<h1 class="section-title">Calculus</h1>
+<p class="lesson-intro">Calculus describes change and accumulation. Mathematical biology uses derivatives to represent how rapidly a biological quantity changes and integrals to recover the accumulated quantity from its rate.</p>
+
+<section class="lesson-section"><h2>Scenario: an infectious population is changing</h2><div class="scenario-box"><p>A health team records 20 infectious people on day 4 and 26 on day 5. The population increased by 6 people during one day. But did it increase steadily, or more rapidly during part of that day? Calculus lets us move from an average change over an interval to the instantaneous rate at a particular time.</p></div></section>
+
+<section class="lesson-section"><h2>Change over an interval</h2><p>Let &#92;(I(t)&#92;) denote the infectious population at time &#92;(t&#92;). Over a time interval from &#92;(t&#92;) to &#92;(t+&#92;Delta t&#92;), the change is</p><div class="math-box formula-line">&#92;[&#92;Delta I=I(t+&#92;Delta t)-I(t).&#92;]</div><p>The average rate of change is</p><div class="math-box formula-line">&#92;[&#92;frac{&#92;Delta I}{&#92;Delta t}=&#92;frac{I(t+&#92;Delta t)-I(t)}{&#92;Delta t}.&#92;]</div><p>In the scenario, this is &#92;(6/1=6&#92;) people per day. The units matter: population change has units of people, whereas its rate has units of people per day.</p></section>
+
+<section class="lesson-section"><h2>The derivative</h2><p>The derivative is the limiting value of the average rate as the time interval becomes arbitrarily small:</p><div class="math-box formula-line">&#92;[&#92;frac{dI}{dt}=&#92;lim_{&#92;Delta t&#92;to0}&#92;frac{I(t+&#92;Delta t)-I(t)}{&#92;Delta t}.&#92;]</div><p>The notation &#92;(dI/dt&#92;) is read “the derivative of &#92;(I&#92;) with respect to &#92;(t&#92;).” It represents an instantaneous rate, not ordinary division by a tiny number.</p><table class="result-table"><thead><tr><th>Derivative value</th><th>Local biological interpretation</th></tr></thead><tbody><tr><td>&#92;(dI/dt&gt;0&#92;)</td><td>The infectious population is increasing</td></tr><tr><td>&#92;(dI/dt=0&#92;)</td><td>It is momentarily neither increasing nor decreasing</td></tr><tr><td>&#92;(dI/dt&lt;0&#92;)</td><td>It is decreasing</td></tr></tbody></table><div class="technical-box"><p>A zero derivative at one time does not necessarily mean the population remains constant. It may be a peak, a trough, or a temporary horizontal point.</p></div></section>
+
+<section class="lesson-section"><h2>Derivative as the slope of a graph</h2><p>On a graph of &#92;(I(t)&#92;) against time, the average rate is the slope of a line joining two points. The instantaneous derivative is the slope of the tangent line at one point.</p><ul><li>A steep upward tangent gives a large positive derivative.</li><li>A horizontal tangent gives derivative zero.</li><li>A steep downward tangent gives a large negative derivative.</li></ul><p>This connects a formula, a numerical rate and the visible shape of a biological trajectory.</p></section>
+
+<section class="lesson-section"><h2>A simple growth example</h2><p>Suppose</p><div class="math-box formula-line">&#92;[N(t)=N_0e^{rt},&#92;]</div><p>where &#92;(N_0&#92;) is the initial population and &#92;(r&#92;) is a constant per-capita growth rate. Differentiating gives</p><div class="math-box formula-line">&#92;[&#92;frac{dN}{dt}=rN_0e^{rt}=rN(t).&#92;]</div><p>The total growth rate is proportional to the current population. If the population doubles, the predicted number of new individuals per unit time also doubles. The parameter &#92;(r&#92;) has units of inverse time, such as per day.</p></section>
+
+<section class="lesson-section"><h2>Partial derivatives</h2><p>A biological quantity may depend on several variables. If infection incidence is</p><div class="math-box formula-line">&#92;[F(S,I)=&#92;beta&#92;frac{SI}{N},&#92;]</div><p>then a partial derivative changes one input while temporarily holding the other inputs fixed:</p><div class="math-box formula-line">&#92;[&#92;frac{&#92;partial F}{&#92;partial I}=&#92;beta&#92;frac{S}{N}.&#92;]</div><p>This measures the local sensitivity of infection flow to the infectious population for a fixed susceptible population. “Held fixed” is a mathematical comparison condition; it does not claim that compartments remain fixed through real epidemic time.</p></section>
+
+<section class="lesson-section"><h2>Accumulation and the integral</h2><p>Differentiation moves from a quantity to its rate. Integration moves from a rate to accumulated change. If &#92;(b(t)&#92;) is a birth rate in individuals per day, the total births between days &#92;(a&#92;) and &#92;(b&#92;) are</p><div class="math-box formula-line">&#92;[&#92;int_a^b b(t)&#92;,dt.&#92;]</div><p>Geometrically, a definite integral is the signed area between the rate curve and the horizontal axis. Positive rate contributes positive accumulation; negative rate contributes negative change.</p><p>If the net population rate is &#92;(g(t)&#92;), then</p><div class="math-box formula-line">&#92;[N(t)=N(0)+&#92;int_0^t g(s)&#92;,ds.&#92;]</div><p>The integration variable &#92;(s&#92;) is temporary. It prevents confusion between the upper time &#92;(t&#92;) and the times being accumulated inside the integral.</p></section>
+
+<section class="lesson-section"><h2>The Fundamental Theorem of Calculus</h2><p>The Fundamental Theorem connects differentiation and integration. If</p><div class="math-box formula-line">&#92;[A(t)=&#92;int_0^t g(s)&#92;,ds,&#92;]</div><p>then, under standard continuity conditions,</p><div class="math-box formula-line">&#92;[&#92;frac{dA}{dt}=g(t).&#92;]</div><p>Thus, accumulating a rate and then differentiating returns the current rate. This is why a differential-equation model and its integral form describe the same continuous trajectory when the required regularity conditions hold.</p></section>
+
+<section class="lesson-section"><h2>What calculus does—and does not—say</h2><ul><li>A derivative describes local change; it does not explain the biological mechanism unless the model supplies one.</li><li>An integral accumulates a stated rate; its meaning depends on the rate’s units and sign.</li><li>A continuous model may produce fractional population values. These represent an approximation or expected density, not literal fractions of individuals.</li><li>Differentiability is a model assumption. A sudden intervention may require a piecewise-defined rate.</li><li>Observed data at separated times give finite differences. An instantaneous derivative is inferred through a model or smoothing assumption.</li></ul></section>
+
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now distinguish change from rate of change, interpret a derivative by its sign, slope and units, understand partial derivatives, use integrals for accumulation, and recognise the connection between a rate equation and its integral form. The next lesson uses these ideas to construct ordinary differential equations.</p></div></section>
+<nav class="lesson-nav"><a href="../functions-and-graphs/">← Previous lesson</a><a href="../ordinary-differential-equations/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
