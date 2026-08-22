@@ -1,1 +1,70 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Expectation and the sample mean in Python for mathematical biology."><title>Expectation and the sample mean | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">02</p><h1 class="section-title">Expectation and the sample mean</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Understand epidemic expectation and estimate it with a sample mean in Python."><title>Expectation and the sample mean | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">02</p><h1 class="section-title">Expectation and the sample mean</h1><p class="lesson-intro">Expectation is the centre of a model distribution; the sample mean is its finite-simulation estimate.</p>
+<section class="lesson-section"><h2>Expectation is a probability-weighted average</h2>
+<p>If a discrete random variable &#92;(X&#92;) can take values &#92;(x&#92;) with probabilities &#92;(&#92;Pr(X=x)&#92;), then</p>
+<div class="math-box">&#92;[&#92;mathbb E[X]=&#92;sum_x x&#92;,&#92;Pr(X=x).&#92;]</div>
+<p>Expectation describes the long-run centre of repeated outcomes. It need not be an attainable individual outcome: an expected infectious count may be 18.4 although every CTMC realisation is an integer.</p></section>
+<section class="lesson-section"><h2>Sample mean estimates expectation</h2>
+<p>When the theoretical probabilities are unavailable, simulate &#92;(M&#92;) independent values &#92;(X_1,&#92;ldots,X_M&#92;) and calculate</p>
+<div class="math-box">&#92;[&#92;overline X_M=&#92;frac{1}{M}&#92;sum_{r=1}^{M}X_r.&#92;]</div>
+<p>The expectation is a property of the model distribution. The sample mean is a random estimate computed from a finite sample.</p></section>
+<section class="lesson-section"><h2>Why independence matters</h2><p>Each epidemic must use new random draws while keeping the same model and initial conditions. Copying one outcome many times does not provide more information about the distribution.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2><p>Estimate &#92;(&#92;mathbb E[I(20)]&#92;) from 5,000 independent SIS CTMC simulations and watch the running sample mean stabilise.</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Expectation and sample mean</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def infectious_at_time(rng, N, I0, beta, gamma, T):
+    I = I0
+    time = 0.0
+
+    while I > 0 and time < T:
+        infection_rate = beta * (N - I) * I / N
+        recovery_rate = gamma * I
+        total_rate = infection_rate + recovery_rate
+        wait = rng.exponential(1 / total_rate)
+
+        if time + wait > T:
+            break
+
+        time += wait
+        if rng.random() < infection_rate / total_rate:
+            I += 1
+        else:
+            I -= 1
+
+    return I
+
+M = 5000
+rng = np.random.default_rng(220)
+sample = np.array([
+    infectious_at_time(rng, 100, 5, 0.25, 0.15, 20)
+    for _ in range(M)
+])
+
+running_mean = np.cumsum(sample) / np.arange(1, M + 1)
+
+sizes = [10, 50, 100, 500, 1000, 5000]
+summary = pd.DataFrame({
+    "sample size": sizes,
+    "sample mean": [running_mean[m - 1] for m in sizes]
+})
+
+print("Estimates of E[I(20)]")
+print(summary.round(4).to_string(index=False))
+print()
+print(f"Final estimate: {sample.mean():.4f}")
+
+plt.figure(figsize=(9.5, 5.1))
+plt.plot(np.arange(1, M + 1), running_mean,
+         color="#174c34")
+plt.axhline(sample.mean(), color="#b42318",
+            linestyle="--", label="Final estimate")
+plt.xlabel("Number of independent simulations")
+plt.ylabel("Running sample mean of I(20)")
+plt.title("The sample mean stabilises as evidence accumulates")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Interpretation</h2><p>The running mean fluctuates strongly when only a few epidemics have been observed. It becomes more stable with more independent runs, but a finite sample mean is still an estimate. Lesson 04 will quantify Monte Carlo error.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now distinguish expectation from one outcome and from a finite sample mean, calculate a running mean, and explain why larger independent samples provide more stable estimates.</p></div></section><nav class="lesson-nav"><a href="../random-variables-epidemic-samples/">← Previous lesson</a><a href="../second-moments-variance-covariance/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
