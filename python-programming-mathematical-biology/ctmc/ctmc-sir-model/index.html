@@ -1,1 +1,244 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Programming a CTMC SIR model in Python for mathematical biology."><title>Programming a CTMC SIR model | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">08</p><h1 class="section-title">Programming a CTMC SIR model</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Program and interpret a continuous-time Markov-chain SIR epidemic model with Gillespie simulation in Python.">
+<title>Programming a CTMC SIR model | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:center;margin:22px 0}.node{padding:21px;text-align:center;background:#eaf4ee;border:2px solid #9fc8b1;border-radius:12px}.arrow{color:#174c34;font-weight:700;text-align:center}.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{padding:20px;background:#eaf4ee;border-radius:10px}.outcome{padding:22px;background:#f1f8f4;border:2px solid #9fc8b1;border-radius:11px}@media(max-width:760px){.flow,.two{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+</style></head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Continuous-Time Markov Chains</a>
+<p class="section-number">08</p>
+<h1 class="section-title">Programming a CTMC SIR model</h1>
+<p class="lesson-intro">The SIR model changes one biological assumption from SIS: recovery gives lasting removal from infection. This creates an accumulating removed compartment and a well-defined final epidemic size.</p>
+
+<section class="lesson-section">
+<h2>Scenario: immunity after recovery</h2>
+<p>A closed community contains 200 people. Three are initially infectious and the other 197 are susceptible. An infectious person either infects a susceptible person or recovers. Recovered people do not return to susceptibility during the modelled period.</p>
+<div class="flow">
+<div class="node"><strong>Susceptible</strong><br>&#92;(S&#92;)</div><div class="arrow">infection →</div>
+<div class="node"><strong>Infectious</strong><br>&#92;(I&#92;)</div><div class="arrow">recovery →</div>
+<div class="node"><strong>Removed</strong><br>&#92;(R&#92;)</div>
+</div>
+<div class="outcome"><strong>Key consequence:</strong> every infection permanently moves one person out of &#92;(S&#92;), and every recovery permanently moves one person into &#92;(R&#92;). Hence &#92;(R&#92;) never decreases and the epidemic cannot persist indefinitely through reinfection.</div>
+</section>
+
+<section class="lesson-section">
+<h2>State changes and event rates</h2>
+<div class="two">
+<div class="card"><h3>Infection</h3><div class="math-box">&#92;[(S,I,R)&#92;to(S-1,I+1,R),&#92;qquad a_1=&#92;beta&#92;frac{SI}{N}.&#92;]</div><p>One susceptible person becomes infectious. Total population is unchanged.</p></div>
+<div class="card"><h3>Recovery</h3><div class="math-box">&#92;[(S,I,R)&#92;to(S,I-1,R+1),&#92;qquad a_2=&#92;gamma I.&#92;]</div><p>One infectious person enters the removed class permanently.</p></div>
+</div>
+<p>The total event rate is &#92;(a_0=a_1+a_2&#92;). When &#92;(I=0&#92;), both rates are zero, so the epidemic has ended.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why SIR needs more state information than SIS</h2>
+<p>In SIS, &#92;(S=N-I&#92;), so &#92;(I&#92;) alone determines the state. In SIR, the same infectious count can occur with different susceptible counts and therefore different infection rates.</p>
+<div class="table-wrap"><table><thead><tr><th>State</th><th>&#92;(I&#92;)</th><th>&#92;(S&#92;)</th><th>Infection rate</th></tr></thead><tbody>
+<tr><td>&#92;((190,5,5)&#92;)</td><td>5</td><td>190</td><td>&#92;(&#92;beta(190)(5)/N&#92;)</td></tr>
+<tr><td>&#92;((50,5,145)&#92;)</td><td>5</td><td>50</td><td>&#92;(&#92;beta(50)(5)/N&#92;)</td></tr>
+</tbody></table></div>
+<p>Thus we store &#92;(S&#92;), &#92;(I&#92;) and &#92;(R&#92;), although conservation &#92;(S+I+R=N&#92;) means only two are mathematically independent.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Two important outcomes</h2>
+<div class="two">
+<div class="card"><h3>Peak infectious count</h3><p>The largest value of &#92;(I&#92;) along one random trajectory. Its time is also random.</p></div>
+<div class="card"><h3>Final epidemic size</h3><p>The total number infected during the outbreak:</p><div class="math-box">&#92;[N-S_{&#92;mathrm{final}}=R_{&#92;mathrm{final}}-R_0^{&#92;mathrm{initial}}.&#92;]</div></div>
+</div>
+<p>Here the initial removed count is zero, so final epidemic size equals final &#92;(R&#92;). Do not confuse the initial compartment value &#92;(R(0)&#92;) with the reproduction number, commonly also written &#92;(&#92;mathcal R_0&#92;).</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>Run one complete SIR epidemic. The first figure shows the compartment path; the second shows how the cumulative number ever infected grows until extinction.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>CTMC SIR model</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Initial population
+S, I, R = 197, 3, 0
+N = S + I + R
+
+# Per-day parameters
+beta = 0.25
+gamma = 0.10
+
+time = 0.0
+seed = 14
+rng = np.random.default_rng(seed)
+
+# Store the initial state
+times = [time]
+S_values = [S]
+I_values = [I]
+R_values = [R]
+event_rows = []
+
+while I > 0:
+    # Rates must use the current S and I
+    infection_rate = beta * S * I / N
+    recovery_rate = gamma * I
+    total_rate = infection_rate + recovery_rate
+
+    if total_rate <= 0:
+        raise ValueError("A positive-I state needs a positive rate.")
+
+    # Time until the next event
+    waiting_time = rng.exponential(1 / total_rate)
+    time += waiting_time
+
+    # Select and apply exactly one event
+    if rng.random() < infection_rate / total_rate:
+        S -= 1
+        I += 1
+        event = "infection"
+    else:
+        I -= 1
+        R += 1
+        event = "recovery"
+
+    # Validate the biological state
+    if min(S, I, R) < 0:
+        raise ValueError("A compartment became negative.")
+
+    if S + I + R != N:
+        raise ValueError("Population conservation failed.")
+
+    times.append(time)
+    S_values.append(S)
+    I_values.append(I)
+    R_values.append(R)
+
+    event_rows.append({
+        "time": time,
+        "waiting time": waiting_time,
+        "event": event,
+        "S": S,
+        "I": I,
+        "R": R
+    })
+
+trajectory = pd.DataFrame({
+    "time": times,
+    "S": S_values,
+    "I": I_values,
+    "R": R_values
+})
+event_log = pd.DataFrame(event_rows)
+
+peak_I = int(trajectory["I"].max())
+peak_time = trajectory.loc[
+    trajectory["I"].idxmax(), "time"
+]
+final_size = N - S
+attack_proportion = final_size / N
+
+print("CTMC SIR summary")
+print(f"Reproduction-number reference: beta/gamma = {beta/gamma:.2f}")
+print(f"Epidemic duration: {time:.3f} days")
+print(f"Number of events: {len(event_log)}")
+print(f"Peak I: {peak_I}")
+print(f"First time at peak: {peak_time:.3f} days")
+print(f"Final state [S, I, R]: [{S}, {I}, {R}]")
+print(f"Final epidemic size: {final_size}")
+print(f"Attack proportion: {attack_proportion:.1%}")
+
+print()
+print("Event counts")
+print(event_log["event"].value_counts().to_string())
+print()
+print("Last 8 events")
+print(event_log.tail(8).round(4).to_string(index=False))
+
+# Figure 1: all compartments
+plt.figure(figsize=(9.5, 5.2))
+plt.step(times, S_values, where="post",
+         label="Susceptible", color="#2563eb")
+plt.step(times, I_values, where="post",
+         label="Infectious", color="#dc2626")
+plt.step(times, R_values, where="post",
+         label="Removed", color="#39815e")
+plt.xlabel("Continuous time (days)")
+plt.ylabel("Number of people")
+plt.title("One complete CTMC SIR epidemic")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+# Figure 2: cumulative number ever infected
+ever_infected = N - trajectory["S"]
+
+plt.figure(figsize=(9.5, 4.8))
+plt.step(trajectory["time"], ever_infected,
+         where="post", color="#6d3fc0")
+plt.scatter([time], [final_size],
+            color="#174c34", zorder=3,
+            label=f"Final size = {final_size}")
+plt.xlabel("Continuous time (days)")
+plt.ylabel("Cumulative number ever infected")
+plt.title("Growth of the epidemic's final size")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the stopping rule</h2>
+<pre><code>while I &gt; 0:</code></pre>
+<p>The loop runs while at least one infectious individual can cause infection or recovery. Once &#92;(I=0&#92;), no infectious individual remains, both rates are zero, and the outbreak is absorbed. Unlike the preceding general Gillespie lesson, no arbitrary time horizon is needed to complete this closed SIR outbreak.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the outcome code</h2>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Biological meaning</th></tr></thead><tbody>
+<tr><td><code>final_size = N - S</code></td><td>Everyone who is no longer susceptible has experienced infection.</td></tr>
+<tr><td><code>attack_proportion = final_size / N</code></td><td>Proportion of the initial population infected during this outbreak.</td></tr>
+<tr><td><code>trajectory["I"].idxmax()</code></td><td>Returns the row at which the largest recorded infectious count first occurs.</td></tr>
+<tr><td><code>event_log.tail(8)</code></td><td>Displays the final eight jumps leading to extinction.</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>At first, many susceptible people are available, so infection may outcompete recovery. Later, susceptible depletion reduces &#92;(&#92;beta SI/N&#92;) even if infectious people remain. Eventually recoveries remove the last infectious individuals.</p>
+<p>One trajectory does not provide the probability distribution of peak size, duration or final size. It is one possible outbreak. A later lesson will simulate many independent trajectories to estimate those distributions.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Set <code>I = 1</code> and <code>S = 199</code>. Try several seeds and look for early extinction.</li>
+<li>Reduce <code>beta</code> below <code>gamma</code>. Compare peak and final size.</li>
+<li>Start with 50 people already removed while keeping &#92;(N=200&#92;). Examine how fewer susceptible people change the infection rate.</li>
+<li>Check the identity: number of infection events plus the initial infectious count equals final &#92;(R&#92;).</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>What is unique to this lesson?</h2>
+<div class="summary-box"><p>You have programmed permanent removal, susceptible depletion, certain eventual epidemic termination, and final epidemic size. The next SEIR lesson adds a latent exposed stage: infection and infectiousness no longer begin at the same event.</p></div>
+</section>
+
+<nav class="lesson-nav"><a href="../ctmc-sis-model/">← Previous lesson</a><a href="../ctmc-seir-model/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body></html>
