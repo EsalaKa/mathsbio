@@ -1,1 +1,41 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Functions and graphs | MathsBio</title><link rel="stylesheet" href="../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Mathematical Foundations</a><h1 class="section-title">Functions and graphs</h1></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Learn functions, variables, domains, ranges and graphs through biological examples.">
+<link rel="canonical" href="https://mathsbio.com/mathematical-foundations/functions-and-graphs/">
+<title>Functions and graphs | MathsBio</title>
+<link rel="stylesheet" href="../../style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a><a href="../">Foundations</a></nav></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Mathematical Foundations</a>
+<p class="section-number">01 · Lesson 01</p>
+<h1 class="section-title">Functions and graphs</h1>
+<p class="lesson-intro">A function is a rule connecting an input to one definite output. In mathematical biology, functions let us describe how a biological quantity depends on time, population size, dose, temperature or another measurable quantity.</p>
+
+<section class="lesson-section"><h2>Biological scenario</h2><div class="scenario-box"><p>Suppose a bacterial population begins with 100 cells and doubles every hour. We want a rule that gives the population at any time, not a separate calculation for every hour.</p></div><p>Let &#92;(t&#92;) be time in hours and &#92;(N(t)&#92;) be the number of bacteria. The model is</p><div class="math-box formula-line">&#92;[N(t)=100&#92;,2^t.&#92;]</div><p>The notation &#92;(N(t)&#92;) is read “&#92;(N&#92;) of &#92;(t&#92;).” It means that the population value depends on the selected time.</p></section>
+
+<section class="lesson-section"><h2>Input, rule and output</h2><table class="result-table"><thead><tr><th>Part</th><th>In the example</th><th>Meaning</th></tr></thead><tbody><tr><td>Input</td><td>&#92;(t&#92;)</td><td>The time supplied to the function</td></tr><tr><td>Rule</td><td>&#92;(100&#92;,2^t&#92;)</td><td>The mathematical operation applied</td></tr><tr><td>Output</td><td>&#92;(N(t)&#92;)</td><td>The predicted bacterial population</td></tr></tbody></table><p>For example,</p><div class="math-box formula-line">&#92;[N(0)=100,&#92;qquad N(1)=200,&#92;qquad N(3)=800.&#92;]</div><p>A function must give only one output for each permitted input. Different inputs may produce the same output, but one input cannot be assigned two conflicting outputs by the same function.</p></section>
+
+<section class="lesson-section"><h2>Independent and dependent variables</h2><p>The input is often called the <strong>independent variable</strong>. The output is the <strong>dependent variable</strong> because its value depends on the input.</p><div class="technical-box"><p>In &#92;(N(t)&#92;), time &#92;(t&#92;) is the independent variable and population &#92;(N&#92;) is the dependent variable. This terminology describes the mathematical relationship; it does not prove that time biologically causes every observed change.</p></div></section>
+
+<section class="lesson-section"><h2>Domain and range</h2><p>The <strong>domain</strong> is the set of allowed inputs. The <strong>range</strong> is the set of outputs produced.</p><p>Algebraically, &#92;(100&#92;,2^t&#92;) is defined for every real &#92;(t&#92;). Biologically, if the experiment begins at &#92;(t=0&#92;) and ends at 10 hours, a suitable domain is &#92;(0&#92;le t&#92;le10&#92;). The biological context therefore restricts the mathematical domain.</p><p>The model predicts positive values, so its range over this experiment is &#92;(100&#92;le N(t)&#92;le102400&#92;). Whether such rapid growth remains realistic is a separate modelling question.</p></section>
+
+<section class="lesson-section"><h2>Tables and graphs show the same function</h2><table class="result-table"><thead><tr><th>Time &#92;(t&#92;)</th><th>Population &#92;(N(t)&#92;)</th></tr></thead><tbody><tr><td>0</td><td>100</td></tr><tr><td>1</td><td>200</td></tr><tr><td>2</td><td>400</td></tr><tr><td>3</td><td>800</td></tr><tr><td>4</td><td>1600</td></tr></tbody></table><p>On a graph, inputs are normally placed on the horizontal axis and outputs on the vertical axis. Each point &#92;((t,N(t))&#92;) records one input–output pair.</p><div class="interpretation-box"><p>A rising graph means the modelled quantity increases as the input increases. Its steepness indicates how rapidly it changes. The graph communicates the relationship visually; it does not add assumptions that are absent from the function.</p></div></section>
+
+<section class="lesson-section"><h2>Common functions in mathematical biology</h2><table class="result-table"><thead><tr><th>Function type</th><th>Example</th><th>Possible biological use</th></tr></thead><tbody><tr><td>Linear</td><td>&#92;(y=a+bx&#92;)</td><td>Approximately constant change over a limited range</td></tr><tr><td>Exponential</td><td>&#92;(N(t)=N_0e^{rt}&#92;)</td><td>Unrestricted population growth or decay</td></tr><tr><td>Logistic</td><td>&#92;(N(t)=K/(1+Ae^{-rt})&#92;)</td><td>Growth limited by carrying capacity</td></tr><tr><td>Saturating</td><td>&#92;(v(S)=V_{&#92;max}S/(K_M+S)&#92;)</td><td>Enzyme reaction rate versus substrate concentration</td></tr><tr><td>Periodic</td><td>&#92;(y(t)=A&#92;sin(&#92;omega t)+c&#92;)</td><td>Seasonal or circadian variation</td></tr></tbody></table></section>
+
+<section class="lesson-section"><h2>Parameters change the relationship</h2><p>In &#92;(N(t)=N_0e^{rt}&#92;), &#92;(t&#92;) is the variable, while &#92;(N_0&#92;) and &#92;(r&#92;) are parameters. The initial value &#92;(N_0&#92;) moves the starting height. The growth-rate parameter &#92;(r&#92;) changes how quickly the curve rises or falls.</p><ul><li>&#92;(r&gt;0&#92;): exponential growth;</li><li>&#92;(r=0&#92;): constant population;</li><li>&#92;(r&lt;0&#92;): exponential decline.</li></ul><p>A parameter comparison should change one declared assumption while keeping the others fixed, unless an interaction is deliberately being studied.</p></section>
+
+<section class="lesson-section"><h2>Conditions and limitations</h2><ul><li>State the input, output and their units.</li><li>Use a biologically meaningful domain.</li><li>Do not interpret a curve outside the range where the model assumptions are reasonable.</li><li>Distinguish a model prediction from an observed data point.</li><li>Remember that a good fit does not by itself establish a biological mechanism.</li></ul></section>
+
+<section class="lesson-section"><h2>What this lesson establishes</h2><div class="summary-box"><p>You can now identify a function’s input, output, rule, domain and range; read function notation; interpret tables and graphs; and explain how variables and parameters play different roles in a biological model.</p></div></section>
+<nav class="lesson-nav"><a href="../">← Mathematical Foundations index</a><a href="../calculus/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body></html>
