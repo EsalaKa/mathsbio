@@ -1,1 +1,96 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="From deterministic change to stochastic change in Python for mathematical biology."><title>From deterministic change to stochastic change | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">01</p><h1 class="section-title">From deterministic change to stochastic change</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Move intuitively from deterministic epidemic change to stochastic change with workable Python."><title>From deterministic change to stochastic change | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">01</p><h1 class="section-title">From deterministic change to stochastic change</h1><p class="lesson-intro">A deterministic epidemic model gives the expected direction of change. A stochastic model also represents the variation between possible epidemic histories.</p>
+<section class="lesson-section"><h2>Scenario: the same epidemic state can change differently</h2>
+<p>In a population of 1,000, suppose &#92;(S=900&#92;) and &#92;(I=100&#92;). Infection occurs at rate &#92;(a_{&#92;mathrm{inf}}=&#92;beta SI/N&#92;) and recovery at rate &#92;(a_{&#92;mathrm{rec}}=&#92;gamma I&#92;).</p>
+<p>With &#92;(&#92;beta=0.30&#92;) and &#92;(&#92;gamma=0.10&#92;), these rates are 27 and 10 people per day. The deterministic model uses their difference:</p>
+<div class="math-box">&#92;[&#92;frac{dI}{dt}=27-10=17.&#92;]</div>
+</section>
+<section class="lesson-section"><h2>What the deterministic change means</h2>
+<p>Over &#92;(&#92;Delta t=0.1&#92;) day, Euler’s method gives &#92;(&#92;Delta I&#92;approx17(0.1)=1.7&#92;). This is an expected net change across many comparable epidemics. It does not mean that exactly 1.7 people change state.</p>
+<div class="definition-box"><p>A deterministic model follows one average-direction path. It does not show the probability of no infections, unusually many infections, or early extinction.</p></div>
+</section>
+<section class="lesson-section"><h2>Actual event counts fluctuate</h2>
+<p>During a short interval, let &#92;(K_{&#92;mathrm{inf}}&#92;) and &#92;(K_{&#92;mathrm{rec}}&#92;) be random infection and recovery counts. Then</p>
+<div class="math-box">&#92;[&#92;Delta I=K_{&#92;mathrm{inf}}-K_{&#92;mathrm{rec}},&#92;qquad &#92;mathbb E[&#92;Delta I]&#92;approx(a_{&#92;mathrm{inf}}-a_{&#92;mathrm{rec}})&#92;Delta t.&#92;]</div>
+<p>Different repetitions give integer changes above or below 1.7, while their average approaches 1.7.</p>
+</section>
+<section class="lesson-section"><h2>Why introduce an SDE?</h2>
+<p>An SDE preserves the deterministic average direction but adds continuous random fluctuation:</p>
+<div class="math-box">&#92;[dX(t)=f(X(t))dt+g(X(t))dW(t).&#92;]</div>
+<table><thead><tr><th>Part</th><th>Role</th></tr></thead><tbody><tr><td>&#92;(f(X)dt&#92;)</td><td>Expected systematic change over a short time.</td></tr><tr><td>&#92;(g(X)dW&#92;)</td><td>Random deviation whose scale depends on state and interval length.</td></tr></tbody></table>
+<p>This page motivates the two parts. The next lessons define drift, diffusion and Brownian increments precisely.</p>
+</section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<p>Run 10,000 short-interval repetitions. The red line is the deterministic expected change; the bars show possible integer stochastic changes.</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Expected change versus random change</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+N = 1000
+S = 900
+I = 100
+beta = 0.30
+gamma = 0.10
+dt = 0.10
+repetitions = 10000
+seed = 5
+rng = np.random.default_rng(seed)
+
+infection_rate = beta * S * I / N
+recovery_rate = gamma * I
+deterministic_change = (
+    infection_rate - recovery_rate
+) * dt
+
+# Short-interval event-count approximation
+infections = rng.poisson(
+    infection_rate * dt, size=repetitions
+)
+recoveries = rng.poisson(
+    recovery_rate * dt, size=repetitions
+)
+random_changes = infections - recoveries
+
+summary = pd.DataFrame({
+    "quantity": [
+        "Deterministic expected change",
+        "Mean simulated change",
+        "SD of simulated changes",
+        "Minimum simulated change",
+        "Maximum simulated change"
+    ],
+    "value": [
+        deterministic_change,
+        random_changes.mean(),
+        random_changes.std(ddof=1),
+        random_changes.min(),
+        random_changes.max()
+    ]
+})
+
+print(summary.round(4).to_string(index=False))
+print()
+print("First 15 random net changes")
+print(random_changes[:15])
+
+bins = np.arange(
+    random_changes.min() - 0.5,
+    random_changes.max() + 1.5
+)
+plt.figure(figsize=(9, 5))
+plt.hist(random_changes, bins=bins,
+         color="#79ae90", edgecolor="white")
+plt.axvline(
+    deterministic_change, color="#b42318",
+    linestyle="--", linewidth=2,
+    label=f"Expected change = {deterministic_change:.1f}"
+)
+plt.xlabel("Net change in infectious people over 0.1 day")
+plt.ylabel("Number of repetitions")
+plt.title("Random changes vary around the deterministic expectation")
+plt.legend()
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div>
+</section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now distinguish expected deterministic change from one random realised change and explain why stochastic modelling matters even when the stochastic average resembles the deterministic result.</p></div></section><nav class="lesson-nav"><a href="../">← SDE index</a><a href="../drift-diffusion/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
