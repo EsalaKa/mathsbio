@@ -1,1 +1,99 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Expected infectious population and its variance in Python for mathematical biology."><title>Expected infectious population and its variance | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">11</p><h1 class="section-title">Expected infectious population and its variance</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Interpret expected infectious population, variance and standard deviation from moment equations."><title>Expected infectious population and its variance | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">11</p><h1 class="section-title">Expected infectious population and its variance</h1><p class="lesson-intro">Moment solutions become biologically useful when expected burden and variability are interpreted separately and together.</p>
+<section class="lesson-section"><h2>Two complementary summaries</h2>
+<div class="math-box">&#92;[&#92;mu_I(t)=&#92;mathbb E[I(t)],&#92;qquad &#92;sigma_I^2(t)=&#92;operatorname{Var}(I(t)).&#92;]</div>
+<p>The mean describes the ensemble centre at each time. Variance describes path-to-path spread around that mean. Neither is one realised epidemic.</p></section>
+<section class="lesson-section"><h2>Standard deviation and coefficient of variation</h2>
+<div class="math-box">&#92;[&#92;sigma_I(t)=&#92;sqrt{&#92;sigma_I^2(t)},&#92;qquad &#92;mathrm{CV}(t)=&#92;frac{&#92;sigma_I(t)}{&#92;mu_I(t)}.&#92;]</div>
+<p>Standard deviation has units of people. CV is dimensionless and measures variation relative to the mean, but becomes unstable when the mean is close to zero.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Interpreting mean and variance</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+N, I0 = 100, 5
+beta, gamma = 0.25, 0.15
+times = np.linspace(0, 60, 601)
+
+def rhs(t, y):
+    m1, m2 = y
+    m3 = 3 * m1 * m2 - 2 * m1 ** 3
+    dm1 = (beta - gamma) * m1 - beta * m2 / N
+    dm2 = (
+        (2 * (beta - gamma) - beta / N) * m2
+        - 2 * beta * m3 / N
+        + (beta + gamma) * m1
+    )
+    return [dm1, dm2]
+
+sol = solve_ivp(
+    rhs, (0, 60), [I0, I0 ** 2],
+    t_eval=times, rtol=1e-8, atol=1e-10
+)
+if not sol.success:
+    raise RuntimeError(sol.message)
+
+mean_I, second_I = sol.y
+variance_I = np.maximum(second_I - mean_I ** 2, 0)
+sd_I = np.sqrt(variance_I)
+cv_I = np.divide(
+    sd_I, mean_I,
+    out=np.full_like(sd_I, np.nan),
+    where=mean_I > 1e-10
+)
+
+peak_mean_index = np.argmax(mean_I)
+peak_variance_index = np.argmax(variance_I)
+
+print(f"Peak mean: {mean_I[peak_mean_index]:.3f}")
+print(f"Time of peak mean: {times[peak_mean_index]:.3f}")
+print(f"Peak variance: {variance_I[peak_variance_index]:.3f}")
+print(f"Time of peak variance: {times[peak_variance_index]:.3f}")
+print()
+
+selected = [0, 10, 20, 40, 60]
+idx = [int(t * 10) for t in selected]
+table = pd.DataFrame({
+    "time": selected,
+    "expected I": mean_I[idx],
+    "variance I": variance_I[idx],
+    "SD I": sd_I[idx],
+    "CV I": cv_I[idx]
+})
+print(table.round(4).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.2))
+plt.plot(times, mean_I, color="#174c34",
+         linewidth=2, label="Expected I")
+plt.fill_between(
+    times,
+    np.maximum(mean_I - sd_I, 0),
+    mean_I + sd_I,
+    color="#b9ddc7", alpha=0.65,
+    label="Mean ± one SD"
+)
+plt.xlabel("Time")
+plt.ylabel("Infectious population")
+plt.title("Expected prevalence and stochastic spread")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+plt.figure(figsize=(9.5, 4.9))
+plt.plot(times, variance_I, color="#b42318",
+         label="Variance")
+plt.axvline(
+    times[peak_variance_index],
+    color="black", linestyle="--",
+    label="Variance peak"
+)
+plt.xlabel("Time")
+plt.ylabel("Variance of I")
+plt.title("Uncertainty can peak at a different time from the mean")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Mean ± SD is not automatically a probability interval</h2><p>For a normal distribution, approximately 68% lies within one standard deviation of the mean. Epidemic distributions may be skewed, bounded or contain extinction mass, so this interpretation must not be assumed from moments alone.</p></section>
+<section class="lesson-section"><h2>Biological meaning</h2><p>A high expected infectious population suggests high average burden. A high variance means scenarios with the same parameters can differ substantially. The timing of maximum uncertainty can be different from the timing of maximum expected burden.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now interpret expected prevalence, variance, standard deviation and relative variability, identify their peak times and avoid presenting a mean–SD display as an exact probability band.</p></div></section><nav class="lesson-nav"><a href="../solving-moment-equations/">← Previous lesson</a><a href="../moments-versus-simulations/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
