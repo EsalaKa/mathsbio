@@ -6,7 +6,7 @@
 <script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <script defer src="../../plot-utils.js"></script>
 <style>.lesson-content{max-width:900px;font-size:1.05rem}.lesson-content h2{font-size:1.55rem;margin-top:2.2rem}.lesson-content h3{font-size:1.2rem;margin-top:1.5rem}.box{margin:1.4rem 0;padding:18px 22px;background:#edf5f0;border-radius:8px}.example{margin:1.4rem 0;padding:18px 22px;background:#fff;border-left:4px solid #39815e}.figure{margin:1.5rem 0;padding:14px;background:#fff;border:1px solid #dce5e0;border-radius:8px;overflow-x:auto}.figure svg{width:100%;min-width:680px;height:auto;display:block}.caption{font-size:.94rem;color:#526158;margin-top:.7rem}.defs{width:100%;border-collapse:collapse;margin:1.4rem 0}.defs th,.defs td{padding:10px 12px;border:1px solid #d9e2dd;text-align:left;vertical-align:top}.defs th{background:#edf5f0}</style>
-</head><body><main class="section container"><a class="back-link" href="../">← Spatial Mathematical Biology</a><article class="lesson-content">
+</head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../">MathsBio</a><nav><a href="../../">Home</a><a href="../">Spatial Mathematical Biology</a></nav></div></header><main class="section container"><a class="back-link" href="../">← Spatial Mathematical Biology</a><article class="lesson-content">
 <h1 class="section-title">Turing patterns</h1>
 <p>A <strong>Turing pattern</strong> is a spatial pattern that can arise when diffusion destabilises a homogeneous equilibrium that is stable without spatial movement. The idea was introduced by Alan Turing in 1952 as a mathematical mechanism for biological pattern formation.</p>
 <div class="box"><strong>Central idea.</strong> Reaction dynamics can keep a spatially uniform state stable, while diffusion can make particular spatial wavelengths grow. This is called <strong>diffusion-driven instability</strong>.</div>
@@ -67,7 +67,7 @@
 <p>The linear analysis predicts which small perturbations initially grow. It does not by itself determine the final nonlinear pattern. The final structure also depends on the nonlinear reaction terms, domain size, geometry, boundary conditions and initial perturbations.</p>
 <p>Turing mechanisms have been investigated in developmental biology, pigmentation, tissue organisation and other systems in which interacting substances or signals can generate spatial structure.</p>
 <div class="box"><strong>Key idea.</strong> A Turing pattern is not simply a pattern produced by diffusion. The non-spatial equilibrium must first be stable, and diffusion must then make one or more non-zero spatial modes unstable.</div>
-</article></main>
+</article><nav class="lesson-nav"><a href="../pattern-formation/">← Previous lesson</a><a href="../spatial-epidemic-models/">Next lesson →</a></nav></main>
 <script>
 window.addEventListener('load',function(){
 const P=window.MathsBioPlot;
@@ -75,4 +75,4 @@ const largestGrowth=function(k){const q=k*k;const tr=-2-1.05*q;const det=1-0.85*
 const d=document.getElementById('dispersion');const cd=P.plotFunction(d,{xMin:0,xMax:5,yMin:-1.15,yMax:0.25,xLabel:'Wavenumber k',yLabel:'Largest growth rate λ',xTicks:[0,1,2,3,4,5],yTicks:[-1,-0.75,-0.5,-0.25,0,0.25]},[{fn:largestGrowth}]);P.hline(d,cd,0);P.label(d,cd,4.85,0.04,'λ = 0',{anchor:'end'});
 const m=document.getElementById('mode');const cm=P.plotFunction(m,{xMin:0,xMax:2*Math.PI,yMin:0.75,yMax:1.25,xLabel:'Position x',yLabel:'u(x)',xTicks:[0,Math.PI/2,Math.PI,3*Math.PI/2,2*Math.PI],yTicks:[0.8,0.9,1,1.1,1.2]},[{fn:x=>1+0.18*Math.cos(2*x)}]);P.hline(m,cm,1);P.label(m,cm,2*Math.PI-0.08,1.025,'u* = 1',{anchor:'end'});
 });
-</script></body></html>
+</script><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
