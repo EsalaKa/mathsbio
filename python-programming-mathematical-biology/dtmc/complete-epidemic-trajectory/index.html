@@ -1,1 +1,404 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Loops for a complete epidemic trajectory in Python for mathematical biology."><title>Loops for a complete epidemic trajectory | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Discrete-Time Markov Chains</a><p class="section-number">06</p><h1 class="section-title">Loops for a complete epidemic trajectory</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Use a Python loop to repeat one valid DTMC transition, store epidemic states and construct one complete stochastic trajectory.">
+<title>Loops for a complete epidemic trajectory | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.trajectory-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0}.trajectory-card{padding:18px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.trajectory-card strong{display:block;color:#174c34;margin-bottom:7px}.loop-parts{display:grid;grid-template-columns:repeat(2,1fr);gap:17px;margin:22px 0}.loop-card{padding:20px;background:#eaf4ee;border-radius:10px}.loop-card h3{margin-top:0;color:#174c34}.stop-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin:22px 0}.stop-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}@media(max-width:800px){.trajectory-flow,.loop-parts,.stop-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+
+<main class="section container">
+<a class="back-link" href="../">← Discrete-Time Markov Chains</a>
+<p class="section-number">06</p>
+<h1 class="section-title">Loops for a complete epidemic trajectory</h1>
+<p class="lesson-intro">One transition gives only the next state. We now repeatedly use that one-step rule, store every state and construct one realised epidemic path through time.</p>
+
+<section class="lesson-section">
+<h2>The unique purpose of this lesson</h2>
+<div class="definition-box">
+<p>A <strong>trajectory</strong>, also called a <strong>sample path</strong> or <strong>realisation</strong>, is one sequence of states produced by the stochastic model:</p>
+<div class="math-box">
+&#92;[
+X_0,X_1,X_2,&#92;ldots,X_K.
+&#92;]
+</div>
+</div>
+<p>Lessons 3–5 already explained the probabilities, random intervals and one-state update. The genuinely new programming ideas here are repetition, storage and stopping.</p>
+<div class="warning-box">
+<p>One trajectory is not a probability distribution and is not the average of all possible epidemics. Another random seed can produce a different valid path.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Scenario: follow one outbreak until it ends</h2>
+<p>Consider a closed SIR population of 200 people:</p>
+<div class="math-box">
+&#92;[
+(S_0,I_0,R_0)=(197,3,0),&#92;qquad N=200.
+&#92;]
+</div>
+<p>Use &#92;(&#92;beta=0.3&#92;) per day, &#92;(&#92;gamma=0.1&#92;) per day and fixed step &#92;(&#92;Delta t=0.01&#92;) day. We will follow the population until either:</p>
+<ul>
+<li>&#92;(I=0&#92;), meaning that infection has become extinct; or</li>
+<li>160 days have been simulated.</li>
+</ul>
+</section>
+
+<section class="lesson-section">
+<h2>From one transition to a trajectory</h2>
+<div class="trajectory-flow">
+<div class="trajectory-card"><strong>1. Initialise</strong>Set parameters and &#92;(X_0&#92;).</div>
+<div class="trajectory-card"><strong>2. Store</strong>Record time zero and the initial state.</div>
+<div class="trajectory-card"><strong>3. Repeat</strong>Calculate one next state during each loop.</div>
+<div class="trajectory-card"><strong>4. Stop</strong>End at extinction or the time horizon.</div>
+</div>
+<p>The essential relationship is:</p>
+<div class="math-box">
+&#92;[
+X_{n+1}=&#92;operatorname{transition}(X_n,U_n).
+&#92;]
+</div>
+<p>The next state from one iteration becomes the current state for the following iteration.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why store the initial state before the loop?</h2>
+<pre><code>times = [0.0]
+S_values = [S]
+I_values = [I]
+R_values = [R]</code></pre>
+<p>The lists begin with &#92;(X_0&#92;), the state before any transition occurs. The loop then appends &#92;(X_1,X_2,&#92;ldots&#92;). If the initial state were omitted, the plotted path would incorrectly begin after the first transition.</p>
+</section>
+
+<section class="lesson-section">
+<h2>The loop structure</h2>
+<pre><code>for step in range(max_steps):
+    result = one_sir_transition(...)
+    S, I, R = result["next_state"]
+
+    times.append((step + 1) * dt)
+    S_values.append(S)
+    I_values.append(I)
+    R_values.append(R)
+
+    if I == 0:
+        break</code></pre>
+<div class="loop-parts">
+<div class="loop-card">
+<h3><code>for</code> and <code>range</code></h3>
+<p><code>range(max_steps)</code> supplies the integers from 0 to <code>max_steps - 1</code>. The loop body runs once for each supplied integer unless <code>break</code> stops it early.</p>
+</div>
+<div class="loop-card">
+<h3>State replacement</h3>
+<p><code>S, I, R = result["next_state"]</code> makes the newly produced state the current state for the next iteration.</p>
+</div>
+<div class="loop-card">
+<h3><code>append</code></h3>
+<p><code>append</code> adds one new value to the end of a list. All four lists grow together and remain aligned by time step.</p>
+</div>
+<div class="loop-card">
+<h3><code>break</code></h3>
+<p>When &#92;(I=0&#92;), <code>break</code> immediately leaves the loop. Further steps would only repeat the absorbing disease-free state.</p>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Why use <code>step + 1</code> for time?</h2>
+<p>Python begins <code>range(max_steps)</code> at <code>step = 0</code>. However, the first state produced inside the loop is &#92;(X_1&#92;), occurring at time &#92;(&#92;Delta t&#92;), not at time zero.</p>
+<div class="math-box">
+&#92;[
+t_{n}=n&#92;Delta t.
+&#92;]
+</div>
+<p>Therefore the time stored after the first transition is:</p>
+<pre><code>(step + 1) * dt</code></pre>
+<p>This avoids an <strong>off-by-one error</strong>, where states are attached to the wrong time values.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Stopping rules and their meanings</h2>
+<div class="stop-grid">
+<div class="stop-card">
+<h3>Biological stopping rule</h3>
+<p>Stop when <code>I == 0</code>. In this closed SIR model, infection cannot restart because there is no importation and recovered people do not return to susceptibility.</p>
+</div>
+<div class="stop-card">
+<h3>Computational stopping rule</h3>
+<p>Stop after <code>max_steps</code> even if infection remains. This guarantees that the program finishes and defines the observation window.</p>
+</div>
+</div>
+<div class="note-box">
+<p>If the time horizon is reached while &#92;(I&gt;0&#92;), we cannot say that extinction occurred. We can say only that infection was still present at the end of the chosen observation period.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Choosing a valid number of steps</h2>
+<p>If the final time is &#92;(T&#92;) and the fixed step is &#92;(&#92;Delta t&#92;), then:</p>
+<div class="math-box">
+&#92;[
+K=&#92;frac{T}{&#92;Delta t}.
+&#92;]
+</div>
+<pre><code>max_steps = int(max_days / dt)</code></pre>
+<p><code>int</code> converts the result into a whole number because <code>range</code> requires an integer. Here &#92;(160/0.01=16000&#92;) possible steps.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>Click <strong>Run code</strong> to generate one complete stochastic trajectory. The result includes a summary, selected rows from the stored table, event counts and a step plot.</p>
+
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>One complete SIR DTMC trajectory</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def one_sir_transition(S, I, R, beta, gamma, dt, rng):
+    N = S + I + R
+
+    p_infection = beta * S * I / N * dt
+    p_recovery = gamma * I * dt
+    p_no_change = 1 - p_infection - p_recovery
+
+    if p_no_change &lt; -1e-12:
+        raise ValueError("dt is too large for valid probabilities.")
+
+    p_no_change = max(0.0, p_no_change)
+    u = rng.random()
+
+    if u &lt; p_infection:
+        return S - 1, I + 1, R, "infection"
+    elif u &lt; p_infection + p_recovery:
+        return S, I - 1, R + 1, "recovery"
+    else:
+        return S, I, R, "no change"
+
+# Model parameters
+beta = 0.3
+gamma = 0.1
+dt = 0.01
+max_days = 160
+max_steps = int(max_days / dt)
+
+# Initial state
+S, I, R = 197, 3, 0
+N = S + I + R
+
+# Reproducible random-number generator
+seed = 7
+rng = np.random.default_rng(seed)
+
+# Store the initial time and state before the loop
+times = [0.0]
+S_values = [S]
+I_values = [I]
+R_values = [R]
+events = ["initial state"]
+
+# Repeatedly apply one transition
+for step in range(max_steps):
+    S, I, R, event = one_sir_transition(
+        S, I, R, beta, gamma, dt, rng
+    )
+
+    time = (step + 1) * dt
+
+    times.append(time)
+    S_values.append(S)
+    I_values.append(I)
+    R_values.append(R)
+    events.append(event)
+
+    # Infection extinction is absorbing in this model
+    if I == 0:
+        break
+
+# Convert aligned lists into one table
+trajectory = pd.DataFrame({
+    "time": times,
+    "S": S_values,
+    "I": I_values,
+    "R": R_values,
+    "event": events
+})
+
+# Validate every stored state
+totals = trajectory["S"] + trajectory["I"] + trajectory["R"]
+if not (totals == N).all():
+    raise ValueError("Population conservation failed.")
+
+if (trajectory[["S", "I", "R"]] &lt; 0).any().any():
+    raise ValueError("A compartment became negative.")
+
+# Summarise the realised trajectory
+final_time = trajectory["time"].iloc[-1]
+final_S = trajectory["S"].iloc[-1]
+final_I = trajectory["I"].iloc[-1]
+final_R = trajectory["R"].iloc[-1]
+peak_I = trajectory["I"].max()
+peak_row = trajectory["I"].idxmax()
+peak_time = trajectory.loc[peak_row, "time"]
+
+if final_I == 0:
+    stopping_reason = "infection became extinct"
+else:
+    stopping_reason = "the time horizon was reached"
+
+print("Trajectory summary")
+print(f"Seed: {seed}")
+print(f"Stored states: {len(trajectory)}")
+print(f"Final time: {final_time:.2f} days")
+print(f"Stopping reason: {stopping_reason}")
+print(f"Peak infectious count: {peak_I}")
+print(f"First time at that peak: {peak_time:.2f} days")
+print(f"Final state: ({final_S}, {final_I}, {final_R})")
+print()
+
+print("First 10 stored states")
+print(trajectory.head(10).to_string(index=False))
+print()
+print("Last 10 stored states")
+print(trajectory.tail(10).to_string(index=False))
+print()
+
+event_counts = (
+    trajectory["event"]
+    .value_counts()
+    .reindex(["infection", "recovery", "no change"], fill_value=0)
+)
+print("Event counts")
+print(event_counts.to_string())
+
+plt.figure(figsize=(9, 5.2))
+plt.step(trajectory["time"], trajectory["S"],
+         where="post", label="Susceptible", color="#2563eb")
+plt.step(trajectory["time"], trajectory["I"],
+         where="post", label="Infectious", color="#dc2626")
+plt.step(trajectory["time"], trajectory["R"],
+         where="post", label="Removed", color="#16a34a")
+plt.xlabel("Time (days)")
+plt.ylabel("Number of people")
+plt.title("One stochastic SIR trajectory")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>How to read the output table</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>time</code></td><td>The model time attached to the stored state.</td></tr>
+<tr><td><code>S</code>, <code>I</code>, <code>R</code></td><td>The integer compartment counts at that time.</td></tr>
+<tr><td><code>event</code></td><td>The event that produced this row from the preceding row.</td></tr>
+</tbody>
+</table>
+</div>
+<p>The first row is labelled <code>initial state</code> because no transition produced it. Every later row records infection, recovery or no change.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why use a step plot?</h2>
+<p>A DTMC state remains at its recorded value until the next fixed observation time, then may jump to another integer state. Therefore:</p>
+<pre><code>plt.step(..., where="post")</code></pre>
+<p>is more faithful than joining the values with sloping lines. A sloping line could visually suggest that fractional people change continuously between time points.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the new code</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>for step in range(max_steps)</code></td><td>Allows at most <code>max_steps</code> repetitions of the one-transition rule.</td></tr>
+<tr><td><code>times.append(time)</code></td><td>Adds the new time to the end of the time list.</td></tr>
+<tr><td><code>break</code></td><td>Stops the loop early when the biological stopping condition is met.</td></tr>
+<tr><td><code>pd.DataFrame({...})</code></td><td>Combines the aligned lists into a labelled rectangular table.</td></tr>
+<tr><td><code>.iloc[-1]</code></td><td>Selects the last stored value by its position.</td></tr>
+<tr><td><code>.idxmax()</code></td><td>Returns the row label at which the infectious count first reaches its maximum.</td></tr>
+<tr><td><code>.value_counts()</code></td><td>Counts how many times each event label occurs.</td></tr>
+<tr><td><code>.all()</code></td><td>Checks whether a condition is true for every value being tested.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Three validations after the loop</h2>
+<div class="validation-grid">
+<div class="validation-card"><strong>Aligned storage</strong>Every list receives exactly one value per stored state.</div>
+<div class="validation-card"><strong>Population conservation</strong>Every row must satisfy &#92;(S+I+R=N&#92;).</div>
+<div class="validation-card"><strong>Non-negativity</strong>No stored compartment count may be below zero.</div>
+</div>
+<p>The one-step function protects each transition. The checks after the loop protect the complete stored dataset.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Try these experiments</h2>
+<ol>
+<li>Change <code>seed = 7</code>. Compare the peak, final state and stopping time with the original trajectory.</li>
+<li>Use <code>seed = 2</code>. Does early randomness produce a noticeably different path?</li>
+<li>Change <code>max_days = 20</code>. If &#92;(I&gt;0&#92;) at the end, explain why the result is not an extinction time.</li>
+<li>Start with <code>S, I, R = 199, 1, 0</code>. The outbreak may disappear very early or grow.</li>
+<li>Comment out the <code>break</code> statement. Observe that the disease-free state is repeatedly stored until the time horizon.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>The plotted line is one possible history of the epidemic. Early infection and recovery events can change whether the outbreak grows, how high it peaks and when it becomes extinct.</p>
+<p>The final removed count is the number of people infected during this particular realisation because everyone begins susceptible or infectious and removed people do not return to susceptibility.</p>
+<div class="warning-box">
+<p>We should not generalise from one path. Estimating extinction probability, expected peak size or the distribution of final epidemic size requires many independent trajectories. That Monte Carlo task is reserved for Lesson 12.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has—and has not—done</h2>
+<div class="summary-box">
+<p><strong>You can now:</strong></p>
+<ul>
+<li>repeat a one-step DTMC transition with a loop;</li>
+<li>store the initial state and every later state in aligned lists;</li>
+<li>attach states to the correct discrete times;</li>
+<li>stop at extinction or a fixed time horizon;</li>
+<li>validate and tabulate a complete trajectory; and</li>
+<li>display an integer-valued stochastic path with a step plot.</li>
+</ul>
+<p><strong>Next:</strong> Lessons 7–9 apply this general trajectory machinery to the distinctive biology and state structures of SIS, SIR and SEIR models. Lesson 7 begins with reinfection in an SIS epidemic.</p>
+</div>
+</section>
+
+<nav class="lesson-nav">
+<a href="../one-dtmc-transition/">← Previous lesson</a>
+<a href="../dtmc-sis-model/">Next lesson →</a>
+</nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
