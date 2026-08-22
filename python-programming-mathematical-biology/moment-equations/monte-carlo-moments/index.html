@@ -1,1 +1,81 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Estimating moments from Monte Carlo simulations in Python for mathematical biology."><title>Estimating moments from Monte Carlo simulations | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">04</p><h1 class="section-title">Estimating moments from Monte Carlo simulations</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Estimate epidemic moments and Monte Carlo error from independent simulations in Python."><title>Estimating moments from Monte Carlo simulations | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">04</p><h1 class="section-title">Estimating moments from Monte Carlo simulations</h1><p class="lesson-intro">Monte Carlo moments are estimates whose precision depends on the number of independent simulations.</p>
+<section class="lesson-section"><h2>Monte Carlo estimators</h2><p>For independent values &#92;(X_1,&#92;ldots,X_M&#92;), estimate the first two raw moments and variance by</p>
+<div class="math-box">&#92;[
+&#92;widehat m_1=&#92;frac1M&#92;sum_rX_r,
+&#92;qquad
+&#92;widehat m_2=&#92;frac1M&#92;sum_rX_r^2,
+&#92;qquad
+s^2=&#92;frac1{M-1}&#92;sum_r(X_r-&#92;widehat m_1)^2.
+&#92;]</div></section>
+<section class="lesson-section"><h2>Two different kinds of variation</h2><table><thead><tr><th>Quantity</th><th>Meaning</th></tr></thead><tbody><tr><td>Sample variance &#92;(s^2&#92;)</td><td>Estimated intrinsic variation between epidemic outcomes.</td></tr><tr><td>Monte Carlo SE of the mean &#92;(s/&#92;sqrt M&#92;)</td><td>Estimated numerical sampling error in &#92;(&#92;widehat m_1&#92;).</td></tr></tbody></table>
+<p>More simulations reduce Monte Carlo error, but they do not remove the biological stochastic variance represented by the model.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Monte Carlo moment estimates</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def sis_value(rng, N=100, I0=5, beta=0.25,
+              gamma=0.15, T=20):
+    I = I0
+    time = 0.0
+    while I > 0 and time < T:
+        b = beta * (N - I) * I / N
+        d = gamma * I
+        wait = rng.exponential(1 / (b + d))
+        if time + wait > T:
+            break
+        time += wait
+        I += 1 if rng.random() < b / (b + d) else -1
+    return I
+
+rng = np.random.default_rng(240)
+maximum_size = 10000
+sample = np.array([
+    sis_value(rng) for _ in range(maximum_size)
+])
+
+sizes = [50, 100, 500, 1000, 5000, 10000]
+rows = []
+
+for M in sizes:
+    values = sample[:M]
+    mean = values.mean()
+    second = np.mean(values ** 2)
+    variance = values.var(ddof=1)
+    se_mean = np.sqrt(variance / M)
+
+    rows.append({
+        "M": M,
+        "first moment": mean,
+        "second moment": second,
+        "variance": variance,
+        "MC SE of mean": se_mean,
+        "95% lower": mean - 1.96 * se_mean,
+        "95% upper": mean + 1.96 * se_mean
+    })
+
+results = pd.DataFrame(rows)
+print(results.round(4).to_string(index=False))
+
+reference_mean = sample.mean()
+absolute_error = np.abs(
+    results["first moment"] - reference_mean
+)
+
+plt.figure(figsize=(9, 5))
+plt.plot(results["M"], results["MC SE of mean"],
+         "o-", label="Estimated MC SE")
+plt.plot(results["M"], absolute_error,
+         "s--", label="Absolute difference from M=10000 estimate")
+plt.xscale("log")
+plt.yscale("log")
+plt.xlabel("Number of independent simulations")
+plt.ylabel("Magnitude (log scale)")
+plt.title("Monte Carlo precision improves with sample size")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Interpret the interval correctly</h2><p>The displayed 95% interval describes Monte Carlo uncertainty in the estimated mean under a normal approximation. It is not the range containing 95% of epidemic outcomes and does not include parameter uncertainty.</p></section>
+<section class="lesson-section"><h2>Reproducibility checklist</h2><ul><li>State the seed, sample size, model and observation time.</li><li>Use independent simulations.</li><li>Report <code>ddof=1</code> for sample variance.</li><li>Increase &#92;(M&#92;) and check that conclusions stabilise.</li><li>Do not treat the largest run as the exact truth.</li></ul></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now estimate raw moments and variance from Monte Carlo samples, calculate the standard error of a mean estimate, and distinguish biological stochasticity from finite-simulation error.</p></div></section><nav class="lesson-nav"><a href="../second-moments-variance-covariance/">← Previous lesson</a><a href="../first-moment-equations/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
