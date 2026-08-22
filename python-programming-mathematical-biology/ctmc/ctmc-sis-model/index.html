@@ -1,1 +1,225 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Programming a CTMC SIS model in Python for mathematical biology."><title>Programming a CTMC SIS model | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">07</p><h1 class="section-title">Programming a CTMC SIS model</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Build and interpret a continuous-time Markov-chain SIS epidemic model with Gillespie simulation in Python.">
+<title>Programming a CTMC SIS model | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.flow{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin:22px 0}.node{padding:22px;text-align:center;background:#eaf4ee;border:2px solid #9fc8b1;border-radius:12px}.arrow{text-align:center;color:#174c34;font-weight:700}.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{padding:20px;background:#eaf4ee;border-radius:10px}.single-state{padding:22px;background:#f1f8f4;border:2px solid #9fc8b1;border-radius:11px}@media(max-width:760px){.flow,.two{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Continuous-Time Markov Chains</a>
+<p class="section-number">07</p>
+<h1 class="section-title">Programming a CTMC SIS model</h1>
+<p class="lesson-intro">This lesson applies Gillespie’s algorithm to an infection in which recovery gives no lasting immunity. Its new biological idea is <strong>reinfection</strong>: a recovered individual immediately becomes susceptible again.</p>
+
+<section class="lesson-section">
+<h2>Scenario: an infection with no lasting immunity</h2>
+<p>Consider 100 people in a community. Initially, 5 are infectious and 95 are susceptible. After recovery, a person can be infected again. This behaviour can represent some bacterial infections and other infections for which immunity is weak or short-lived.</p>
+<div class="flow">
+<div class="node"><strong>Susceptible</strong><br>&#92;(S&#92;)</div>
+<div class="arrow">infection →<br>← recovery</div>
+<div class="node"><strong>Infectious</strong><br>&#92;(I&#92;)</div>
+</div>
+<p>Because the population is closed, &#92;(S+I=N&#92;). Therefore, knowing &#92;(I&#92;) automatically gives &#92;(S=N-I&#92;).</p>
+<div class="single-state"><strong>One-dimensional state:</strong> the CTMC can be programmed using the single integer &#92;(I&#92;), with state space &#92;(&#92;{0,1,2,&#92;ldots,N&#92;&#92;).</div>
+</section>
+
+<section class="lesson-section">
+<h2>Two events and their rates</h2>
+<div class="two">
+<div class="card"><h3>Infection</h3><p>&#92;(I&#92;) increases by 1.</p><div class="math-box">&#92;[I&#92;to I+1,&#92;qquad a_{&#92;mathrm{inf}}(I)=&#92;beta&#92;frac{(N-I)I}{N}.&#92;]</div><p>The rate is zero when nobody is infectious or nobody is susceptible.</p></div>
+<div class="card"><h3>Recovery</h3><p>&#92;(I&#92;) decreases by 1.</p><div class="math-box">&#92;[I&#92;to I-1,&#92;qquad a_{&#92;mathrm{rec}}(I)=&#92;gamma I.&#92;]</div><p>Recovery returns the individual to the susceptible compartment.</p></div>
+</div>
+<p>The total rate is &#92;(a_0(I)=a_{&#92;mathrm{inf}}(I)+a_{&#92;mathrm{rec}}(I)&#92;). Gillespie’s algorithm generates the next waiting time from &#92;(&#92;operatorname{Exp}(a_0(I))&#92;) and then chooses infection or recovery in proportion to these rates.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Boundary states and extinction</h2>
+<div class="table-wrap"><table><thead><tr><th>State</th><th>Possible events</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>&#92;(I=0&#92;)</td><td>None</td><td>Infection is extinct. This is absorbing because the model has no importation.</td></tr>
+<tr><td>&#92;(0&lt;I&lt;N&#92;)</td><td>Infection and recovery</td><td>Both types of event may be possible.</td></tr>
+<tr><td>&#92;(I=N&#92;)</td><td>Recovery only</td><td>There are no susceptible people, so the infection rate is zero.</td></tr>
+</tbody></table></div>
+<p>These conditions are produced naturally by the rate formulas; separate artificial probabilities are not required.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Threshold intuition</h2>
+<p>Near the beginning, when almost everyone is susceptible, each infectious person produces infections at approximately rate &#92;(&#92;beta&#92;) and recovers at rate &#92;(&#92;gamma&#92;). The basic reproduction number is</p>
+<div class="math-box">&#92;[R_0=&#92;frac{&#92;beta}{&#92;gamma}.&#92;]</div>
+<p>If &#92;(R_0&gt;1&#92;), infection initially has an upward tendency. This does <strong>not</strong> guarantee a major outbreak: the CTMC can still reach &#92;(I=0&#92;) through chance.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>Click <strong>Run code</strong>. The program simulates one SIS trajectory, prints its event log and summary, and draws the irregular-time step path. Change the seed to see a different possible epidemic.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>CTMC SIS model</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Population and biological parameters
+N = 100
+I = 5
+beta = 0.30
+gamma = 0.10
+
+time = 0.0
+max_time = 120.0
+seed = 7
+rng = np.random.default_rng(seed)
+
+# Store the initial state
+times = [time]
+I_values = [I]
+event_rows = []
+stopping_reason = "time horizon reached"
+
+while time < max_time:
+    S = N - I
+
+    # Recalculate the two rates in the current state
+    infection_rate = beta * S * I / N
+    recovery_rate = gamma * I
+    total_rate = infection_rate + recovery_rate
+
+    # I = 0 gives total_rate = 0: extinction
+    if total_rate == 0:
+        stopping_reason = "infection became extinct"
+        break
+
+    # Generate the next continuous waiting time
+    waiting_time = rng.exponential(1 / total_rate)
+
+    # Do not perform an event outside the observation window
+    if time + waiting_time > max_time:
+        break
+
+    # Choose infection or recovery by its rate proportion
+    u = rng.random()
+    if u < infection_rate / total_rate:
+        I += 1
+        event = "infection"
+    else:
+        I -= 1
+        event = "recovery"
+
+    time += waiting_time
+
+    # Check that the state remains biologically valid
+    if not 0 <= I <= N:
+        raise ValueError("I left the valid state space.")
+
+    times.append(time)
+    I_values.append(I)
+    event_rows.append({
+        "time": time,
+        "waiting time": waiting_time,
+        "event": event,
+        "S": N - I,
+        "I": I
+    })
+
+trajectory = pd.DataFrame({
+    "time": times,
+    "I": I_values
+})
+event_log = pd.DataFrame(event_rows)
+
+peak_I = int(trajectory["I"].max())
+peak_time = trajectory.loc[
+    trajectory["I"].idxmax(), "time"
+]
+
+print("CTMC SIS summary")
+print(f"R0 = {beta / gamma:.2f}")
+print(f"Stopping reason: {stopping_reason}")
+print(f"Number of events: {len(event_log)}")
+print(f"Peak I: {peak_I}")
+print(f"First time at peak: {peak_time:.3f} days")
+print(f"Final recorded I: {I}")
+print(f"Final recorded S: {N - I}")
+
+if len(event_log) > 0:
+    print()
+    print("Event counts")
+    print(event_log["event"].value_counts().to_string())
+    print()
+    print("First 10 events")
+    print(event_log.head(10).round(4).to_string(index=False))
+
+# Extend the displayed state to the horizon without adding an event
+plot_times = times.copy()
+plot_I = I_values.copy()
+if stopping_reason == "time horizon reached" and time < max_time:
+    plot_times.append(max_time)
+    plot_I.append(I)
+
+plt.figure(figsize=(9, 5))
+plt.step(plot_times, plot_I, where="post",
+         color="#b42318", linewidth=1.7)
+plt.axhline(N * (1 - gamma / beta),
+            color="#39815e", linestyle="--",
+            label="Deterministic endemic level")
+plt.xlabel("Continuous time (days)")
+plt.ylabel("Infectious people, I")
+plt.title("One CTMC SIS epidemic trajectory")
+plt.ylim(0, N)
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the important code</h2>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>S = N - I</code></td><td>Uses population conservation, so only &#92;(I&#92;) must be stored as the state.</td></tr>
+<tr><td><code>rng.exponential(1 / total_rate)</code></td><td>NumPy expects the exponential mean, which is &#92;(1/a_0&#92;), not the rate &#92;(a_0&#92;).</td></tr>
+<tr><td><code>infection_rate / total_rate</code></td><td>Converts the infection rate into the conditional probability that the next event is infection.</td></tr>
+<tr><td><code>0 &lt;= I &lt;= N</code></td><td>Checks the required SIS state-space condition.</td></tr>
+<tr><td><code>where="post"</code></td><td>Keeps the state constant after each jump until the next event.</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret the outcome</h2>
+<p>A rising path means infection events are temporarily occurring more often than recoveries. A falling path means recoveries dominate over that part of this particular random history.</p>
+<p>The dashed line is the positive deterministic equilibrium &#92;(I^*=N(1-&#92;gamma/&#92;beta)&#92;) when &#92;(R_0&gt;1&#92;). It is a reference level, not an absorbing CTMC state. A finite stochastic SIS process can fluctuate around it for a long time and still eventually become extinct.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Try these biological experiments</h2>
+<ol>
+<li>Set <code>I = 1</code> and try several seeds. Record how often extinction occurs quickly.</li>
+<li>Set <code>beta = 0.08</code>, giving &#92;(R_0&lt;1&#92;), and observe the stronger downward tendency.</li>
+<li>Increase <code>N</code> while keeping the initial infected proportion similar. Compare the relative size of fluctuations.</li>
+<li>Remove the fixed seed only after you understand reproducibility: the result will then vary on every run.</li>
+</ol>
+</section>
+
+<section class="lesson-section">
+<h2>What is unique to this lesson?</h2>
+<div class="summary-box"><p>You have used one state variable, represented recovery as a return to susceptibility, and distinguished a deterministic endemic level from stochastic extinction. The next lesson changes the biology: recovered people remain removed, so reinfection is no longer possible and final epidemic size becomes meaningful.</p></div>
+</section>
+
+<nav class="lesson-nav"><a href="../gillespie-direct-algorithm/">← Previous lesson</a><a href="../ctmc-sir-model/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body></html>
