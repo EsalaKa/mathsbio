@@ -1,1 +1,245 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Event-path plots, step plots, distributions and tables in Python for mathematical biology."><title>Event-path plots, step plots, distributions and tables | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">14</p><h1 class="section-title">Event-path plots, step plots, distributions and tables</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Choose, program and interpret event timelines, CTMC step paths, outcome distributions and summary tables for epidemic models.">
+<title>Event-path plots, step plots, distributions and tables | MathsBio</title><link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js"></script>
+<style>.four{display:grid;grid-template-columns:repeat(2,1fr);gap:17px}.card{padding:20px;background:#eaf4ee;border-radius:10px}.rule{padding:22px;background:#f1f8f4;border:2px solid #9fc8b1;border-radius:11px}@media(max-width:720px){.four{grid-template-columns:1fr}}</style></head><body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container">
+<a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">14</p><h1 class="section-title">Event-path plots, step plots, distributions and tables</h1>
+<p class="lesson-intro">A stochastic result can be technically correct but communicated badly. This lesson matches each biological question to a suitable display and explains what the display does—and does not—show.</p>
+
+<section class="lesson-section"><h2>Four displays answer four different questions</h2>
+<div class="four">
+<div class="card"><h3>Event timeline</h3><p><strong>Question:</strong> Which event occurred, and when?</p><p>Plot one marker per infection or recovery event at its exact continuous time.</p></div>
+<div class="card"><h3>State step plot</h3><p><strong>Question:</strong> How did compartment counts change through one epidemic?</p><p>Keep the state constant between irregular jump times.</p></div>
+<div class="card"><h3>Multiple sample paths</h3><p><strong>Question:</strong> How different can trajectories be?</p><p>Show a manageable subset with transparency, not hundreds of opaque lines.</p></div>
+<div class="card"><h3>Outcome distribution</h3><p><strong>Question:</strong> How frequently did different final results occur?</p><p>Use all independent runs in a histogram, empirical distribution or probability table.</p></div>
+</div>
+</section>
+
+<section class="lesson-section"><h2>The fundamental CTMC plotting rule</h2>
+<div class="rule"><strong>Use a step plot for compartment states.</strong> A CTMC state jumps at an event and remains constant until the next event. Connecting states with sloping lines falsely suggests that fractional people change continuously between events.</div>
+<div class="math-box">&#92;[X(t)=X(t_k)&#92;quad&#92;text{for }t_k&#92;le t&lt;t_{k+1}.&#92;]</div>
+<p>In Matplotlib, <code>plt.step(..., where="post")</code> implements this right-continuous display.</p>
+</section>
+
+<section class="lesson-section"><h2>Tables preserve exact values</h2>
+<p>Plots reveal patterns; tables provide exact numbers. A useful event table has one row per jump and includes event time, waiting time, event type and post-event state. A useful outcome table has one row per independent trajectory.</p>
+<div class="table-wrap"><table><thead><tr><th>Table</th><th>Rows represent</th><th>Typical columns</th></tr></thead><tbody>
+<tr><td>Event log</td><td>Events in one trajectory</td><td>Time, waiting time, event, &#92;(S,I,R&#92;)</td></tr>
+<tr><td>Outcome data</td><td>Independent trajectories</td><td>Final size, duration, peak, peak time</td></tr>
+<tr><td>Summary table</td><td>Outcome measures</td><td>Median, 5th and 95th percentiles</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<p>Run the code to create one coherent four-panel report: the event timeline and step path come from one selected epidemic, while the sample-path and distribution panels use many independent epidemics. Exact supporting tables are printed below the code.</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>CTMC visual and tabular report</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def simulate_sir(rng, N, I0, beta, gamma):
+    S, I, R = N - I0, I0, 0
+    time = 0.0
+
+    times = [time]
+    I_values = [I]
+    events = []
+    peak_I = I
+    peak_time = 0.0
+
+    while I > 0:
+        infection_rate = beta * S * I / N
+        recovery_rate = gamma * I
+        total_rate = infection_rate + recovery_rate
+
+        waiting_time = rng.exponential(1 / total_rate)
+        time += waiting_time
+
+        if rng.random() < infection_rate / total_rate:
+            S -= 1
+            I += 1
+            event = "infection"
+        else:
+            I -= 1
+            R += 1
+            event = "recovery"
+
+        if I > peak_I:
+            peak_I = I
+            peak_time = time
+
+        times.append(time)
+        I_values.append(I)
+        events.append({
+            "time": time,
+            "waiting time": waiting_time,
+            "event": event,
+            "S": S,
+            "I": I,
+            "R": R
+        })
+
+    outcome = {
+        "final size": N - S,
+        "duration": time,
+        "peak I": peak_I,
+        "peak time": peak_time
+    }
+
+    return (
+        np.array(times),
+        np.array(I_values),
+        pd.DataFrame(events),
+        outcome
+    )
+
+# Model and reporting settings
+N = 200
+I0 = 3
+beta = 0.25
+gamma = 0.10
+number_of_runs = 300
+seed = 120
+rng = np.random.default_rng(seed)
+
+all_paths = []
+outcome_rows = []
+selected_event_log = None
+
+for run in range(number_of_runs):
+    times, I_values, event_log, outcome = simulate_sir(
+        rng, N, I0, beta, gamma
+    )
+
+    outcome["run"] = run + 1
+    outcome_rows.append(outcome)
+
+    # Retain only a readable subset of paths for plotting
+    if run < 20:
+        all_paths.append((times, I_values))
+
+    if run == 0:
+        selected_times = times
+        selected_I = I_values
+        selected_event_log = event_log
+
+outcomes = pd.DataFrame(outcome_rows)
+
+summary_table = outcomes[
+    ["final size", "duration", "peak I", "peak time"]
+].quantile([0.05, 0.50, 0.95])
+summary_table.index = [
+    "5th percentile", "median", "95th percentile"
+]
+
+print("First trajectory: first 12 events")
+print(
+    selected_event_log.head(12)
+    .round(4)
+    .to_string(index=False)
+)
+print()
+print("Outcome summary across 300 trajectories")
+print(summary_table.round(3).to_string())
+
+# Create a unified four-panel report
+fig, axes = plt.subplots(2, 2, figsize=(11, 8.2))
+
+# A. Exact event timeline for one trajectory
+event_y = selected_event_log["event"].map({
+    "recovery": 0,
+    "infection": 1
+})
+event_colours = selected_event_log["event"].map({
+    "recovery": "#39815e",
+    "infection": "#b42318"
+})
+axes[0, 0].scatter(
+    selected_event_log["time"], event_y,
+    c=event_colours, s=13, alpha=0.7
+)
+axes[0, 0].set_yticks([0, 1], ["Recovery", "Infection"])
+axes[0, 0].set_xlabel("Continuous time (days)")
+axes[0, 0].set_title("A. Event timeline: one epidemic")
+axes[0, 0].grid(axis="x", alpha=0.2)
+
+# B. Correct piecewise-constant state path
+axes[0, 1].step(
+    selected_times, selected_I, where="post",
+    color="#b42318", linewidth=1.7
+)
+axes[0, 1].set_xlabel("Continuous time (days)")
+axes[0, 1].set_ylabel("Infectious people")
+axes[0, 1].set_title("B. Step path: one epidemic")
+axes[0, 1].grid(alpha=0.2)
+
+# C. A readable subset of independent paths
+for times, I_values in all_paths:
+    axes[1, 0].step(
+        times, I_values, where="post",
+        alpha=0.35, linewidth=0.9
+    )
+axes[1, 0].set_xlabel("Continuous time (days)")
+axes[1, 0].set_ylabel("Infectious people")
+axes[1, 0].set_title("C. Twenty independent sample paths")
+axes[1, 0].grid(alpha=0.2)
+
+# D. Distribution uses all simulated trajectories
+axes[1, 1].hist(
+    outcomes["final size"], bins=25,
+    color="#79ae90", edgecolor="white"
+)
+axes[1, 1].axvline(
+    outcomes["final size"].median(),
+    color="#174c34", linestyle="--",
+    label="Median"
+)
+axes[1, 1].set_xlabel("Final outbreak size")
+axes[1, 1].set_ylabel("Number of trajectories")
+axes[1, 1].set_title("D. Distribution across all 300 runs")
+axes[1, 1].legend()
+axes[1, 1].grid(axis="y", alpha=0.2)
+
+fig.suptitle("CTMC SIR: paths, events and outcome distribution")
+fig.tight_layout()</textarea>
+<div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div></div>
+</section>
+
+<section class="lesson-section"><h2>How to read the four panels</h2>
+<ol>
+<li><strong>Panel A:</strong> event density is high when the total rate is high. The vertical position labels event type; it is not a numerical magnitude.</li>
+<li><strong>Panel B:</strong> every vertical jump changes &#92;(I&#92;) by exactly one, while horizontal segments show no change between events.</li>
+<li><strong>Panel C:</strong> variation in peak, timing and extinction is visible, but twenty displayed paths are illustrative rather than a probability estimate.</li>
+<li><strong>Panel D:</strong> all 300 outcomes contribute. Separate clusters can reveal early fade-outs and major epidemics.</li>
+</ol>
+</section>
+
+<section class="lesson-section"><h2>Match the display to the claim</h2>
+<div class="table-wrap"><table><thead><tr><th>Claim</th><th>Suitable evidence</th><th>Unsuitable evidence alone</th></tr></thead><tbody>
+<tr><td>Events occur at irregular times</td><td>Event timeline or one step path</td><td>Outcome histogram</td></tr>
+<tr><td>Trajectories vary substantially</td><td>Multiple paths plus ensemble summaries</td><td>One selected path</td></tr>
+<tr><td>Large outbreaks occur with a given frequency</td><td>Count/proportion from all independent runs</td><td>Spaghetti plot</td></tr>
+<tr><td>Median final size has a stated value</td><td>Outcome table and marked distribution</td><td>Event log from one run</td></tr>
+</tbody></table></div></section>
+
+<section class="lesson-section"><h2>Presentation checks</h2>
+<ul>
+<li>State the number of independent trajectories and the random seed.</li>
+<li>Label whether intervals describe outcomes or Monte Carlo uncertainty.</li>
+<li>Include units on time axes and identify the population quantity.</li>
+<li>Do not hide early extinctions by displaying only large outbreaks.</li>
+<li>Do not use excessive decimal places for inherently noisy estimates.</li>
+<li>Place biological interpretation beside the display, not only code.</li>
+</ul>
+</section>
+
+<section class="lesson-section"><h2>Biological interpretation</h2>
+<p>The selected path explains event order, but it cannot establish what is common. The ensemble shows that identical parameters can generate different epidemic histories. The distribution and summary table quantify that variability and support statements about population burden.</p>
+<p>Good communication keeps three levels distinct: an event, one trajectory, and a distribution across trajectories.</p>
+</section>
+
+<section class="lesson-section"><h2>CTMC section completion</h2><div class="summary-box"><p>You can now define CTMC event rates, generate exponential waiting times, select and update events, program SIS/SIR/SEIR models, construct a generator, simulate ensembles, estimate probabilities, calculate outbreak outcomes, and communicate results with appropriate plots and tables.</p></div></section>
+<nav class="lesson-nav"><a href="../outbreak-outcomes/">← Previous lesson</a><a href="../">Return to CTMC index →</a></nav>
+</main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
