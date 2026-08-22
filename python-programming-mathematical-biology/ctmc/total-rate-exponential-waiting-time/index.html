@@ -51,7 +51,7 @@
 <p>For &#92;(N=1000&#92;), &#92;(i=10&#92;), &#92;(&#92;beta=0.3&#92;) and &#92;(&#92;gamma=0.1&#92;):</p>
 <div class="math-box">
 &#92;[
-b(10)=2.97,&#92qquad d(10)=1.00,
+b(10)=2.97,&#92;qquad d(10)=1.00,
 &#92;]
 &#92;[
 a(10)=2.97+1.00=3.97&#92;text{ events/day}.
@@ -145,7 +145,7 @@ e^{-ah}=1-ah+O(h^2).
 </section>
 
 <section class="lesson-section">
-<h2>Why use (1-	exttt{rng.random()})?</h2>
+<h2>Why use <code>1 - rng.random()</code>?</h2>
 <p>NumPy's <code>rng.random()</code> generates values in &#92;([0,1)&#92;). The logarithm of zero is not finite. Therefore the code uses:</p>
 <pre><code>u = 1.0 - rng.random()</code></pre>
 <p>This gives &#92;(U&#92;in(0,1]&#92;) and guarantees that <code>np.log(u)</code> is defined. The transformation has the same uniform distribution apart from irrelevant endpoint conventions.</p>
