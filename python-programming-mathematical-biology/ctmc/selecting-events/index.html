@@ -1,1 +1,327 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Selecting infection, progression or recovery events in Python for mathematical biology."><title>Selecting infection, progression or recovery events | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Continuous-Time Markov Chains</a><p class="section-number">04</p><h1 class="section-title">Selecting infection, progression or recovery events</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Select infection, progression or recovery in a CTMC by normalising competing event rates and mapping a uniform random number to cumulative intervals.">
+<title>Selecting infection, progression or recovery events | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.question-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.question-card{padding:21px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.question-card h3{margin-top:0;color:#174c34}.rate-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.rate-card{padding:19px;background:#eaf4ee;border-radius:10px}.rate-card h3{margin-top:0;color:#174c34}.interval-table th,.interval-table td{text-align:left}.conditional-box{padding:22px;background:#f1f8f4;border:2px solid #9fc8b1;border-radius:11px}.boundary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:22px 0}.boundary-card{padding:18px;background:#fff;border:1px solid #dce7e0;border-radius:10px}@media(max-width:800px){.question-grid,.rate-grid,.boundary-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Continuous-Time Markov Chains</a>
+<p class="section-number">04</p>
+<h1 class="section-title">Selecting infection, progression or recovery events</h1>
+<p class="lesson-intro">Once the waiting time has been generated, the CTMC must decide which of the currently possible biological events causes the next jump.</p>
+
+<section class="lesson-section">
+<h2>Keep “when?” and “which?” separate</h2>
+<div class="question-grid">
+<div class="question-card"><h3>When?</h3><p>The total rate &#92;(a_0&#92;) determines the exponential waiting time.</p><strong>Completed in Lesson 3</strong></div>
+<div class="question-card"><h3>Which?</h3><p>Each event's rate as a proportion of &#92;(a_0&#92;) determines its conditional selection probability.</p><strong>This lesson</strong></div>
+</div>
+<p>This page assumes that a jump is about to occur. It selects the event type but does not yet update the state.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Scenario: three competing SEIR events</h2>
+<p>At the current state:</p>
+<div class="math-box">
+&#92;[
+(S,E,I,R)=(990,5,5,0),
+&#92;qquad N=1000,
+&#92;]
+</div>
+<p>use &#92;(&#92;beta=0.3&#92;), &#92;(&#92;sigma=0.2&#92;) and &#92;(&#92;gamma=0.1&#92;) per day.</p>
+<div class="rate-grid">
+<div class="rate-card"><h3>Infection</h3><div class="math-box">&#92;[a_1=&#92;beta SI/N=1.485.&#92;]</div></div>
+<div class="rate-card"><h3>Progression</h3><div class="math-box">&#92;[a_2=&#92;sigma E=1.000.&#92;]</div></div>
+<div class="rate-card"><h3>Recovery</h3><div class="math-box">&#92;[a_3=&#92;gamma I=0.500.&#92;]</div></div>
+</div>
+<p>The total rate is:</p>
+<div class="math-box">
+&#92;[
+a_0=a_1+a_2+a_3=2.985&#92;text{ events/day}.
+&#92;]
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Normalise rates into event probabilities</h2>
+<div class="conditional-box">
+<p>Given that the next jump occurs, event &#92;(k&#92;) is selected with probability:</p>
+<div class="math-box">
+&#92;[
+&#92;Pr(&#92;text{event }k&#92;mid&#92;text{a jump occurs})
+=
+&#92;frac{a_k}{a_0}.
+&#92;]
+</div>
+</div>
+<p>Therefore:</p>
+<div class="math-box">
+&#92;[
+&#92;begin{aligned}
+p_{&#92;mathrm{infection}}&=1.485/2.985&#92;approx0.4975,&#92;&#92;
+p_{&#92;mathrm{progression}}&=1.000/2.985&#92;approx0.3350,&#92;&#92;
+p_{&#92;mathrm{recovery}}&=0.500/2.985&#92;approx0.1675.
+&#92;end{aligned}
+&#92;]
+</div>
+<p>The rates have units of events per day, but the units cancel in each ratio. The resulting event probabilities are dimensionless and sum to 1.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why there is no “no-change event” here</h2>
+<p>This selection is conditional on a CTMC jump occurring. Therefore one of the positive-rate biological events must be selected.</p>
+<div class="table-wrap"><table><thead><tr><th>Fixed-step DTMC</th><th>Event-driven CTMC</th></tr></thead><tbody>
+<tr><td>A fixed step may contain no event, so no change is a transition category.</td><td>The exponential waiting time already represents how long the state remains unchanged.</td></tr>
+<tr><td>Event probabilities plus no-change probability sum to 1.</td><td>Conditional probabilities of currently possible events sum to 1.</td></tr>
+</tbody></table></div>
+<p>Adding a no-change category to the conditional CTMC event selection would double-count waiting.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Construct cumulative intervals</h2>
+<p>Generate &#92;(U&#92;sim&#92;operatorname{Uniform}(0,1)&#92;) and place the conditional probabilities beside one another:</p>
+<div class="table-wrap"><table class="interval-table"><thead><tr><th>Uniform interval</th><th>Length</th><th>Selected event</th></tr></thead><tbody>
+<tr><td>&#92;(0&#92;le U&lt;0.4975&#92;)</td><td>0.4975</td><td>Infection</td></tr>
+<tr><td>&#92;(0.4975&#92;le U&lt;0.8325&#92;)</td><td>0.3350</td><td>Progression</td></tr>
+<tr><td>&#92;(0.8325&#92;le U&lt;1&#92;)</td><td>0.1675</td><td>Recovery</td></tr>
+</tbody></table></div>
+<p>The second boundary is cumulative:</p>
+<div class="math-box">
+&#92;[
+0.8325
+=
+p_{&#92;mathrm{infection}}
++
+p_{&#92;mathrm{progression}}.
+&#92;]
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Translate the intervals into Python</h2>
+<pre><code>if u &lt; p_infection:
+    event = "infection"
+elif u &lt; p_infection + p_progression:
+    event = "progression"
+else:
+    event = "recovery"</code></pre>
+<p>Reaching <code>elif</code> already means the infection condition was false. Reaching <code>else</code> means the uniform value lies in the remaining recovery interval.</p>
+<p>The event order is not biologically important. Another order gives the same event probabilities if its cumulative boundaries are constructed consistently.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Why larger rates are selected more often</h2>
+<p>The interval assigned to an event has length &#92;(a_k/a_0&#92;). Therefore an event with twice the rate receives twice the interval length and is selected approximately twice as often over many repetitions at the same state.</p>
+<p>This does not mean it must occur in any particular single selection. A low-rate event can still be selected.</p>
+</section>
+
+<section class="lesson-section">
+<h2>Boundary and zero-rate events</h2>
+<div class="boundary-grid">
+<div class="boundary-card"><strong>If &#92;(S=0&#92;)</strong><p>Infection rate is zero, so the infection interval has zero length.</p></div>
+<div class="boundary-card"><strong>If &#92;(E=0&#92;)</strong><p>Progression rate is zero, so progression cannot be selected.</p></div>
+<div class="boundary-card"><strong>If &#92;(I=0&#92;)</strong><p>Infection and recovery rates are zero, but progression may remain possible when &#92;(E&gt;0&#92;).</p></div>
+</div>
+<p>If every event rate is zero, then &#92;(a_0=0&#92;). No event can be selected and the state is absorbing. The program must stop before dividing by &#92;(a_0&#92;).</p>
+</section>
+
+<section class="lesson-section">
+<h2>Conditions for valid event selection</h2>
+<ul>
+<li>Every event rate must be non-negative.</li>
+<li>The total rate must equal the sum of all current event rates.</li>
+<li>The total rate must be positive before normalisation.</li>
+<li>Conditional probabilities must lie in &#92;([0,1]&#92;) and sum to 1.</li>
+<li>Only events allowed by the current biological state should have positive rates.</li>
+</ul>
+</section>
+
+<section class="lesson-section">
+<h2>Interactive Python laboratory</h2>
+<p>The code selects one event and then repeats the selection 20,000 times without changing the state, solely to verify that empirical event proportions approach the conditional probabilities.</p>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>Select one CTMC event type</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def event_probabilities(rates):
+    rates = np.array(rates, dtype=float)
+
+    if (rates &lt; 0).any():
+        raise ValueError("Event rates cannot be negative.")
+
+    total_rate = rates.sum()
+
+    if total_rate == 0:
+        raise ValueError(
+            "No event is possible because the total rate is zero."
+        )
+
+    probabilities = rates / total_rate
+
+    if not np.isclose(probabilities.sum(), 1.0):
+        raise ValueError("Event probabilities do not sum to 1.")
+
+    return total_rate, probabilities
+
+def select_event(u, event_names, probabilities):
+    cumulative = np.cumsum(probabilities)
+
+    if u &lt; cumulative[0]:
+        return event_names[0]
+    elif u &lt; cumulative[1]:
+        return event_names[1]
+    else:
+        return event_names[2]
+
+# Current SEIR state and parameters
+S, E, I, R = 990, 5, 5, 0
+N = S + E + I + R
+
+beta = 0.30
+sigma = 0.20
+gamma = 0.10
+
+event_names = np.array([
+    "infection",
+    "progression",
+    "recovery"
+])
+
+rates = np.array([
+    beta * S * I / N,
+    sigma * E,
+    gamma * I
+])
+
+total_rate, probabilities = event_probabilities(rates)
+cumulative_boundaries = np.cumsum(probabilities)
+
+# Select one event
+seed = 7
+rng = np.random.default_rng(seed)
+u = rng.random()
+selected_event = select_event(
+    u, event_names, probabilities
+)
+
+selection_table = pd.DataFrame({
+    "event": event_names,
+    "rate (events/day)": rates,
+    "conditional probability": probabilities,
+    "cumulative upper boundary": cumulative_boundaries
+})
+
+print(f"Total rate: {total_rate:.4f} events/day")
+print(selection_table.round(6).to_string(index=False))
+print()
+print(f"Uniform value u: {u:.6f}")
+print(f"Selected event: {selected_event}")
+
+# Repeat only to verify the conditional probabilities
+number_of_selections = 20000
+counts = {
+    "infection": 0,
+    "progression": 0,
+    "recovery": 0
+}
+
+for selection in range(number_of_selections):
+    u = rng.random()
+    event = select_event(u, event_names, probabilities)
+    counts[event] += 1
+
+observed_proportions = np.array([
+    counts[event] / number_of_selections
+    for event in event_names
+])
+
+comparison_table = pd.DataFrame({
+    "event": event_names,
+    "theoretical probability": probabilities,
+    "observed proportion": observed_proportions
+})
+
+print()
+print(f"Comparison after {number_of_selections} selections")
+print(comparison_table.round(5).to_string(index=False))
+
+x = np.arange(len(event_names))
+width = 0.36
+
+plt.figure(figsize=(8.5, 4.8))
+plt.bar(
+    x - width/2,
+    probabilities,
+    width,
+    label="Theoretical probability",
+    color="#39815e"
+)
+plt.bar(
+    x + width/2,
+    observed_proportions,
+    width,
+    label="Observed proportion",
+    color="#9fc8b1"
+)
+plt.xticks(x, ["Infection", "Progression", "Recovery"])
+plt.ylabel("Conditional probability or proportion")
+plt.ylim(0, 0.60)
+plt.title("Event selection follows relative transition rates")
+plt.legend()
+plt.grid(axis="y", alpha=0.25)
+plt.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap"><p class="output-label">Output</p><pre class="python-output" aria-live="polite">Run the code to see the result.</pre><div class="python-output-images" aria-live="polite"></div></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Understand the new code</h2>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>rates / total_rate</code></td><td>Normalises rates into dimensionless conditional event probabilities.</td></tr>
+<tr><td><code>np.cumsum(probabilities)</code></td><td>Calculates cumulative upper interval boundaries.</td></tr>
+<tr><td><code>counts[event] += 1</code></td><td>Adds one to the count belonging to the selected event name.</td></tr>
+<tr><td><code>np.isclose(...)</code></td><td>Checks a floating-point probability sum using a small numerical tolerance.</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="lesson-section">
+<h2>Biological interpretation</h2>
+<p>At this state, infection has the largest transition rate and therefore the largest conditional probability of being the next event. Progression is the next most likely, and recovery has the smallest interval.</p>
+<p>The repeated selections keep the state fixed only to verify the rate-ratio rule. A real CTMC simulation updates the state after one selected event and then recalculates every rate before proceeding.</p>
+</section>
+
+<section class="lesson-section">
+<h2>What this lesson has—and has not—done</h2>
+<div class="summary-box"><p><strong>You can now:</strong></p><ul>
+<li>normalise competing event rates by their total;</li>
+<li>interpret the result as event type conditional on a jump;</li>
+<li>construct cumulative uniform intervals;</li>
+<li>handle zero-rate and zero-total-rate cases; and</li>
+<li>verify selections using repeated fixed-state experiments.</li>
+</ul><p><strong>Not yet:</strong> Lesson 5 combines one exponential waiting time, one event selection and the corresponding compartment update to program one complete CTMC event.</p></div>
+</section>
+
+<nav class="lesson-nav"><a href="../total-rate-exponential-waiting-time/">← Previous lesson</a><a href="../one-ctmc-event/">Next lesson →</a></nav>
+</main>
+<footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer>
+</body>
+</html>
