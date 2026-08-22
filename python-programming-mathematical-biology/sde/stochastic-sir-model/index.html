@@ -1,1 +1,106 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Constructing a stochastic SIR model in Python for mathematical biology."><title>Constructing a stochastic SIR model | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">07</p><h1 class="section-title">Constructing a stochastic SIR model</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Construct a stochastic SIR diffusion from infection and recovery event channels."><title>Constructing a stochastic SIR model | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">07</p><h1 class="section-title">Constructing a stochastic SIR model</h1><p class="lesson-intro">The stochastic SIR model has two independent event channels, but their noise contributions must be shared between the compartments changed by each event.</p>
+<section class="lesson-section"><h2>Start from two event channels</h2>
+<table><thead><tr><th>Event</th><th>State-change vector &#92;((S,I,R)&#92;)</th><th>Rate</th></tr></thead><tbody><tr><td>Infection</td><td>&#92;((-1,+1,0)&#92;)</td><td>&#92;(a_1=&#92;beta SI/N&#92;)</td></tr><tr><td>Recovery</td><td>&#92;((0,-1,+1)&#92;)</td><td>&#92;(a_2=&#92;gamma I&#92;)</td></tr></tbody></table>
+<p>Each event produces both a mean contribution and a random contribution in its own state-change direction.</p></section>
+<section class="lesson-section"><h2>The stochastic SIR equations</h2>
+<div class="math-box">&#92;[
+dS=-a_1dt-&#92;sqrt{a_1}dW_1,
+&#92;]
+&#92;[
+dI=(a_1-a_2)dt+&#92;sqrt{a_1}dW_1-&#92;sqrt{a_2}dW_2,
+&#92;]
+&#92;[
+dR=a_2dt+&#92;sqrt{a_2}dW_2.
+&#92;]</div>
+<p>&#92;(W_1&#92;) and &#92;(W_2&#92;) are independent Brownian motions representing infection and recovery fluctuations.</p></section>
+<section class="lesson-section"><h2>Why the same increment must be shared</h2>
+<p>An infection removes exactly what it adds: the term &#92;(-&#92;sqrt{a_1}dW_1&#92;) in &#92;(S&#92;) is paired with &#92;(+&#92;sqrt{a_1}dW_1&#92;) in &#92;(I&#92;). Likewise, recovery noise leaves &#92;(I&#92;) and enters &#92;(R&#92;). Therefore</p>
+<div class="math-box">&#92;[dS+dI+dR=0.&#92;]</div>
+<p>Using separate random numbers for the two sides of one event would destroy population conservation.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Stochastic SIR construction</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+N = 1000
+S0, I0, R0 = 990.0, 10.0, 0.0
+beta = 0.28
+gamma = 0.10
+T = 100
+dt = 0.01
+seed = 52
+
+steps = int(round(T / dt))
+times = np.linspace(0, T, steps + 1)
+rng = np.random.default_rng(seed)
+
+S = np.zeros(steps + 1)
+I = np.zeros(steps + 1)
+R = np.zeros(steps + 1)
+S[0], I[0], R[0] = S0, I0, R0
+corrections = 0
+
+for n in range(steps):
+    infection_rate = beta * S[n] * I[n] / N
+    recovery_rate = gamma * I[n]
+
+    dW_infection = np.sqrt(dt) * rng.normal()
+    dW_recovery = np.sqrt(dt) * rng.normal()
+
+    infection_change = (
+        infection_rate * dt
+        + np.sqrt(max(infection_rate, 0)) * dW_infection
+    )
+    recovery_change = (
+        recovery_rate * dt
+        + np.sqrt(max(recovery_rate, 0)) * dW_recovery
+    )
+
+    proposed = np.array([
+        S[n] - infection_change,
+        I[n] + infection_change - recovery_change,
+        R[n] + recovery_change
+    ])
+
+    if (proposed < 0).any():
+        corrections += 1
+        proposed = np.maximum(proposed, 0)
+        proposed *= N / proposed.sum()
+
+    S[n + 1], I[n + 1], R[n + 1] = proposed
+
+totals = S + I + R
+
+summary = pd.DataFrame({
+    "quantity": [
+        "Maximum population error",
+        "Minimum compartment value",
+        "Peak infectious value",
+        "Time of first peak",
+        "Boundary corrections"
+    ],
+    "value": [
+        np.max(np.abs(totals - N)),
+        min(S.min(), I.min(), R.min()),
+        I.max(),
+        times[np.argmax(I)],
+        corrections
+    ]
+})
+
+print(summary.round(6).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.2))
+plt.plot(times, S, label="Susceptible", color="#2563eb")
+plt.plot(times, I, label="Infectious", color="#b42318")
+plt.plot(times, R, label="Removed", color="#39815e")
+plt.xlabel("Time (days)")
+plt.ylabel("Population")
+plt.title("One stochastic SIR diffusion path")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Matrix viewpoint</h2><p>With state-change matrix &#92;(V&#92;) and rate vector &#92;(a(X)&#92;), the event-derived diffusion can be written</p><div class="math-box">&#92;[dX=Va(X)dt+V&#92;sqrt{&#92;operatorname{diag}(a(X))}dW.&#92;]</div><p>This compact form becomes especially useful when SEIR adds a third event channel.</p></section>
+<section class="lesson-section"><h2>Conditions and interpretation</h2><ul><li>Rates must be non-negative in the biological state space.</li><li>The two Brownian increments are independent, but each increment is shared across compartments affected by its event.</li><li>Continuous SDE states are approximations to integer counts.</li><li>The displayed non-negativity projection is declared and counted; it is not part of the original SDE.</li></ul></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now construct a multivariable SIR diffusion from event vectors, preserve population through shared noise, and distinguish independent event channels from independent compartment noise.</p></div></section><nav class="lesson-nav"><a href="../stochastic-sis-model/">← Previous lesson</a><a href="../stochastic-seir-model/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
