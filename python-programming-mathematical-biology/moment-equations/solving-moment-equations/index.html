@@ -1,1 +1,103 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Solving moment equations numerically in Python for mathematical biology."><title>Solving moment equations numerically | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">10</p><h1 class="section-title">Solving moment equations numerically</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Solve closed epidemic moment equations numerically with Python and validate variance."><title>Solving moment equations numerically | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">10</p><h1 class="section-title">Solving moment equations numerically</h1><p class="lesson-intro">A numerical solver advances the retained moments through time; solver checks and reconstructed-moment checks are both necessary.</p>
+<section class="lesson-section"><h2>Initial moments</h2><p>If the initial infectious count is known exactly as &#92;(I(0)=I_0&#92;), then</p>
+<div class="math-box">&#92;[m_1(0)=I_0,&#92;qquad m_2(0)=I_0^2,&#92;qquad v(0)=0.&#92;]</div>
+<p>If the initial state were random, its first two moments would need to be supplied instead.</p></section>
+<section class="lesson-section"><h2>Solver inputs</h2><table><thead><tr><th>Input</th><th>Purpose</th></tr></thead><tbody><tr><td><code>fun</code></td><td>Moment derivative function.</td></tr><tr><td><code>t_span</code></td><td>Start and final time.</td></tr><tr><td><code>y0</code></td><td>Initial retained moments.</td></tr><tr><td><code>t_eval</code></td><td>Times at which results are returned.</td></tr><tr><td><code>rtol, atol</code></td><td>Relative and absolute local error controls.</td></tr></tbody></table></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Solving closed moment equations</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+def moment_rhs(t, y, N, beta, gamma):
+    m1, m2 = y
+    m3 = 3 * m1 * m2 - 2 * m1 ** 3
+
+    dm1 = (beta - gamma) * m1 - beta * m2 / N
+    dm2 = (
+        (2 * (beta - gamma) - beta / N) * m2
+        - 2 * beta * m3 / N
+        + (beta + gamma) * m1
+    )
+    return [dm1, dm2]
+
+N = 100
+I0 = 5
+beta = 0.25
+gamma = 0.15
+T = 30
+
+output_times = np.linspace(0, T, 301)
+initial_moments = [I0, I0 ** 2]
+
+solution = solve_ivp(
+    fun=moment_rhs,
+    t_span=(0, T),
+    y0=initial_moments,
+    t_eval=output_times,
+    args=(N, beta, gamma),
+    method="RK45",
+    rtol=1e-8,
+    atol=1e-10
+)
+
+if not solution.success:
+    raise RuntimeError(solution.message)
+
+m1, m2 = solution.y
+variance = m2 - m1 ** 2
+
+if variance.min() < -1e-7:
+    raise ValueError("The solution produced negative variance.")
+
+variance = np.maximum(variance, 0)
+sd = np.sqrt(variance)
+
+selected_times = [0, 5, 10, 20, 30]
+indices = [
+    np.argmin(np.abs(solution.t - t))
+    for t in selected_times
+]
+table = pd.DataFrame({
+    "time": selected_times,
+    "mean m1": m1[indices],
+    "second moment m2": m2[indices],
+    "variance": variance[indices],
+    "standard deviation": sd[indices]
+})
+
+print(f"Solver success: {solution.success}")
+print(f"Derivative evaluations: {solution.nfev}")
+print()
+print(table.round(4).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.2))
+plt.plot(solution.t, m1, color="#174c34",
+         linewidth=2, label="Mean m1")
+plt.fill_between(
+    solution.t,
+    np.maximum(m1 - sd, 0),
+    m1 + sd,
+    color="#b9ddc7", alpha=0.65,
+    label="Mean ± one SD"
+)
+plt.xlabel("Time")
+plt.ylabel("Infectious population")
+plt.title("Numerical solution of closed SIS moment equations")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+plt.figure(figsize=(9.5, 4.9))
+plt.plot(solution.t, variance,
+         color="#b42318", label="Variance")
+plt.xlabel("Time")
+plt.ylabel("Variance of I")
+plt.title("Variance reconstructed from m2 − m1²")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Why tolerate a tiny negative residual?</h2><p>Variance is mathematically non-negative. A computed value such as &#92;(-10^{-12}&#92;) can arise from floating-point subtraction of nearly equal numbers. The code rejects materially negative variance below &#92;(-10^{-7}&#92;) and clips only smaller numerical residuals to zero. This is different from hiding a failed closure or solver.</p></section>
+<section class="lesson-section"><h2>Solver accuracy is not closure accuracy</h2><p>Tight tolerances reduce numerical integration error in the closed ODEs. They do not make the normal closure exact. Comparison with stochastic simulations is still required.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now supply initial moments, solve a closed system with <code>solve_ivp</code>, inspect solver success, reconstruct variance and separate numerical tolerance from closure error.</p></div></section><nav class="lesson-nav"><a href="../programming-moment-odes/">← Previous lesson</a><a href="../expected-infectious-variance/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
