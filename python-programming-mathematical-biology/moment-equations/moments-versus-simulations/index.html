@@ -1,1 +1,98 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Comparing moment solutions with simulations in Python for mathematical biology."><title>Comparing moment solutions with simulations | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">12</p><h1 class="section-title">Comparing moment solutions with simulations</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Compare closed epidemic moment solutions with Monte Carlo CTMC moments in Python."><title>Comparing moment solutions with simulations | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Moment Equations</a><p class="section-number">12</p><h1 class="section-title">Comparing moment solutions with simulations</h1><p class="lesson-intro">Closure quality must be assessed against the stochastic model, not inferred from a smooth ODE solution.</p>
+<section class="lesson-section"><h2>Why comparison is necessary</h2><p>The closed ODE has numerical error, closure error and possibly model mismatch. Tight solver tolerances address only numerical integration. CTMC simulations provide an independent benchmark for the original stochastic model.</p></section>
+<section class="lesson-section"><h2>Matched comparison design</h2><ul><li>Use the same &#92;(N,I_0,&#92;beta,&#92;gamma&#92;).</li><li>Compare at the same times.</li><li>Use enough independent simulations to reduce Monte Carlo error.</li><li>Compare both mean and variance.</li><li>Report absolute or relative discrepancies.</li></ul></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Closed moments versus CTMC</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+N, I0 = 100, 5
+beta, gamma = 0.25, 0.15
+times = np.linspace(0, 30, 61)
+
+def rhs(t, y):
+    m1, m2 = y
+    m3 = 3 * m1 * m2 - 2 * m1 ** 3
+    return [
+        (beta - gamma) * m1 - beta * m2 / N,
+        (2 * (beta - gamma) - beta / N) * m2
+        - 2 * beta * m3 / N
+        + (beta + gamma) * m1
+    ]
+
+sol = solve_ivp(
+    rhs, (0, 30), [I0, I0 ** 2],
+    t_eval=times, rtol=1e-9, atol=1e-11
+)
+moment_mean, moment_second = sol.y
+moment_variance = np.maximum(
+    moment_second - moment_mean ** 2, 0
+)
+
+rng = np.random.default_rng(290)
+M = 6000
+
+def ctmc_path():
+    I, time = I0, 0.0
+    event_times, values = [0.0], [I]
+    while I > 0 and time < times[-1]:
+        b = beta * (N - I) * I / N
+        d = gamma * I
+        wait = rng.exponential(1 / (b + d))
+        if time + wait > times[-1]:
+            break
+        time += wait
+        I += 1 if rng.random() < b / (b + d) else -1
+        event_times.append(time)
+        values.append(I)
+    pos = np.searchsorted(event_times, times, side="right") - 1
+    return np.array(values)[pos]
+
+paths = np.array([ctmc_path() for _ in range(M)])
+simulation_mean = paths.mean(axis=0)
+simulation_variance = paths.var(axis=0, ddof=1)
+
+mean_error = moment_mean - simulation_mean
+variance_error = moment_variance - simulation_variance
+
+selected = [0, 5, 10, 20, 30]
+idx = [int(t * 2) for t in selected]
+table = pd.DataFrame({
+    "time": selected,
+    "moment mean": moment_mean[idx],
+    "simulation mean": simulation_mean[idx],
+    "mean difference": mean_error[idx],
+    "moment variance": moment_variance[idx],
+    "simulation variance": simulation_variance[idx],
+    "variance difference": variance_error[idx]
+})
+print(table.round(3).to_string(index=False))
+
+plt.figure(figsize=(9.5, 5.1))
+plt.plot(times, moment_mean, color="#174c34",
+         linewidth=2, label="Closed-moment mean")
+plt.plot(times, simulation_mean, "--",
+         color="#39815e", label="CTMC sample mean")
+plt.xlabel("Time")
+plt.ylabel("Expected infectious population")
+plt.title("First moment: closure versus simulation")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+plt.figure(figsize=(9.5, 5.1))
+plt.plot(times, moment_variance, color="#b42318",
+         linewidth=2, label="Closed-moment variance")
+plt.plot(times, simulation_variance, "--",
+         color="#d97706", label="CTMC sample variance")
+plt.xlabel("Time")
+plt.ylabel("Variance of infectious population")
+plt.title("Variance: closure discrepancy is visible")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Interpret discrepancies</h2><p>Small differences can arise from finite Monte Carlo error. Persistent differences larger than that sampling error suggest closure error. Agreement for the mean does not guarantee agreement for variance, tails or extinction probability.</p></section>
+<section class="lesson-section"><h2>Validation is regime-specific</h2><p>A closure that performs well for one population size or initial state may fail near extinction, under stronger nonlinearity or for longer times. Validation must cover the biological regimes in which conclusions will be used.</p></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now design a matched validation experiment, compare closed first and second moments with CTMC sample moments and interpret disagreement as a combination of Monte Carlo and closure error.</p></div></section><nav class="lesson-nav"><a href="../expected-infectious-variance/">← Previous lesson</a><a href="../approximate-outbreak-probabilities/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
