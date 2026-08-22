@@ -1,1 +1,77 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Simulating ΔW = √Δt Z in Python for mathematical biology."><title>Simulating ΔW = √Δt Z | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">04</p><h1 class="section-title">Simulating ΔW = √Δt Z</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Simulate Brownian increments using square-root time scaling and verify their distribution in Python."><title>Simulating ΔW = √Δt Z | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">04</p><h1 class="section-title">Simulating ΔW = √Δt Z</h1><p class="lesson-intro">A computer generates a Brownian increment by scaling a standard normal random number by the square root of the time-step length.</p>
+<section class="lesson-section"><h2>Start with a standard normal number</h2><div class="math-box">&#92;[Z&#92;sim N(0,1).&#92;]</div><p>&#92;(Z&#92;) is dimensionless, has mean 0 and variance 1. Python generates a fresh independent value with <code>rng.normal(0, 1)</code>.</p></section>
+<section class="lesson-section"><h2>Scale it to the required time interval</h2>
+<div class="math-box">&#92;[&#92;Delta W=&#92;sqrt{&#92;Delta t}Z.&#92;]</div>
+<p>Multiplication by &#92;(&#92;sqrt{&#92;Delta t}&#92;) keeps the mean at 0 and changes the variance correctly:</p>
+<div class="math-box">&#92;[&#92;operatorname{Var}(&#92;Delta W)=(&#92;sqrt{&#92;Delta t})^2&#92;operatorname{Var}(Z)=&#92;Delta t.&#92;]</div>
+<p>Using &#92;(&#92;Delta t Z&#92;) would give variance &#92;((&#92;Delta t)^2&#92;), which is the wrong scaling.</p></section>
+<section class="lesson-section"><h2>A numerical example</h2><p>If &#92;(&#92;Delta t=0.04&#92;) and the generated value is &#92;(Z=-1.2&#92;), then &#92;(&#92;Delta W=&#92;sqrt{0.04}(-1.2)=0.2(-1.2)=-0.24&#92;). A negative increment is normal and represents downward random fluctuation over that interval.</p></section>
+<section class="lesson-section"><h2>Interactive Python laboratory</h2><p>Generate increments for three time steps and verify that their empirical variance follows &#92;(&#92;Delta t&#92;) while their standard deviation follows &#92;(&#92;sqrt{&#92;Delta t}&#92;).</p>
+<div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>Simulating Brownian increments</span></div>
+<textarea class="python-editor" spellcheck="false">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+time_steps = np.array([0.01, 0.04, 0.16])
+sample_size = 100000
+seed = 27
+rng = np.random.default_rng(seed)
+
+rows = []
+samples = {}
+
+for dt in time_steps:
+    Z = rng.normal(0, 1, size=sample_size)
+    dW = np.sqrt(dt) * Z
+    samples[dt] = dW
+
+    rows.append({
+        "dt": dt,
+        "theoretical mean": 0,
+        "sample mean": dW.mean(),
+        "theoretical variance": dt,
+        "sample variance": dW.var(ddof=1),
+        "theoretical SD": np.sqrt(dt),
+        "sample SD": dW.std(ddof=1)
+    })
+
+results = pd.DataFrame(rows)
+print(results.round(5).to_string(index=False))
+
+plt.figure(figsize=(9, 5))
+for dt in time_steps:
+    plt.hist(
+        samples[dt], bins=70, density=True,
+        histtype="step", linewidth=1.6,
+        label=f"dt = {dt}"
+    )
+
+plt.xlabel("Brownian increment, ΔW")
+plt.ylabel("Density")
+plt.title("Larger time intervals produce wider increments")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+plt.figure(figsize=(7.5, 5))
+plt.plot(
+    np.sqrt(time_steps),
+    results["sample SD"],
+    "o-", color="#b42318",
+    label="Simulated SD"
+)
+plt.plot(
+    np.sqrt(time_steps),
+    np.sqrt(time_steps),
+    "--", color="#174c34",
+    label="Theoretical SD = √dt"
+)
+plt.xlabel("√dt")
+plt.ylabel("Standard deviation of ΔW")
+plt.title("Brownian increment scale follows √dt")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
+<section class="lesson-section"><h2>Understand the code</h2><table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody><tr><td><code>rng.normal(0, 1, size=n)</code></td><td>Generates &#92;(n&#92;) independent standard normal values.</td></tr><tr><td><code>np.sqrt(dt) * Z</code></td><td>Converts standard normals into Brownian increments for the chosen interval.</td></tr><tr><td><code>ddof=1</code></td><td>Uses the usual sample variance and sample standard deviation.</td></tr></tbody></table></section>
+<section class="lesson-section"><h2>Essential conditions</h2><ul><li>&#92;(&#92;Delta t&#92;) must be positive.</li><li>Use a new independent &#92;(Z&#92;) for each non-overlapping time interval and each independent path.</li><li>Use the same increments only when intentionally comparing numerical solutions driven by the same Brownian path.</li><li>A random seed supports reproducibility; it does not remove randomness from the model.</li></ul></section>
+<section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now generate Brownian increments in Python, derive their mean and variance, explain the square-root scaling, and verify the formula numerically. The next lesson inserts these increments into Euler–Maruyama updates.</p></div></section><nav class="lesson-nav"><a href="../brownian-motion-increments/">← Previous lesson</a><a href="../euler-maruyama-method/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
