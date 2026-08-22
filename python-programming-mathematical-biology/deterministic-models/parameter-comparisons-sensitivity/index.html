@@ -1,1 +1,440 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Parameter comparisons and sensitivity experiments in Python for mathematical biology."><title>Parameter comparisons and sensitivity experiments | MathsBio</title><link rel="stylesheet" href="../../../style.css"></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Deterministic Models</a><p class="section-number">13</p><h1 class="section-title">Parameter comparisons and sensitivity experiments</h1><p>This lesson page is ready for its intuitive mathematical-biology explanation and working Python program.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Compare epidemic parameters and conduct local sensitivity experiments using reusable Python simulations.">
+<title>Parameter comparisons and sensitivity experiments | MathsBio</title>
+<link rel="stylesheet" href="../../../style.css">
+<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<script defer src="../../../assets/python-runner.js"></script>
+<style>
+.experiment-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}.experiment-level{padding:20px;background:#fff;border:1px solid #dce7e0;border-top:5px solid #39815e;border-radius:10px}.experiment-level span{display:block;margin-bottom:7px;color:#39815e;font-size:.78rem;font-weight:700}.design-table{width:100%;border-collapse:collapse;background:#fff}.design-table th,.design-table td{padding:12px 14px;border:1px solid #d6e3db;text-align:left;vertical-align:top}.design-table th{background:#eaf4ee;color:#174c34}.baseline-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}.baseline-card{padding:18px;text-align:center;background:#eaf4ee;border-radius:9px}.baseline-card strong{display:block;color:#174c34}.sensitivity-box{padding:22px;background:#fff;border:2px solid #8fbea1;border-radius:11px}.interpret-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}.interpret-card{padding:20px;background:#fff;border:1px solid #dce7e0;border-radius:10px}.warning-box{padding:22px;background:#fff6df;border:2px solid #d4a54c;border-radius:11px}@media(max-width:800px){.experiment-levels,.baseline-grid,.interpret-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header>
+<main class="section container">
+<a class="back-link" href="../">← Deterministic Models</a>
+<p class="section-number">13</p>
+<h1 class="section-title">Parameter comparisons and sensitivity experiments</h1>
+<p class="lesson-intro">A model outcome depends on its parameter values. Parameter comparison shows how selected scenarios differ, while sensitivity analysis measures how strongly an outcome responds to small parameter changes around a stated baseline.</p>
+
+<section class="lesson-section">
+<h2>Biological scenario</h2>
+<div class="scenario-box">
+<p>For an SIR epidemic in a population of 1,000, the baseline parameters are &#92;(&#92;beta=0.30&#92;) and &#92;(&#92;gamma=0.10&#92;) per day.</p>
+<p>We want to investigate how transmission and recovery affect the infectious peak and final outbreak size.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Three levels of experiment</h2>
+<div class="experiment-levels">
+<div class="experiment-level"><span>LEVEL 1</span><strong>One parameter at a time</strong><p>Change &#92;(&#92;beta&#92;) while keeping everything else fixed.</p></div>
+<div class="experiment-level"><span>LEVEL 2</span><strong>Parameter grid</strong><p>Test combinations of &#92;(&#92;beta&#92;) and &#92;(&#92;gamma&#92;).</p></div>
+<div class="experiment-level"><span>LEVEL 3</span><strong>Local sensitivity</strong><p>Estimate response to small changes around the baseline.</p></div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Design a fair comparison</h2>
+<div class="baseline-grid">
+<div class="baseline-card"><strong>Population</strong>1,000</div>
+<div class="baseline-card"><strong>Initial state</strong>&#92;(S_0=990,I_0=10,R_0=0&#92;)</div>
+<div class="baseline-card"><strong>Time interval</strong>0–200 days</div>
+<div class="baseline-card"><strong>Numerical settings</strong>same solver and tolerances</div>
+</div>
+<table class="design-table">
+<thead><tr><th>Principle</th><th>Reason</th></tr></thead>
+<tbody>
+<tr><td>State the baseline.</td><td>A parameter effect is interpreted relative to a reference model.</td></tr>
+<tr><td>Change only intended quantities.</td><td>Otherwise the source of an outcome difference becomes unclear.</td></tr>
+<tr><td>Use biologically meaningful ranges.</td><td>Extreme values may answer an irrelevant question.</td></tr>
+<tr><td>Use identical numerical settings.</td><td>Differences should not arise from inconsistent computation.</td></tr>
+<tr><td>Choose outcomes before running.</td><td>This avoids selecting only results that appear interesting afterwards.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>One-at-a-time comparison</h2>
+<p>Choose several transmission values:</p>
+<p class="formula-line">&#92;[&#92;beta&#92;in&#92;{0.20,0.25,0.30,0.35,0.40&#92;},&#92;]</p>
+<p>while fixing &#92;(&#92;gamma=0.10&#92;). This isolates the model response to &#92;(&#92;beta&#92;) along that particular line through parameter space.</p>
+<div class="technical-box">
+<p>One-at-a-time comparison is easy to interpret, but it does not reveal interactions that occur when several parameters change together.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Two-parameter experiment</h2>
+<p>A grid evaluates every selected combination of &#92;(&#92;beta&#92;) and &#92;(&#92;gamma&#92;). Results can be stored in a two-dimensional array:</p>
+<pre><code>peak_grid = np.zeros(
+    (len(gamma_values), len(beta_values))
+)</code></pre>
+<p>The row index identifies a &#92;(&#92;gamma&#92;) value and the column index identifies a &#92;(&#92;beta&#92;) value.</p>
+<div class="step-card">
+<pre><code>for row, gamma in enumerate(gamma_values):
+    for column, beta in enumerate(beta_values):
+        result = simulate_sir(beta, gamma)
+        peak_grid[row, column] = result["peak_I"]</code></pre>
+<ul>
+<li>A loop inside another loop is a <strong>nested loop</strong>.</li>
+<li><span class="inline-code">enumerate(values)</span> supplies both an index and its corresponding value.</li>
+<li><span class="inline-code">peak_grid[row, column]</span> selects one cell in the two-dimensional array.</li>
+</ul>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Local normalized sensitivity</h2>
+<p>For parameter &#92;(p&#92;) and outcome &#92;(Y&#92;), we estimate a local sensitivity using a small increase and decrease around the baseline:</p>
+<div class="sensitivity-box">
+<p class="formula-line">&#92;[S_p^Y&#92;approx&#92;frac{Y(p+&#92;Delta p)-Y(p-&#92;Delta p)}{2&#92;Delta p}&#92;frac{p}{Y(p)}.&#92;]</p>
+</div>
+<p>This is dimensionless. A value near 1 means that, locally, a 1% parameter increase is associated with approximately a 1% outcome increase. A negative value means the outcome moves in the opposite direction.</p>
+<div class="warning-box">
+<p>This interpretation is local and approximate. It applies near the chosen baseline and for the selected perturbation size.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Program the finite-difference calculation</h2>
+<div class="step-card">
+<pre><code>change_fraction = 0.05
+delta_beta = change_fraction * beta_baseline
+
+outcome_plus = model(beta_baseline + delta_beta)
+outcome_minus = model(beta_baseline - delta_beta)
+
+derivative = (
+    outcome_plus - outcome_minus
+) / (2 * delta_beta)
+
+sensitivity = (
+    derivative * beta_baseline / outcome_baseline
+)</code></pre>
+<p class="code-explain">A 5% change is used on each side of the baseline. The central difference uses both sides and is generally more balanced than a one-sided comparison.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Run the complete sensitivity experiment</h2>
+<div class="python-lab">
+<div class="python-lab-header"><span>Interactive Python</span><span>SIR parameter experiments</span></div>
+<textarea class="python-editor" spellcheck="false" aria-label="Editable Python code">import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+
+def sir_rhs(t, y, beta, gamma):
+    """Return deterministic SIR derivatives."""
+    
+    S, I, R = y
+    N = S + I + R
+    
+    infection_flow = beta * S * I / N
+    recovery_flow = gamma * I
+    
+    return [
+        -infection_flow,
+        infection_flow - recovery_flow,
+        recovery_flow
+    ]
+
+
+def simulate_sir(beta, gamma):
+    """Solve the shared SIR scenario and return outcomes."""
+    
+    time = np.linspace(0, 200, 2001)
+    
+    solution = solve_ivp(
+        sir_rhs,
+        t_span=(0, 200),
+        y0=[990, 10, 0],
+        t_eval=time,
+        args=(beta, gamma),
+        rtol=1e-8,
+        atol=1e-10
+    )
+    
+    if not solution.success:
+        raise RuntimeError(solution.message)
+    
+    S, I, R = solution.y
+    peak_index = np.argmax(I)
+    
+    return {
+        "time": solution.t,
+        "S": S,
+        "I": I,
+        "R": R,
+        "peak_I": I[peak_index],
+        "peak_time": solution.t[peak_index],
+        "final_size": 10 + 990 - S[-1]
+    }
+
+
+def normalized_sensitivity(
+    parameter_name,
+    beta_baseline,
+    gamma_baseline,
+    outcome_name,
+    change_fraction=0.05
+):
+    """Estimate one local normalized sensitivity."""
+    
+    baseline = simulate_sir(
+        beta_baseline,
+        gamma_baseline
+    )[outcome_name]
+    
+    if parameter_name == "beta":
+        delta = change_fraction * beta_baseline
+        
+        outcome_plus = simulate_sir(
+            beta_baseline + delta,
+            gamma_baseline
+        )[outcome_name]
+        
+        outcome_minus = simulate_sir(
+            beta_baseline - delta,
+            gamma_baseline
+        )[outcome_name]
+        
+        parameter_baseline = beta_baseline
+    
+    elif parameter_name == "gamma":
+        delta = change_fraction * gamma_baseline
+        
+        outcome_plus = simulate_sir(
+            beta_baseline,
+            gamma_baseline + delta
+        )[outcome_name]
+        
+        outcome_minus = simulate_sir(
+            beta_baseline,
+            gamma_baseline - delta
+        )[outcome_name]
+        
+        parameter_baseline = gamma_baseline
+    
+    else:
+        raise ValueError("parameter_name must be beta or gamma.")
+    
+    derivative = (
+        outcome_plus - outcome_minus
+    ) / (2 * delta)
+    
+    return derivative * parameter_baseline / baseline
+
+
+# Baseline and comparison values
+beta_baseline = 0.30
+gamma_baseline = 0.10
+
+beta_values = np.array([0.20, 0.25, 0.30, 0.35, 0.40])
+gamma_values = np.array([0.07, 0.10, 0.13])
+
+# One-at-a-time beta results
+beta_results = []
+
+for beta in beta_values:
+    beta_results.append(
+        simulate_sir(beta, gamma_baseline)
+    )
+
+# Two-dimensional peak grid
+peak_grid = np.zeros(
+    (len(gamma_values), len(beta_values))
+)
+
+for row, gamma in enumerate(gamma_values):
+    for column, beta in enumerate(beta_values):
+        result = simulate_sir(beta, gamma)
+        peak_grid[row, column] = result["peak_I"]
+
+# Local normalized sensitivities
+sensitivity_labels = [
+    "beta → peak",
+    "gamma → peak",
+    "beta → final size",
+    "gamma → final size"
+]
+
+sensitivity_values = [
+    normalized_sensitivity(
+        "beta", beta_baseline, gamma_baseline, "peak_I"
+    ),
+    normalized_sensitivity(
+        "gamma", beta_baseline, gamma_baseline, "peak_I"
+    ),
+    normalized_sensitivity(
+        "beta", beta_baseline, gamma_baseline, "final_size"
+    ),
+    normalized_sensitivity(
+        "gamma", beta_baseline, gamma_baseline, "final_size"
+    )
+]
+
+# Display one-at-a-time outcome table
+print("beta   Peak I   Peak day   Final epidemic size")
+print("------------------------------------------------")
+
+for beta, result in zip(beta_values, beta_results):
+    print(
+        f"{beta:4.2f}  {result['peak_I']:7.2f}  "
+        f"{result['peak_time']:8.1f}  "
+        f"{result['final_size']:19.2f}"
+    )
+
+# Display the peak matrix
+print("\nPeak infectious matrix")
+print("Rows: gamma values; columns: beta values")
+print("------------------------------------------------")
+print(np.round(peak_grid, 2))
+
+# Display sensitivity values
+print("\nLocal normalized sensitivities")
+print("------------------------------------------------")
+
+for label, value in zip(
+    sensitivity_labels,
+    sensitivity_values
+):
+    print(f"{label:20s} {value:8.3f}")
+
+# Create three plots
+fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
+
+# Plot 1: infectious trajectories
+for beta, result in zip(beta_values, beta_results):
+    axes[0].plot(
+        result["time"],
+        result["I"],
+        label=f"beta={beta:.2f}"
+    )
+
+axes[0].set_title("One-at-a-time comparison")
+axes[0].set_xlabel("Time (days)")
+axes[0].set_ylabel("Infectious population")
+axes[0].grid(alpha=0.25)
+axes[0].legend(fontsize=8)
+
+# Plot 2: heatmap
+image = axes[1].imshow(
+    peak_grid,
+    origin="lower",
+    aspect="auto",
+    cmap="viridis"
+)
+
+axes[1].set_xticks(range(len(beta_values)))
+axes[1].set_xticklabels(
+    [f"{value:.2f}" for value in beta_values]
+)
+axes[1].set_yticks(range(len(gamma_values)))
+axes[1].set_yticklabels(
+    [f"{value:.2f}" for value in gamma_values]
+)
+axes[1].set_xlabel("beta")
+axes[1].set_ylabel("gamma")
+axes[1].set_title("Peak infectious population")
+fig.colorbar(image, ax=axes[1], label="Peak I")
+
+# Plot 3: local sensitivities
+colours = [
+    "seagreen" if value &gt;= 0 else "indianred"
+    for value in sensitivity_values
+]
+
+axes[2].bar(
+    sensitivity_labels,
+    sensitivity_values,
+    color=colours
+)
+axes[2].axhline(0, color="black", linewidth=0.8)
+axes[2].set_title("Local normalized sensitivity")
+axes[2].set_ylabel("Sensitivity")
+axes[2].tick_params(axis="x", rotation=35)
+axes[2].grid(axis="y", alpha=0.25)
+
+fig.tight_layout()</textarea>
+<div class="code-controls">
+<button class="code-button primary" type="button" data-action="run">▶ Run code</button>
+<button class="code-button" type="button" data-action="reset">↻ Reset code</button>
+<button class="code-button" type="button" data-action="copy">Copy code</button>
+</div>
+<div class="output-wrap">
+<p class="output-label">Output</p>
+<pre class="python-output" aria-live="polite">Run the code to see the result.</pre>
+<div class="python-output-images" aria-live="polite"></div>
+</div>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>New programming tools</h2>
+<table class="design-table">
+<thead><tr><th>Code</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>np.zeros((rows, columns))</code></td><td>Creates a two-dimensional numerical array.</td></tr>
+<tr><td><code>enumerate(values)</code></td><td>Returns each item together with its index.</td></tr>
+<tr><td><code>zip(a, b)</code></td><td>Pairs corresponding entries from two collections.</td></tr>
+<tr><td><code>np.round(array, 2)</code></td><td>Rounds displayed values to two decimal places without changing the original array.</td></tr>
+<tr><td><code>imshow(matrix)</code></td><td>Displays a two-dimensional array as a colour image.</td></tr>
+<tr><td><code>fig.colorbar(...)</code></td><td>Adds a scale explaining how colours correspond to numerical values.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="lesson-section">
+<h2>Interpret the results carefully</h2>
+<div class="interpret-grid">
+<div class="interpret-card">
+<h3>Positive sensitivity</h3>
+<p>The outcome increases locally as the parameter increases. Transmission commonly has a positive effect on peak size near an epidemic baseline.</p>
+</div>
+<div class="interpret-card">
+<h3>Negative sensitivity</h3>
+<p>The outcome decreases locally as the parameter increases. Faster recovery commonly reduces infectious burden.</p>
+</div>
+</div>
+<div class="technical-box">
+<p>The magnitude ranks local responsiveness only for the chosen model, baseline, outcome and perturbation. A small local sensitivity does not prove that a parameter is unimportant everywhere.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Sensitivity is not uncertainty</h2>
+<table class="design-table">
+<thead><tr><th>Sensitivity analysis</th><th>Uncertainty analysis</th></tr></thead>
+<tbody>
+<tr><td>Asks how outputs respond when inputs change.</td><td>Asks how uncertain inputs produce uncertainty in outputs.</td></tr>
+<tr><td>Can use deliberately chosen parameter changes.</td><td>Requires assumptions or evidence about plausible parameter distributions or ranges.</td></tr>
+<tr><td>Does not assign probabilities to parameter values.</td><td>May propagate probability distributions through the model.</td></tr>
+</tbody>
+</table>
+<div class="warning-box">
+<p>Neither sensitivity nor scenario comparison establishes that changing a real-world factor will cause exactly the modelled outcome. Conclusions remain conditional on the model structure and parameter interpretation.</p>
+</div>
+</section>
+
+<section class="lesson-section">
+<h2>Try changing the perturbation size</h2>
+<div class="experiment-box">
+<p>Change <span class="inline-code">change_fraction=0.05</span> to 0.01 and then to 0.20 in the function calls or default definition.</p>
+<ol>
+<li>Compare the sensitivity estimates.</li>
+<li>Identify which estimates remain stable.</li>
+<li>Explain why a 20% change is less “local” than a 1% change.</li>
+<li>Discuss whether one derivative-like number can summarise a strongly nonlinear response.</li>
+</ol>
+</div>
+</section>
+</main>
+</body>
+</html>
