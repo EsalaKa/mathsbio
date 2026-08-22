@@ -1,7 +1,21 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Program one reusable and validated epidemic SDE trajectory in Python."><title>Programming one SDE trajectory | MathsBio</title><link rel="stylesheet" href="../../../style.css"><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script defer src="https://cdn.jsdelivr.net/npm/pyodide/v0.27.7/full/pyodide.js"></script><script defer src="../../../assets/python-runner.js?v=20260822-1"></script></head><body><header class="site-header"><div class="container nav-wrap"><a class="brand" href="../../../">MathsBio</a></div></header><main class="section container"><a class="back-link" href="../">← Stochastic Differential Equations</a><p class="section-number">09</p><h1 class="section-title">Programming one SDE trajectory</h1><p class="lesson-intro">A reliable stochastic program should make its inputs, random generator, numerical loop, stored path and validity diagnostics easy to inspect.</p>
 <section class="lesson-section"><h2>Programming goal</h2><p>The model equations and Euler–Maruyama method are already known. The new task is to package one complete simulation so that inputs, random-number generation, state storage, validation and outputs are clearly separated.</p></section>
+<section class="lesson-section"><h2>Scenario and purpose</h2>
+<p>We reuse the stochastic SIS model with &#92;(N=500&#92;), &#92;(I(0)=10&#92;), &#92;(&#92;beta=0.25&#92;) and &#92;(&#92;gamma=0.15&#92;). The purpose is no longer to derive its coefficients. It is to build a dependable function that produces one possible epidemic history.</p>
+<div class="definition-box"><p><strong>One trajectory</strong> is one sequence of numerical states generated from one sequence of Brownian increments. It is a possible outcome under the model, not the expected path and not a probability distribution.</p></div>
+</section>
 <section class="lesson-section"><h2>Inputs and outputs</h2><table><thead><tr><th>Inputs</th><th>Returned outputs</th></tr></thead><tbody><tr><td>Initial state and parameters</td><td>Time grid and state path</td></tr><tr><td>Final time and time step</td><td>Diagnostic information</td></tr><tr><td>A random-number generator</td><td>Values ready for tables and plots</td></tr></tbody></table>
 <p>Passing the generator into the function avoids hidden randomness and makes later repeated simulations straightforward.</p></section>
+<section class="lesson-section"><h2>The function contract</h2>
+<p>A function contract states what a function expects and what it returns.</p>
+<table><thead><tr><th>Requirement</th><th>Reason</th></tr></thead><tbody>
+<tr><td>&#92;(N&gt;0&#92;), &#92;(T&gt;0&#92;) and &#92;(&#92;Delta t&gt;0&#92;)</td><td>Population, horizon and step length must be meaningful.</td></tr>
+<tr><td>&#92;(&#92;beta,&#92;gamma&#92;ge0&#92;)</td><td>Biological event rates cannot be negative.</td></tr>
+<tr><td>&#92;(0&#92;le I_0&#92;le N&#92;)</td><td>The initial state must lie in the SIS state space.</td></tr>
+<tr><td>&#92;(T/&#92;Delta t&#92;) is an integer</td><td>The stored grid reaches the requested final time exactly.</td></tr>
+</tbody></table>
+<p>If a requirement fails, the function raises a clear error instead of returning a misleading trajectory.</p>
+</section>
 <section class="lesson-section"><h2>Interactive Python laboratory</h2>
 <div class="python-lab"><div class="python-lab-header"><span>Interactive Python</span><span>One reusable SDE trajectory</span></div>
 <textarea class="python-editor" spellcheck="false">import numpy as np
@@ -11,13 +25,24 @@ import matplotlib.pyplot as plt
 def simulate_sis_sde(
     rng, N, I0, beta, gamma, T, dt
 ):
-    if dt <= 0:
-        raise ValueError("dt must be positive.")
+    if N <= 0:
+        raise ValueError("N must be positive.")
+
+    if T <= 0 or dt <= 0:
+        raise ValueError("T and dt must be positive.")
+
+    if beta < 0 or gamma < 0:
+        raise ValueError("Rates cannot be negative.")
 
     if not 0 <= I0 <= N:
         raise ValueError("I0 must be between 0 and N.")
 
     steps = int(round(T / dt))
+
+    if not np.isclose(steps * dt, T):
+        raise ValueError(
+            "Choose dt so that T/dt is an integer."
+        )
     times = np.linspace(0, T, steps + 1)
     I = np.zeros(steps + 1)
     I[0] = I0
@@ -88,6 +113,15 @@ plt.title(f"One SIS SDE trajectory, seed = {seed}")
 plt.grid(alpha=0.25)
 plt.tight_layout()</textarea><div class="code-controls"><button class="code-button primary" type="button" data-action="run">▶ Run code</button><button class="code-button" type="button" data-action="reset">↻ Reset code</button><button class="code-button" type="button" data-action="copy">Copy code</button></div><div class="output-wrap"><p class="output-label">Output</p><pre class="python-output">Run the code to see the result.</pre><div class="python-output-images"></div></div></div></section>
 <section class="lesson-section"><h2>Why each design choice matters</h2><table><thead><tr><th>Choice</th><th>Benefit</th></tr></thead><tbody><tr><td>Function parameters instead of global variables</td><td>The simulation can be reused safely with new scenarios.</td></tr><tr><td>Generator passed as <code>rng</code></td><td>The source of randomness is visible and controllable.</td></tr><tr><td>Preallocated NumPy array</td><td>Storage is efficient and has a predictable length.</td></tr><tr><td>Returned diagnostics</td><td>Boundary corrections and validity can be inspected rather than hidden.</td></tr></tbody></table></section>
+<section class="lesson-section"><h2>Seed, generator and reproducibility</h2>
+<p>The seed initialises the random-number generator. Recreating a generator with the same seed and using the same code reproduces the same trajectory. Continuing to use an existing generator produces new draws because its internal state has advanced.</p>
+<table><thead><tr><th>Action</th><th>Result</th></tr></thead><tbody>
+<tr><td>Create a new generator with seed 71</td><td>Reproduces this stored path.</td></tr>
+<tr><td>Call the function again with the same existing generator</td><td>Produces another path from later random draws.</td></tr>
+<tr><td>Create a new generator with a different seed</td><td>Produces a different reproducible path.</td></tr>
+</tbody></table>
+<p>A fixed seed supports checking and teaching. It does not make the stochastic model deterministic.</p>
+</section>
 <section class="lesson-section"><h2>What one path can establish</h2><p>One path demonstrates a possible history and helps debug the program. It cannot estimate a probability, mean, variance or typical range. Those require independent repetitions.</p></section>
 <section class="lesson-section"><h2>Continuous model, discrete numerical storage</h2><p>The SDE defines a continuous-time process. Euler–Maruyama stores approximations only at grid times. A line plot connects those stored values; it is not evidence that the computer calculated every intermediate time.</p></section>
 <section class="lesson-section"><h2>What this lesson adds</h2><div class="summary-box"><p>You can now package one SDE path into a validated reusable function, pass randomness explicitly, return diagnostics, and distinguish a possible trajectory from an ensemble result.</p></div></section><nav class="lesson-nav"><a href="../stochastic-seir-model/">← Previous lesson</a><a href="../many-sde-trajectories/">Next lesson →</a></nav></main><footer class="site-footer"><div class="container">MathsBio · Mathematical biology through clear mathematics and workable Python</div></footer></body></html>
